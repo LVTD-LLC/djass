@@ -18,7 +18,7 @@ from django.db import transaction
 from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView, UpdateView
 
-from core.stripe_webhooks import EVENT_HANDLERS
+from apps.core.stripe_webhooks import EVENT_HANDLERS
 
 
 from apps.core.forms import ProfileUpdateForm
