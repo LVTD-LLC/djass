@@ -2,8 +2,8 @@ import stripe
 from django.conf import settings
 
 from djass.utils import get_djass_logger
-from core.choices import ProfileStates
-from core.models import Profile
+from apps.core.choices import ProfileStates
+from apps.core.models import Profile
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
