@@ -161,3 +161,4 @@ This app uses Stripe Checkout for purchases and the Billing Portal for subscript
 - Trigger a test event:
   - `docker compose -f docker-compose-local.yml run --rm stripe trigger customer.subscription.created`
 \n<!-- redeploy 2026-02-18T12:19:19Z -->
+<!-- redeploy 2026-02-18T13:24:59Z -->
