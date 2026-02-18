@@ -160,3 +160,4 @@ This app uses Stripe Checkout for purchases and the Billing Portal for subscript
   - `docker compose -f docker-compose-local.yml run --rm stripe listen --forward-to http://backend:8000/stripe/webhook/${WEBHOOK_UUID}/`
 - Trigger a test event:
   - `docker compose -f docker-compose-local.yml run --rm stripe trigger customer.subscription.created`
+\n<!-- redeploy 2026-02-18T12:19:19Z -->
