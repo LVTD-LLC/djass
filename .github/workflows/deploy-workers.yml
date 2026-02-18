@@ -8,6 +8,10 @@ on:
 env:
   PROJECT_NAME: djass
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-deploy:
     name: Deploy
