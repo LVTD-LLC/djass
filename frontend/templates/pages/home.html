@@ -41,10 +41,7 @@
                   {% if project.status == "ready" and project.artifact %}
                     <a href="{% url 'project_download' project.id %}" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">Download ZIP</a>
                   {% elif project.status == "failed" %}
-                    <form method="post" action="{% url 'project_retry' project.id %}" class="inline">
-                      {% csrf_token %}
-                      <button type="submit" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">Retry</button>
-                    </form>
+                    <p class="text-amber-700 dark:text-amber-400">We've been notified of the error and are working on it.</p>
                     {% if project.error_message %}
                       <p class="mt-1 max-w-md text-xs text-red-600 dark:text-red-400">{{ project.error_message }}</p>
                     {% endif %}

@@ -39,7 +39,7 @@ env = environ.Env(
 ENVIRONMENT = env("ENVIRONMENT")
 COOKIECUTTER_TEMPLATE_PATH = env(
     "COOKIECUTTER_TEMPLATE_PATH",
-    default=str(BASE_DIR.parent / "django-saas-starter"),
+    default="https://github.com/rasulkireev/django-saas-starter.git",
 )
 
 LOGFIRE_TOKEN = env("LOGFIRE_TOKEN", default="")
