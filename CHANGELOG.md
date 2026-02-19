@@ -15,4 +15,15 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 
 ## [Unreleased]
-...
+
+### Added
+- Project dashboard flow for generated codebases: create project, queued generation status, retry, and ZIP download actions.
+- New `Project` and `ProjectArtifact` models for persisted generation history and downloadable artifacts.
+- Background generation task scaffold (`django-q2`) for cookiecutter execution and artifact packaging.
+- Initial tests for project creation queueing, dashboard history rendering, and download authorization.
+
+### Changed
+- Home page converted from placeholder to a functional project dashboard with generation status/actions.
+- Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.
+- Generation now uses Cookiecutter Python API first with CLI fallback for resilience.
+- Media/artifact storage path is now configurable via `MEDIA_ROOT` and defaults to `/data/media` in production for persistent volumes.

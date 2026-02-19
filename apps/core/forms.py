@@ -1,7 +1,7 @@
 from allauth.account.forms import LoginForm, SignupForm
 from django import forms
 
-from apps.core.models import Profile
+from apps.core.models import Project, Profile
 from apps.core.utils import DivErrorList
 
 
@@ -43,3 +43,65 @@ class ProfileUpdateForm(forms.ModelForm):
             user.save()
             profile.save()
         return profile
+
+
+class ProjectCreateForm(forms.ModelForm):
+    BOOL_CHOICES = (("y", "Yes"), ("n", "No"))
+
+    repo_url = forms.URLField(required=False)
+    author_url = forms.URLField(required=False)
+    use_posthog = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_buttondown = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_s3 = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_stripe = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_sentry = forms.ChoiceField(choices=BOOL_CHOICES)
+    generate_blog = forms.ChoiceField(choices=BOOL_CHOICES)
+    generate_docs = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_mjml = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_ai = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_logfire = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_healthchecks = forms.ChoiceField(choices=BOOL_CHOICES)
+    use_ci = forms.ChoiceField(choices=BOOL_CHOICES)
+
+    class Meta:
+        model = Project
+        fields = ["name"]
+
+    project_name = forms.CharField(max_length=255, initial="My Awesome Project")
+    project_slug = forms.CharField(max_length=255, required=False)
+    project_description = forms.CharField(max_length=255, initial="This project will help you be the best in the world")
+    author_name = forms.CharField(max_length=255, initial="Jane Doe")
+    author_email = forms.EmailField(initial="janedoe@example.com")
+    project_main_color = forms.CharField(max_length=32, initial="green")
+
+    def clean_project_slug(self):
+        value = self.cleaned_data.get("project_slug")
+        if value:
+            return value.replace("-", "_").replace(" ", "_").lower()
+        project_name = self.cleaned_data.get("project_name", "project")
+        return project_name.replace("-", "_").replace(" ", "_").lower()
+
+    def get_cookiecutter_payload(self):
+        keys = [
+            "project_name",
+            "project_slug",
+            "repo_url",
+            "project_description",
+            "author_name",
+            "author_email",
+            "author_url",
+            "project_main_color",
+            "use_posthog",
+            "use_buttondown",
+            "use_s3",
+            "use_stripe",
+            "use_sentry",
+            "generate_blog",
+            "generate_docs",
+            "use_mjml",
+            "use_ai",
+            "use_logfire",
+            "use_healthchecks",
+            "use_ci",
+        ]
+        return {key: self.cleaned_data[key] for key in keys}
