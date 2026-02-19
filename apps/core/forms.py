@@ -47,6 +47,16 @@ class ProfileUpdateForm(forms.ModelForm):
 
 class ProjectCreateForm(forms.ModelForm):
     BOOL_CHOICES = (("y", "Yes"), ("n", "No"))
+    TEXT_INPUT_CLASS = (
+        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 "
+        "placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
+        "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+    )
+    SELECT_CLASS = (
+        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 "
+        "focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
+        "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+    )
 
     repo_url = forms.URLField(required=False)
     author_url = forms.URLField(required=False)
@@ -73,6 +83,15 @@ class ProjectCreateForm(forms.ModelForm):
     author_name = forms.CharField(max_length=255, initial="Jane Doe")
     author_email = forms.EmailField(initial="janedoe@example.com")
     project_main_color = forms.CharField(max_length=32, initial="green")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.Select):
+                widget.attrs["class"] = self.SELECT_CLASS
+            else:
+                widget.attrs["class"] = self.TEXT_INPUT_CLASS
 
     def clean_project_slug(self):
         value = self.cleaned_data.get("project_slug")
