@@ -61,14 +61,14 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["project_form"] = ProjectCreateForm()
+        context["project_form"] = ProjectCreateForm(user=self.request.user)
         return context
 
 
 @login_required
 @require_POST
 def create_project(request):
-    form = ProjectCreateForm(request.POST)
+    form = ProjectCreateForm(request.POST, user=request.user)
     if not form.is_valid():
         for field_name, errors in form.errors.items():
             for error in errors:
