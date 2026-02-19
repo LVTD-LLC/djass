@@ -1,6 +1,10 @@
 from urllib.parse import urlencode
 
 import stripe
+from django.http import FileResponse, Http404
+from django.utils import timezone
+from django.utils.text import slugify
+from django_q.tasks import async_task
 
 from allauth.account.models import EmailAddress, EmailConfirmation
 from django.contrib.auth.decorators import login_required
@@ -10,7 +14,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -21,8 +25,8 @@ from django.views.generic import TemplateView, UpdateView
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
 
-from apps.core.forms import ProfileUpdateForm
-from apps.core.models import Profile
+from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
+from apps.core.models import Profile, Project, ProjectStatus
 
 from djass.utils import get_djass_logger
 
@@ -45,9 +49,70 @@ class HomeView(LoginRequiredMixin, TemplateView):
             context["show_confetti"] = True
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
-        
+
+        context["projects"] = Project.objects.filter(user=self.request.user)
+        context["project_form"] = ProjectCreateForm()
 
         return context
+
+
+@login_required
+@require_POST
+def create_project(request):
+    form = ProjectCreateForm(request.POST)
+    if not form.is_valid():
+        for field_name, errors in form.errors.items():
+            for error in errors:
+                messages.error(request, f"{field_name}: {error}")
+        return redirect("home")
+
+    payload = form.get_cookiecutter_payload()
+    project_name = payload["project_name"]
+    project_slug = payload["project_slug"]
+
+    project = Project.objects.create(
+        user=request.user,
+        name=project_name,
+        slug=slugify(project_slug).replace("-", "_")[:255],
+        input_payload=payload,
+        status=ProjectStatus.QUEUED,
+    )
+
+    async_task("apps.core.tasks.generate_project_artifact", project_id=project.id, group="Generate Project")
+    messages.success(request, f"Project '{project.name}' queued for generation.")
+    return redirect("home")
+
+
+@login_required
+def download_project_artifact(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+    if project.status != ProjectStatus.READY or not hasattr(project, "artifact"):
+        raise Http404("Artifact is not ready yet.")
+
+    artifact = project.artifact
+    artifact.zip_file.open("rb")
+    safe_slug = project.slug or slugify(project.name) or "project"
+    filename = f"{safe_slug}-{timezone.now().strftime('%Y%m%d')}.zip"
+    return FileResponse(artifact.zip_file, as_attachment=True, filename=filename)
+
+
+@require_POST
+@login_required
+def retry_project_generation(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+    if project.status not in [ProjectStatus.FAILED, ProjectStatus.READY]:
+        messages.error(request, "Project cannot be retried from its current state.")
+        return redirect("home")
+
+    project.status = ProjectStatus.QUEUED
+    project.error_message = ""
+    project.started_at = None
+    project.finished_at = None
+    project.save(update_fields=["status", "error_message", "started_at", "finished_at", "updated_at"])
+
+    async_task("apps.core.tasks.generate_project_artifact", project_id=project.id, group="Generate Project")
+    messages.success(request, f"Regeneration queued for '{project.name}'.")
+    return redirect("home")
 
 
 class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

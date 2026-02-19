@@ -109,15 +109,19 @@ You'd still need to make sure .env has correct values.
 
 3. Add Environment Variables to those same apps from `.env`.
 
-4. Create a new GitHub Actions secret with the following:
+4. Configure persistent storage for generated artifacts on the `djass` app:
+   - In CapRover, mount a persistent directory to `/data/media` in the container.
+   - Set `MEDIA_ROOT=/data/media` in environment variables (same for workers if they touch media).
+
+5. Create a new GitHub Actions secret with the following:
    - `CAPROVER_SERVER`
    - `CAPROVER_APP_TOKEN`
    - `WORKERS_APP_TOKEN`
    - `REGISTRY_TOKEN`
 
-5. Then just push main branch.
+6. Then just push main branch.
 
-6. Github Workflow in this repo should take care of the rest.
+7. Github Workflow in this repo should take care of the rest.
 
 ## Local Development
 

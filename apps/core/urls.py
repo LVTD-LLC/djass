@@ -7,6 +7,9 @@ urlpatterns = [
     path("home", views.HomeView.as_view(), name="home"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
+    path("projects/create", views.create_project, name="project_create"),
+    path("projects/<int:project_id>/download", views.download_project_artifact, name="project_download"),
+    path("projects/<int:project_id>/retry", views.retry_project_generation, name="project_retry"),
     # Utils
     path("resend-confirmation/", views.resend_confirmation_email, name="resend_confirmation"),
     path("delete-account/", views.delete_account, name="delete_account"),

@@ -37,6 +37,10 @@ env = environ.Env(
 
 # Options: dev, prod
 ENVIRONMENT = env("ENVIRONMENT")
+COOKIECUTTER_TEMPLATE_PATH = env(
+    "COOKIECUTTER_TEMPLATE_PATH",
+    default=str(BASE_DIR.parent / "django-saas-starter"),
+)
 
 LOGFIRE_TOKEN = env("LOGFIRE_TOKEN", default="")
 if LOGFIRE_TOKEN:
@@ -211,7 +215,9 @@ STATICFILES_DIRS = [
 folder_name = f"djass-{ENVIRONMENT}"
 aws_s3_endpoint_url = env("AWS_S3_ENDPOINT_URL", default="")
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+# In production on CapRover, mount a persistent volume to this path.
+# Example: /captain/data/<app-name>/media -> /data/media
+MEDIA_ROOT = env("MEDIA_ROOT", default="/data/media" if ENVIRONMENT == "prod" else os.path.join(BASE_DIR, "media/"))
 
 if not aws_s3_endpoint_url:
     MEDIA_URL = f"/media/"

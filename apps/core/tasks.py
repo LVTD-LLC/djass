@@ -1,13 +1,21 @@
+import hashlib
 import json
+import os
+import subprocess
+import tempfile
+import zipfile
+
+from cookiecutter.main import cookiecutter
+from pathlib import Path
 from urllib.parse import unquote
 
 import posthog
-
-
 import requests
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.utils import timezone
 
-from apps.core.models import Profile
+from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -139,3 +147,102 @@ def track_state_change(
         profile.save(update_fields=["state"])
 
     return f"Tracked state change from {from_state} to {to_state} for profile {profile_id}"
+
+
+def _zip_directory(source_dir: Path, output_zip: Path) -> None:
+    with zipfile.ZipFile(output_zip, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(source_dir):
+            for file_name in files:
+                full_path = Path(root) / file_name
+                zipf.write(full_path, full_path.relative_to(source_dir))
+
+
+def _compute_sha256(file_path: Path) -> str:
+    digest = hashlib.sha256()
+    with file_path.open("rb") as file_obj:
+        for chunk in iter(lambda: file_obj.read(8192), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def generate_project_artifact(project_id: int) -> str:
+    project = Project.objects.get(id=project_id)
+    if project.status == ProjectStatus.GENERATING:
+        return "Project is already generating"
+
+    project.status = ProjectStatus.GENERATING
+    project.started_at = timezone.now()
+    project.error_message = ""
+    project.save(update_fields=["status", "started_at", "error_message", "updated_at"])
+
+    template_path = settings.COOKIECUTTER_TEMPLATE_PATH
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="djass-gen-") as tmp_dir:
+            tmp_dir_path = Path(tmp_dir)
+            output_root = tmp_dir_path / "output"
+            output_root.mkdir(parents=True, exist_ok=True)
+
+            generated_dir_path = None
+
+            try:
+                generated_dir = cookiecutter(
+                    str(template_path),
+                    no_input=True,
+                    output_dir=str(output_root),
+                    extra_context=project.input_payload,
+                )
+                generated_dir_path = Path(generated_dir)
+            except Exception as python_api_exc:
+                logger.warning(
+                    "Cookiecutter Python API failed, falling back to CLI",
+                    project_id=project.id,
+                    error=str(python_api_exc),
+                )
+                command = [
+                    "cookiecutter",
+                    str(template_path),
+                    "--no-input",
+                    "--output-dir",
+                    str(output_root),
+                ]
+                for key, value in project.input_payload.items():
+                    command.append(f"{key}={value}")
+
+                subprocess.run(command, check=True, capture_output=True, text=True)
+                generated_items = [path for path in output_root.iterdir() if path.is_dir()]
+                if not generated_items:
+                    raise RuntimeError("No generated project directory found")
+                generated_dir_path = generated_items[0]
+
+            generated_dir = generated_dir_path
+            zip_path = tmp_dir_path / f"{project.slug or 'project'}.zip"
+            _zip_directory(generated_dir, zip_path)
+
+            zip_bytes = zip_path.read_bytes()
+            size_bytes = zip_path.stat().st_size
+            sha256 = _compute_sha256(zip_path)
+
+            artifact, _ = ProjectArtifact.objects.get_or_create(project=project)
+            if artifact.zip_file:
+                artifact.zip_file.delete(save=False)
+
+            artifact_name = f"{project.slug or 'project'}.zip"
+            artifact.zip_file.save(artifact_name, ContentFile(zip_bytes), save=False)
+            artifact.size_bytes = size_bytes
+            artifact.sha256 = sha256
+            artifact.save()
+
+        project.status = ProjectStatus.READY
+        project.finished_at = timezone.now()
+        project.error_message = ""
+        project.save(update_fields=["status", "finished_at", "error_message", "updated_at"])
+        return "Project artifact generated"
+
+    except Exception as exc:
+        project.status = ProjectStatus.FAILED
+        project.finished_at = timezone.now()
+        project.error_message = str(exc)[:1000]
+        project.save(update_fields=["status", "finished_at", "error_message", "updated_at"])
+        logger.error("Project generation failed", project_id=project.id, error=str(exc), exc_info=True)
+        raise

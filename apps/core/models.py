@@ -2,6 +2,8 @@ from decimal import Decimal, InvalidOperation
 
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils.text import slugify
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
@@ -152,3 +154,50 @@ class EmailSent(BaseModel):
 
     def __str__(self):
         return f"{self.email_type} to {self.email_address}"
+
+
+class ProjectStatus(models.TextChoices):
+    QUEUED = "queued", "Queued"
+    GENERATING = "generating", "Generating"
+    READY = "ready", "Ready"
+    FAILED = "failed", "Failed"
+
+
+class Project(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, blank=True)
+    input_payload = models.JSONField(default=dict)
+    status = models.CharField(
+        max_length=20,
+        choices=ProjectStatus.choices,
+        default=ProjectStatus.QUEUED,
+    )
+    error_message = models.TextField(blank=True, default="")
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.user_id})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)[:255]
+        super().save(*args, **kwargs)
+
+
+class ProjectArtifact(BaseModel):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="artifact")
+    zip_file = models.FileField(upload_to="generated-projects/%Y/%m/%d")
+    size_bytes = models.BigIntegerField(default=0)
+    sha256 = models.CharField(max_length=64, blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def clean(self):
+        if self.zip_file and not self.zip_file.name.endswith(".zip"):
+            raise ValidationError("Artifact file must be a .zip archive.")

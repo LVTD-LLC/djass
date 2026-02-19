@@ -5,6 +5,7 @@ description = "Web app wrapper around django-saas-starter cookiecutter."
 authors = [{ name = "Rasul", email = "rasul@example.com" }]
 requires-python = ">=3.14,<4.0"
 dependencies = [
+    "cookiecutter>=2.6.0",
     "django>=6.0.2",
     "django-allauth>=65.14.0",
     "django-anymail>=14.0",
