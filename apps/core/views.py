@@ -51,8 +51,17 @@ class HomeView(LoginRequiredMixin, TemplateView):
             messages.error(self.request, "Something went wrong with the payment.")
 
         context["projects"] = Project.objects.filter(user=self.request.user)
-        context["project_form"] = ProjectCreateForm()
 
+        return context
+
+
+class ProjectCreateView(LoginRequiredMixin, TemplateView):
+    login_url = "account_login"
+    template_name = "pages/project-create.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["project_form"] = ProjectCreateForm()
         return context
 
 
@@ -64,7 +73,7 @@ def create_project(request):
         for field_name, errors in form.errors.items():
             for error in errors:
                 messages.error(request, f"{field_name}: {error}")
-        return redirect("home")
+        return redirect("project_new")
 
     payload = form.get_cookiecutter_payload()
     project_name = payload["project_name"]
