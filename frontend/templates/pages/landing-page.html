@@ -1,9 +1,9 @@
 {% extends "base_landing.html" %}
 
 {% block content %}
-<div class="relative isolate overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-white">
+<div class="relative isolate overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
   <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl" aria-hidden="true">
-    <div class="relative left-1/2 aspect-[1155/678] w-[36rem] -translate-x-1/2 bg-gradient-to-tr from-emerald-300 to-green-600 opacity-20 sm:w-[72rem]"></div>
+    <div class="relative left-1/2 aspect-[1155/678] w-[36rem] -translate-x-1/2 bg-gradient-to-tr from-emerald-300 to-green-600 opacity-20 dark:from-emerald-900 dark:to-green-900 dark:opacity-30 sm:w-[72rem]"></div>
   </div>
 
   <div class="mx-auto max-w-7xl px-6 pb-20 pt-16 sm:pt-24 lg:px-8 lg:pt-28">
@@ -17,10 +17,10 @@
       <p class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
         Django SaaS, without boilerplate pain
       </p>
-      <h1 class="mt-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+      <h1 class="mt-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
         Launch your Django SaaS starter in minutes, not days.
       </h1>
-      <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
         Djass is a clean web interface for <strong>django-saas-starter</strong>. Fill out a simple form, we generate your project in the background, and you download a production-ready codebase ZIP.
       </p>
 
@@ -31,99 +31,99 @@
     </div>
 
     <div class="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-3">
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900">1. Configure</p>
-        <p class="mt-2 text-sm text-gray-600">Enter project name, integrations, and starter options.</p>
+      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">1. Configure</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Enter project name, integrations, and starter options.</p>
       </div>
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900">2. Generate</p>
-        <p class="mt-2 text-sm text-gray-600">We queue and run generation with django-q2 + Redis.</p>
+      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">2. Generate</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">We queue and run generation with django-q2 + Redis.</p>
       </div>
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900">3. Download</p>
-        <p class="mt-2 text-sm text-gray-600">Get ZIP instantly when ready. Keep project history in your dashboard.</p>
+      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">3. Download</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Get ZIP instantly when ready. Keep project history in your dashboard.</p>
       </div>
     </div>
   </div>
 </div>
 
-<div class="bg-gray-50 py-20 sm:py-24">
+<div class="bg-gray-50 py-20 dark:bg-gray-950 sm:py-24">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
     <div class="mx-auto max-w-3xl text-center">
-      <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Everything you get with django-saas-starter</h2>
-      <p class="mt-4 text-gray-600">Not just a template — a production-ready Django SaaS foundation with modern defaults and optional power-ups.</p>
+      <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">Everything you get with django-saas-starter</h2>
+      <p class="mt-4 text-gray-600 dark:text-gray-300">Not just a template — a production-ready Django SaaS foundation with modern defaults and optional power-ups.</p>
     </div>
 
     <div class="mt-12 grid gap-6 lg:grid-cols-2">
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Core foundation</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Core foundation</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Django 6</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Python 3.14</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">django-environ config</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Tailwind + Stimulus + Webpack</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">SEO-ready templates</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Django 6</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Python 3.14</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">django-environ config</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Tailwind + Stimulus + Webpack</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">SEO-ready templates</span>
         </div>
       </div>
 
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Authentication & user system</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Authentication & user system</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">django-allauth auth</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional social auth</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Google login (optional)</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">GitHub login (optional)</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">django-allauth auth</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional social auth</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Google login (optional)</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">GitHub login (optional)</span>
         </div>
       </div>
 
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Pages, content, API</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Pages, content, API</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Landing + pricing + auth pages</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Sitemap</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Feedback widget</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional blog</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional docs</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">django-ninja API base</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Session / token / superuser auth modes</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Landing + pricing + auth pages</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Sitemap</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Feedback widget</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional blog</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional docs</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">django-ninja API base</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Session / token / superuser auth modes</span>
         </div>
       </div>
 
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Database, storage, email</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Database, storage, email</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Postgres 18 setup</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">pgvector enabled</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">pg_stat_statements enabled</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional S3-compatible media storage</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Anymail + Mailgun + Mailhog local</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional MJML emails</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional Buttondown newsletter</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Postgres 18 setup</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">pgvector enabled</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">pg_stat_statements enabled</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional S3-compatible media storage</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Anymail + Mailgun + Mailhog local</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional MJML emails</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional Buttondown newsletter</span>
         </div>
       </div>
 
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Developer experience & deployment</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Developer experience & deployment</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Docker Compose (local + prod)</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Makefile helpers</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">pytest</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">ruff + djlint pre-commit</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">CapRover deploy via GitHub Actions</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional CI workflow</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Docker Compose (local + prod)</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Makefile helpers</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">pytest</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">ruff + djlint pre-commit</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">CapRover deploy via GitHub Actions</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional CI workflow</span>
         </div>
       </div>
 
       <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Observability & AI-ready extras</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Observability & AI-ready extras</h3>
         <div class="mt-4 flex flex-wrap gap-2 text-xs">
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Structlog</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional Sentry</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional Logfire</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional healthcheck endpoint</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional Posthog</span>
-          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">Cursor rules included</span>
-          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">Optional pydanticai integration</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Structlog</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional Sentry</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional Logfire</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional healthcheck endpoint</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional Posthog</span>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Cursor rules included</span>
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Optional pydanticai integration</span>
         </div>
       </div>
     </div>
