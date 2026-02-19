@@ -7,20 +7,110 @@
       <div class="flex items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Create project</h1>
-          <p class="mt-2 text-gray-600 dark:text-gray-300">Configure your starter and queue generation.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-300">Fields marked with <span class="text-red-500">*</span> are required.</p>
         </div>
         <a href="{% url 'home' %}" class="text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100">Back to dashboard</a>
       </div>
 
-      <form method="post" action="{% url 'project_create' %}" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <form method="post" action="{% url 'project_create' %}" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2" id="project-create-form">
         {% csrf_token %}
-        {% for field in project_form %}
-          <div>
-            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ field.help_text }}</p>{% endif %}
-          </div>
-        {% endfor %}
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.project_name.id_for_label }}">
+            Project Name <span class="text-red-500">*</span>
+          </label>
+          {{ project_form.project_name }}
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.project_slug.id_for_label }}">
+            Project Slug <span class="text-red-500">*</span>
+          </label>
+          {{ project_form.project_slug }}
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.repo_url.id_for_label }}">Repo URL</label>
+          {{ project_form.repo_url }}
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.project_description.id_for_label }}">Project Description</label>
+          {{ project_form.project_description }}
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.author_name.id_for_label }}">Author Name</label>
+          {{ project_form.author_name }}
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.author_url.id_for_label }}">Author URL</label>
+          {{ project_form.author_url }}
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.author_email.id_for_label }}">Author Email</label>
+          {{ project_form.author_email }}
+        </div>
+
+        <div>
+          <label class="mb-1 inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.project_main_color.id_for_label }}">
+            Project Main Color
+            <a href="https://tailwindcss.com/docs/colors" target="_blank" rel="noopener noreferrer" class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-xs text-gray-500 hover:text-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-100" title="Tailwind color reference">?</a>
+          </label>
+          {{ project_form.project_main_color }}
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_posthog.id_for_label }}">Use posthog</label>
+          {{ project_form.use_posthog }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_buttondown.id_for_label }}">Use buttondown</label>
+          {{ project_form.use_buttondown }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_s3.id_for_label }}">Use s3</label>
+          {{ project_form.use_s3 }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_stripe.id_for_label }}">Use stripe</label>
+          {{ project_form.use_stripe }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_sentry.id_for_label }}">Use sentry</label>
+          {{ project_form.use_sentry }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.generate_blog.id_for_label }}">Generate blog</label>
+          {{ project_form.generate_blog }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.generate_docs.id_for_label }}">Generate docs</label>
+          {{ project_form.generate_docs }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_mjml.id_for_label }}">Use mjml</label>
+          {{ project_form.use_mjml }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_ai.id_for_label }}">Use ai</label>
+          {{ project_form.use_ai }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_logfire.id_for_label }}">Use logfire</label>
+          {{ project_form.use_logfire }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_healthchecks.id_for_label }}">Use healthchecks</label>
+          {{ project_form.use_healthchecks }}
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ project_form.use_ci.id_for_label }}">Use ci</label>
+          {{ project_form.use_ci }}
+        </div>
+
         <div class="md:col-span-2">
           <button type="submit" class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
             Create Project
@@ -30,4 +120,33 @@
     </section>
   </div>
 </div>
+
+<script>
+  (() => {
+    const nameInput = document.getElementById("{{ project_form.project_name.id_for_label }}");
+    const slugInput = document.getElementById("{{ project_form.project_slug.id_for_label }}");
+    if (!nameInput || !slugInput) return;
+
+    let slugTouched = slugInput.value.trim().length > 0;
+    slugInput.addEventListener("input", () => {
+      slugTouched = slugInput.value.trim().length > 0;
+    });
+
+    const slugify = (value) => value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-_]/g, "")
+      .replace(/[\s-]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    nameInput.addEventListener("input", () => {
+      if (slugTouched) return;
+      slugInput.value = slugify(nameInput.value);
+    });
+
+    if (!slugInput.value.trim() && nameInput.value.trim()) {
+      slugInput.value = slugify(nameInput.value);
+    }
+  })();
+</script>
 {% endblock content %}

@@ -1,5 +1,6 @@
 from allauth.account.forms import LoginForm, SignupForm
 from django import forms
+from django.utils.text import slugify
 
 from apps.core.models import Project, Profile
 from apps.core.utils import DivErrorList
@@ -75,17 +76,25 @@ class ProjectCreateForm(forms.ModelForm):
 
     class Meta:
         model = Project
-        fields = ["name"]
+        fields = []
 
-    project_name = forms.CharField(max_length=255, initial="My Awesome Project")
-    project_slug = forms.CharField(max_length=255, required=False)
-    project_description = forms.CharField(max_length=255, initial="This project will help you be the best in the world")
-    author_name = forms.CharField(max_length=255, initial="Jane Doe")
-    author_email = forms.EmailField(initial="janedoe@example.com")
-    project_main_color = forms.CharField(max_length=32, initial="green")
+    project_name = forms.CharField(max_length=255, initial="My Awesome Project", required=True)
+    project_slug = forms.CharField(max_length=255, required=True)
+    project_description = forms.CharField(
+        max_length=255,
+        initial="This project will help you be the best in the world",
+        required=False,
+    )
+    author_name = forms.CharField(max_length=255, initial="Jane Doe", required=False)
+    author_email = forms.EmailField(required=False)
+    project_main_color = forms.CharField(max_length=32, initial="green", required=False)
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        if self.user and self.user.email:
+            self.fields["author_email"].initial = self.user.email
+
         for field in self.fields.values():
             widget = field.widget
             if isinstance(widget, forms.Select):
@@ -94,11 +103,26 @@ class ProjectCreateForm(forms.ModelForm):
                 widget.attrs["class"] = self.TEXT_INPUT_CLASS
 
     def clean_project_slug(self):
-        value = self.cleaned_data.get("project_slug")
+        value = self.cleaned_data.get("project_slug", "").strip()
+        if not value:
+            raise forms.ValidationError("Project slug is required.")
+
+        normalized = slugify(value).replace("-", "_")
+        if not normalized:
+            raise forms.ValidationError("Project slug must contain letters or numbers.")
+        return normalized
+
+    def clean_author_email(self):
+        value = (self.cleaned_data.get("author_email") or "").strip()
         if value:
-            return value.replace("-", "_").replace(" ", "_").lower()
-        project_name = self.cleaned_data.get("project_name", "project")
-        return project_name.replace("-", "_").replace(" ", "_").lower()
+            return value
+        if self.user and self.user.email:
+            return self.user.email
+        return ""
+
+    def clean_project_main_color(self):
+        value = (self.cleaned_data.get("project_main_color") or "").strip()
+        return value or "green"
 
     def get_cookiecutter_payload(self):
         keys = [
