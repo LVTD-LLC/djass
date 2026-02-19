@@ -36,6 +36,7 @@ def sync_state_transitions(monkeypatch):
 
     def _fake_async_task(func_path, *args, **kwargs):
         if func_path == "apps.core.tasks.track_state_change":
+            kwargs.pop("group", None)
             return core_tasks.track_state_change(*args, **kwargs)
         return None
 
