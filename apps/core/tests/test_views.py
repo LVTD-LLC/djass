@@ -2,6 +2,7 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.core.choices import ProfileStates
 from apps.core.views import get_price_id_for_plan
 
 
@@ -16,6 +17,37 @@ class TestHomeView:
         url = reverse("home")
         response = auth_client.get(url)
         assert "pages/home.html" in [t.name for t in response.templates]
+
+    def test_home_shows_generation_locked_state(self, auth_client):
+        response = auth_client.get(reverse("home"))
+        assert response.status_code == 200
+        assert "Generation locked" in response.content.decode()
+
+    def test_home_shows_generation_unlocked_state(self, auth_client, user):
+        profile = user.profile
+        profile.state = ProfileStates.SUBSCRIBED
+        profile.save(update_fields=["state"])
+
+        response = auth_client.get(reverse("home"))
+        assert response.status_code == 200
+        assert "Generation unlocked" in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestProjectCreateView:
+    def test_project_create_view_shows_locked_state(self, auth_client):
+        response = auth_client.get(reverse("project_new"))
+        assert response.status_code == 200
+        assert "Generation is locked" in response.content.decode()
+
+    def test_project_create_view_shows_unlocked_state(self, auth_client, user):
+        profile = user.profile
+        profile.state = ProfileStates.SUBSCRIBED
+        profile.save(update_fields=["state"])
+
+        response = auth_client.get(reverse("project_new"))
+        assert response.status_code == 200
+        assert "Generation is unlocked" in response.content.decode()
 
 
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time", "monthly": "price_monthly"})

@@ -63,6 +63,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             messages.error(self.request, "Something went wrong with the payment.")
 
         context["projects"] = Project.objects.filter(user=self.request.user)
+        context["can_generate"] = _user_can_create_projects(self.request.user)
 
         return context
 
@@ -71,14 +72,10 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
     login_url = "account_login"
     template_name = "pages/project-create.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        if not _user_can_create_projects(request.user):
-            return _deny_project_access(request)
-        return super().dispatch(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["project_form"] = ProjectCreateForm(user=self.request.user)
+        context["can_generate"] = _user_can_create_projects(self.request.user)
         return context
 
 
