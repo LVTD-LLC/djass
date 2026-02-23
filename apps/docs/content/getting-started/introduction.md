@@ -1,25 +1,41 @@
 ---
-title: Getting Started with Djass
-description: Learn how to get started with Djass, Web app wrapper around django-saas-starter cookiecutter.
-keywords: Djass, getting started, documentation
+title: Introduction
+description: What Djass generates, who this documentation is for, and how to use it.
+keywords: Djass, django-saas-starter, getting started
 author: Rasul
 ---
 
-Welcome to Djass! This guide will help you get started with your new Django SaaS application.
+Djass helps you generate a production-ready Django SaaS codebase from `django-saas-starter`.
 
-## What is Djass?
+The goal of this documentation is simple: help you understand the generated repository quickly, ship features safely, and avoid architecture drift.
 
-Djass is built on a modern Django SaaS starter template that includes:
+## Who this documentation is for
 
-- User authentication and profile management
-- Subscription billing with Stripe
-- Built-in blog system with markdown support
-- Product analytics with PostHog
-- Cloud storage with S3
-- Responsive design with Tailwind CSS
-- API endpoints with Django Ninja
-- Error tracking with Sentry
+Use these docs if you are:
 
-## Next Steps
+- building a product with a generated Djass project,
+- joining an existing generated codebase,
+- extending the starter with custom business logic,
+- or using AI tools to accelerate development.
 
-Sign up for an account and explore the features!
+## What you get from a generated project
+
+By default, generated projects are opinionated around:
+
+- **Django + PostgreSQL + Redis** for backend and data
+- **Django Q2** for background jobs
+- **Tailwind CSS** via the frontend build pipeline
+- **App boundaries** under `apps/` (`core`, `api`, `pages`, optional `blog`, optional `docs`)
+- **Deployability** through Docker Compose and Render-ready conventions
+
+## Suggested reading path
+
+1. **Local Development** — run the project end-to-end.
+2. **Repository Structure** — understand where code should go.
+3. **Background Jobs with Django Q2** — learn async execution patterns.
+4. **Generator Options** — know what each scaffold toggle changes.
+5. **Workflows** — add features safely and use AI effectively.
+
+## Scope note
+
+This documentation focuses on the generated project and the architecture choices Djass applies. It is intentionally practical and implementation-oriented.

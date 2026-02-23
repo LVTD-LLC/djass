@@ -1,30 +1,48 @@
 ---
-title: Deploying Djass to Render
-description: Learn how to deploy Djass on Render.
-keywords: Djass, deployment, render, self-hosting
+title: Render Deployment
+description: Deploy Djass on Render using the included render.yaml blueprint.
+keywords: Djass, Render, deployment, django
 author: Rasul
 ---
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rasulkireev/djass)
+Djass includes a `render.yaml` blueprint for deploying web, workers, PostgreSQL, and Redis.
 
-## Required configuration
+## Quick start
 
-Before deploying, you need to configure environment variables. See the [Environment Variables](/docs/deployment/environment-variables/) guide for detailed information about all configuration options.
+Use the deploy button:
 
-Refer to the [Environment Variables](/docs/deployment/environment-variables/) guide for the complete list of required and optional variables.
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gregagi/djass)
 
-All other variables beyond the required ones are optional but may enhance functionality.
+## What Render creates
 
-**Note:** This should work out of the box with Render's free tier if you provide the required configuration. Here's what you need to know about the limitations:
+From `render.yaml`, Render provisions:
 
-- **Worker Service Limitation**: The worker service is not a dedicated worker type (those are only available on paid plans). For the free tier, I had to use a web service through a small hack, but it works fine for most use cases.
+- `djass-web` (Django web service)
+- `djass-workers` (Django Q2 worker process)
+- `djass-db` (PostgreSQL)
+- `djass-redis` (Redis)
+- shared env var group (`app-env`)
 
-- **Memory Constraints**: The free web service has a 512 MB RAM limit, which can cause issues with **automated background tasks only**. When you add a project, it runs a suite of background tasks to analyze your website, generate articles, keywords, and other content. These automated processes can hit memory limits and potentially cause failures.
+## Required setup after provisioning
 
-- **Manual Tasks Work Fine**: However, if you perform tasks manually (like generating a single article), these typically use the web service instead of the worker and should work reliably since it's one request at a time.
+1. Open env vars and confirm required values from the [Environment Variables](/docs/deployment/environment-variables/) guide.
+2. Set `SITE_URL` to the real public URL if auto-generated value is incorrect.
+3. Add API keys/integrations only if you need them.
+4. Trigger a deploy for both web and worker services.
 
-- **Upgrade Recommendation**: If you do upgrade to a paid plan, use the actual worker service instead of the web service workaround for better automated task reliability.
+## Important production notes
 
-**Reality Check**: The website functionality should be usable on the free tier - you'll only pay for API costs. Manual operations work fine, but automated background tasks (especially when adding multiple projects) may occasionally fail due to memory constraints. It's not super comfortable for heavy automated use, but perfectly functional for manual content generation.
+- Worker service is implemented as a web service on free tiers (with a lightweight HTTP server for health checks).
+- If you keep local filesystem media storage, uploaded/generated files are ephemeral.
+  - Prefer S3-compatible storage for persistent artifacts.
+- Run on paid plans for better stability if you process heavy background workloads.
 
-If you know of any other services like Render that allow deployment via a button and provide free Redis, Postgres, and web services, please let me know in the [Issues](https://github.com/rasulkireev/djass/issues) section. I can try to create deployments for those. Bear in mind that free services are usually not large enough to run this application reliably.
+## Post-deploy checklist
+
+- App loads at `/`
+- Signup/login flow works
+- Background generation jobs transition from queued → ready
+- Artifact download works
+- Worker logs show task execution
+
+If any of these fail, compare web vs worker env values first (especially DB/Redis/auth keys).
