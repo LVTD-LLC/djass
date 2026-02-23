@@ -58,4 +58,4 @@ A feature is done when:
 - users can complete the intended job,
 - unhappy paths are handled,
 - docs are updated,
-- and deployment impact is understood.
+- and runtime/config impact is understood.

@@ -26,7 +26,7 @@ This page defines the documentation strategy for generated Djass projects.
 - **Architecture:** explain project shape and why decisions were made.
 - **Features:** describe what each generator toggle changes.
 - **Workflows:** show how to implement and ship changes safely.
-- **Deployment:** make production setup repeatable.
+- **Configuration:** keep runtime setup explicit and predictable.
 
 ## What “good” looks like
 
@@ -41,7 +41,7 @@ Documentation should be:
 
 Use this lightweight rule:
 
-- If a PR changes architecture, setup, deployment, or expected workflow, update docs in the same PR.
+- If a PR changes architecture, setup, configuration, or expected workflow, update docs in the same PR.
 - Keep pages short and link outward instead of building huge monolith pages.
 - Prefer concrete examples from this repository over generic framework advice.
 
@@ -49,5 +49,5 @@ Use this lightweight rule:
 
 - API conventions and versioning guidance (`apps/api`)
 - Testing strategy and CI expectations
-- Production runbook (backups, migrations, incident handling)
+- Runtime configuration patterns and secret-management examples
 - Contributor playbook for teams using coding agents

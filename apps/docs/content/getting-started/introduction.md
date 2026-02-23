@@ -26,7 +26,7 @@ By default, generated projects are opinionated around:
 - **Django Q2** for background jobs
 - **Tailwind CSS** via the frontend build pipeline
 - **App boundaries** under `apps/` (`core`, `api`, `pages`, optional `blog`, optional `docs`)
-- **Deployability** through Docker Compose and Render-ready conventions
+- **Configuration-first setup** through explicit environment variables and clear app boundaries
 
 ## Suggested reading path
 

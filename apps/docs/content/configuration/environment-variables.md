@@ -1,28 +1,27 @@
 ---
 title: Environment Variables
-description: Practical guide to configuring generated Djass projects using .env.
+description: Configuration reference for Djass runtime, integrations, and background jobs.
 keywords: Djass, environment variables, configuration, .env
 author: Rasul
 ---
 
-Use `.env.example` as the source of truth and copy it to `.env` before running the app.
+Use `.env.example` as the source of truth and copy it to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-## Required for all environments
+## Core runtime variables
 
-These values should always be set intentionally.
-
-### Runtime and security
+These should always be set intentionally.
 
 - `ENVIRONMENT` — `dev` or `prod`
-- `DEBUG` — keep `off`/`False` in production
+- `DEBUG` — keep `off`/`False` outside local development
 - `SECRET_KEY` — Django secret key
-- `SITE_URL` — full external URL (e.g. `https://yourdomain.com`)
+- `SITE_URL` — canonical app URL
+- `MEDIA_ROOT` — path for generated artifacts and uploaded files
 
-### Database
+## Database
 
 - `POSTGRES_DB`
 - `POSTGRES_USER`
@@ -30,27 +29,26 @@ These values should always be set intentionally.
 - `POSTGRES_HOST`
 - `POSTGRES_PORT`
 
-### Redis / background jobs
+## Redis + background jobs
 
 - `REDIS_HOST`
 - `REDIS_PORT`
 - `REDIS_PASSWORD`
-- `REDIS_DB` (default `0`)
+- `REDIS_DB`
 
 Django Q2 uses Redis for queueing and worker communication.
 
-## Recommended base variables
+## Project generation
 
-- `MEDIA_ROOT` — path for uploaded/generated artifacts (persist this in production)
-- `COOKIECUTTER_TEMPLATE_PATH` — template source used for project generation
+- `COOKIECUTTER_TEMPLATE_PATH` — template source used for generated projects
 
-If not set, a default template path is used.
+If not set, Djass uses the default template path configured in settings.
 
 ## Optional integrations
 
 Enable only what you actively use.
 
-### Auth and identity
+### Authentication
 
 - `GITHUB_CLIENT_ID`
 - `GITHUB_CLIENT_SECRET`
@@ -64,7 +62,7 @@ Enable only what you actively use.
 
 If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 
-### Email and notifications
+### Email and newsletter
 
 - `MAILGUN_API_KEY`
 - `BUTTONDOWN_API_KEY`
@@ -83,7 +81,7 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `LOGFIRE_TOKEN`
 - `POSTHOG_API_KEY`
 
-### AI provider config
+### AI provider
 
 - `OPENAI_API_KEY`
 
@@ -93,16 +91,15 @@ Optional model overrides:
 - `ANTHROPIC_MODEL_FAST`, `ANTHROPIC_MODEL_BALANCED`, `ANTHROPIC_MODEL_SMART`
 - `GEMINI_MODEL_FAST`, `GEMINI_MODEL_BALANCED`, `GEMINI_MODEL_SMART`
 
-## Validation checklist before deploy
+## Configuration sanity checklist
 
-- `DEBUG` is off
-- `SITE_URL` matches production domain
-- DB/Redis credentials are not defaults
-- secrets are stored in deployment secret manager (not committed)
-- `MEDIA_ROOT` (or S3 config) is persistent
+- `DEBUG` is off outside local development
+- DB/Redis credentials are not default placeholders
+- secrets are managed securely and never committed
+- `MEDIA_ROOT` (or S3 config) is persistent for generated artifacts
 
 ## Security notes
 
 - Never commit `.env`.
-- Rotate keys immediately if exposed.
-- Prefer platform secret stores over plaintext files where possible.
+- Rotate credentials immediately if exposed.
+- Prefer secret managers over plaintext files when possible.

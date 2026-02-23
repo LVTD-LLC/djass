@@ -1,21 +1,27 @@
-# README
+# Frontend assets
 
-This project was created with [python-webpack-boilerplate](https://github.com/AccordBox/python-webpack-boilerplate)
+This directory contains Webpack/Tailwind assets and Django template integrations used by Djass.
 
-## Available Scripts
-
-In the project directory, you can run:
+## Available commands
 
 ### `npm run start`
 
-`npm run start` will launch a server process, which makes `live reloading` possible.
-
-If you change JS or SCSS files, the web page would auto refresh after the change. Now the server is working on port 9091 by default, but you can change it in `webpack/webpack.config.dev.js`
+Starts the frontend dev server with live reloading (default port `9091`).
 
 ### `npm run watch`
 
-run webpack in `watch` mode.
+Runs Webpack in watch mode.
 
 ### `npm run build`
 
-[production mode](https://webpack.js.org/guides/production/), Webpack would focus on minified bundles, lighter weight source maps, and optimized assets to improve load time.
+Builds production frontend assets.
+
+## Typical workflow
+
+For full local development, use the repo root command:
+
+```bash
+make serve
+```
+
+This starts backend, workers, and frontend together with the expected local stack.

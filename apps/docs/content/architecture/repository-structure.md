@@ -15,7 +15,7 @@ Generated projects intentionally separate responsibilities by app to keep code d
 - `apps/blog` — optional blog functionality
 - `apps/docs` — optional documentation app and markdown content
 - `frontend/` — webpack/tailwind assets and Django templates
-- `deployment/` — container entrypoints and deployment-specific files
+- `deployment/` — container entrypoints and runtime infrastructure files
 
 ## Why this split matters
 

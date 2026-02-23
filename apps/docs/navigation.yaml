@@ -22,7 +22,5 @@ navigation:
     - adding-a-feature
     - ai-assisted-development
 
-  deployment:
+  configuration:
     - environment-variables
-    - render-deployment
-    - docker-compose-deployment
