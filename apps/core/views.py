@@ -228,6 +228,8 @@ def delete_account(request):
 def create_checkout_session(request, pk, plan):
     user = request.user
     profile = user.profile
+    plan_key = (plan or "").lower()
+    is_one_time = plan_key == "one-time"
     price_id = get_price_id_for_plan(plan)
     if not price_id:
         logger.warning("Stripe price id not configured for plan", plan=plan, user_id=user.id)
@@ -265,7 +267,7 @@ def create_checkout_session(request, pk, plan):
                 "quantity": 1,
             }
         ],
-        "mode": "subscription",
+        "mode": "payment" if is_one_time else "subscription",
         "success_url": success_url,
         "cancel_url": cancel_url,
         "customer_update": {
@@ -278,8 +280,9 @@ def create_checkout_session(request, pk, plan):
             "price_id": price_id,
             "plan": plan,
         },
-        "subscription_data": {"metadata": {"user_id": user.id, "plan": plan}},
     }
+    if not is_one_time:
+        session_params["subscription_data"] = {"metadata": {"user_id": user.id, "plan": plan}}
 
     try:
         checkout_session = stripe.checkout.Session.create(**session_params)
