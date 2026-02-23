@@ -186,4 +186,4 @@ def docs_page_view(request, category, page):
         return render(request, "docs/docs_page.html", context)
     except Exception as e:
         logger.error("Error loading documentation page", category=category, page=page, error=str(e))
-        raise Http404("Documentation page not found")
+        raise Http404("Documentation page not found") from e
