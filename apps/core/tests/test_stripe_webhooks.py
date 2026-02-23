@@ -5,9 +5,10 @@ from apps.core.models import Profile
 from apps.core.stripe_webhooks import (
     handle_created_subscription,
     handle_deleted_subscription,
+    handle_checkout_completed,
     handle_updated_subscription,
 )
-from apps.core.tests.test_helpers import build_subscription_event
+from apps.core.tests.test_helpers import build_checkout_completed_event, build_subscription_event
 
 
 @pytest.mark.django_db
@@ -102,3 +103,24 @@ def test_handle_deleted_subscription_churns_and_clears_subscription_id(
     profile.refresh_from_db()
     assert profile.state == ProfileStates.CHURNED
     assert profile.stripe_subscription_id == ""
+
+
+@pytest.mark.django_db
+def test_handle_checkout_completed_payment_grants_access(sync_state_transitions, profile):
+    event = build_checkout_completed_event(
+        customer_id="cus_paid",
+        checkout_id="cs_paid",
+        payment_status="paid",
+        mode="payment",
+        metadata={"user_id": profile.user_id, "price_id": "price_one_time"},
+        amount_total=2500,
+        currency="usd",
+        payment_intent="pi_paid",
+    )
+
+    handle_checkout_completed(event)
+
+    profile.refresh_from_db()
+    assert profile.stripe_customer_id == "cus_paid"
+    assert profile.state == ProfileStates.SUBSCRIBED
+    assert profile.current_state == ProfileStates.SUBSCRIBED
