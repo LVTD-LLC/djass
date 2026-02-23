@@ -17,7 +17,7 @@
     {% if not has_subscription %}
     <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
       <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Upgrade Your Account</h3>
-      <p class="mb-4 text-sm text-gray-600 dark:text-gray-300">Choose a plan that suits your needs:</p>
+      <p class="mb-4 text-sm text-gray-600 dark:text-gray-300">One-time upgrades include unlimited generations and forever updates.</p>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div class="rounded-md shadow">
           <a href="{% url 'user_upgrade_checkout_session' pk=user.id plan='monthly' %}"
@@ -34,7 +34,7 @@
         <div class="rounded-md shadow">
           <a href="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}"
              class="flex justify-center items-center px-4 py-3 h-full text-sm font-medium text-white bg-green-600 rounded-md border border-transparent transition duration-150 ease-in-out md:text-base hover:bg-green-700">
-            One-time - $500
+            One-time - $999
           </a>
         </div>
       </div>

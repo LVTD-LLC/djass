@@ -50,6 +50,17 @@ class TestProjectCreateView:
         assert "Generation is unlocked" in response.content.decode()
 
 
+@pytest.mark.django_db
+def test_settings_upgrade_copy(auth_client):
+    response = auth_client.get(reverse("settings"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "One-time - $999" in content
+    assert "unlimited generations" in content.lower()
+    assert "forever updates" in content.lower()
+
+
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time", "monthly": "price_monthly"})
 def test_get_price_id_for_plan_one_time():
     assert get_price_id_for_plan("one-time") == "price_one_time"
