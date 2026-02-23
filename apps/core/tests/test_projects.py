@@ -89,12 +89,29 @@ class TestProjectFlow:
                 "use_healthchecks": "y",
                 "use_ci": "y",
             },
-            follow=True,
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 302
+        assert response.url == reverse("pricing")
         assert Project.objects.filter(user=response.wsgi_request.user).count() == 0
         assert called == {}
+
+    def test_retry_project_requires_subscription(self, auth_client, user):
+        project = Project.objects.create(
+            user=user,
+            name="Retry Project",
+            slug="retry_project",
+            input_payload={"project_name": "Retry Project"},
+            status=ProjectStatus.FAILED,
+            error_message="boom",
+        )
+
+        response = auth_client.post(reverse("project_retry", args=[project.id]))
+
+        assert response.status_code == 302
+        assert response.url == reverse("pricing")
+        project.refresh_from_db()
+        assert project.status == ProjectStatus.FAILED
 
     def test_download_denies_other_user(self, auth_client, django_user_model):
         other_user = django_user_model.objects.create_user(
