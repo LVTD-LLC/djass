@@ -67,6 +67,7 @@ class Profile(BaseModel):
     @property
     def has_active_subscription(self):
         return self.state in [
+            ProfileStates.TRIAL_STARTED,
             ProfileStates.SUBSCRIBED,
             ProfileStates.CANCELLED,
         ] or (self.user.is_superuser and settings.ENVIRONMENT == "prod")
