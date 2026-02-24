@@ -1,4 +1,5 @@
 import pytest
+from allauth.account.models import EmailAddress
 from django.test import override_settings
 from django.urls import reverse
 
@@ -51,7 +52,8 @@ class TestProjectCreateView:
 
 
 @pytest.mark.django_db
-def test_settings_upgrade_copy(auth_client):
+def test_settings_upgrade_copy(auth_client, user):
+    EmailAddress.objects.create(user=user, email=user.email, verified=False, primary=True)
     response = auth_client.get(reverse("settings"))
     assert response.status_code == 200
 

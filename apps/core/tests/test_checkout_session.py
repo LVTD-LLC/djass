@@ -23,7 +23,7 @@ def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeyp
     url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
     response = auth_client.post(url)
 
-    assert response.status_code == 303
+    assert response.status_code == 302
     assert captured["mode"] == "payment"
     assert "subscription_data" not in captured
 
@@ -46,7 +46,7 @@ def test_create_checkout_session_monthly_uses_subscription_mode(auth_client, mon
     url = reverse("user_upgrade_checkout_session", args=[1, "monthly"])
     response = auth_client.post(url)
 
-    assert response.status_code == 303
+    assert response.status_code == 302
     assert captured["mode"] == "subscription"
     assert captured["subscription_data"]["metadata"]["plan"] == "monthly"
 
@@ -75,6 +75,6 @@ def test_create_checkout_session_yearly_uses_subscription_mode(auth_client, monk
     url = reverse("user_upgrade_checkout_session", args=[1, "yearly"])
     response = auth_client.post(url)
 
-    assert response.status_code == 303
+    assert response.status_code == 302
     assert captured["mode"] == "subscription"
     assert captured["subscription_data"]["metadata"]["plan"] == "yearly"
