@@ -1,13 +1,17 @@
 import pytest
 from django.urls import reverse
 
+from apps.core.choices import ProfileStates
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
 
 
 @pytest.mark.django_db
 class TestProjectFlow:
-    def test_create_project_queues_job(self, auth_client, monkeypatch):
+    def test_create_project_queues_job(self, auth_client, monkeypatch, user):
         called = {}
+        profile = user.profile
+        profile.state = ProfileStates.SUBSCRIBED
+        profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             called["args"] = args
@@ -49,6 +53,65 @@ class TestProjectFlow:
         assert project.status == ProjectStatus.QUEUED
         assert called["args"][0] == "apps.core.tasks.generate_project_artifact"
         assert called["kwargs"]["project_id"] == project.id
+
+    def test_create_project_requires_subscription(self, auth_client, monkeypatch):
+        called = {}
+
+        def fake_async_task(*args, **kwargs):
+            called["args"] = args
+            called["kwargs"] = kwargs
+            return "task-id"
+
+        monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+        response = auth_client.post(
+            reverse("project_create"),
+            {
+                "name": "My project card",
+                "project_name": "My SaaS",
+                "project_slug": "my_saas",
+                "repo_url": "https://github.com/gregagi/my-saas",
+                "project_description": "test",
+                "author_name": "Rasul",
+                "author_email": "rasul@example.com",
+                "author_url": "",
+                "project_main_color": "green",
+                "use_posthog": "y",
+                "use_buttondown": "y",
+                "use_s3": "y",
+                "use_stripe": "y",
+                "use_sentry": "y",
+                "generate_blog": "y",
+                "generate_docs": "y",
+                "use_mjml": "y",
+                "use_ai": "y",
+                "use_logfire": "y",
+                "use_healthchecks": "y",
+                "use_ci": "y",
+            },
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("pricing")
+        assert Project.objects.filter(user=response.wsgi_request.user).count() == 0
+        assert called == {}
+
+    def test_retry_project_requires_subscription(self, auth_client, user):
+        project = Project.objects.create(
+            user=user,
+            name="Retry Project",
+            slug="retry_project",
+            input_payload={"project_name": "Retry Project"},
+            status=ProjectStatus.FAILED,
+            error_message="boom",
+        )
+
+        response = auth_client.post(reverse("project_retry", args=[project.id]))
+
+        assert response.status_code == 302
+        assert response.url == reverse("pricing")
+        project.refresh_from_db()
+        assert project.status == ProjectStatus.FAILED
 
     def test_download_denies_other_user(self, auth_client, django_user_model):
         other_user = django_user_model.objects.create_user(

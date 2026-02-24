@@ -3,6 +3,7 @@ from django.conf import settings
 
 from djass.utils import get_djass_logger
 from apps.core.choices import ProfileStates
+from apps.core import tasks as core_tasks
 from apps.core.models import Profile
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -273,7 +274,9 @@ def handle_checkout_completed(event):
         currency = checkout_data.get("currency")
         payment_intent = checkout_data.get("payment_intent")
 
-        profile.track_state_change(
+        core_tasks.track_state_change(
+            profile_id=profile.id,
+            from_state=profile.current_state,
             to_state=ProfileStates.SUBSCRIBED,
             source_function="stripe_webhook handle_checkout_completed",
             metadata={

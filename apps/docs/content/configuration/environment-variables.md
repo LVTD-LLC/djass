@@ -74,6 +74,7 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_ID_MONTHLY`
 - `STRIPE_PRICE_ID_YEARLY`
+- `STRIPE_PRICE_ID_ONE_TIME`
 
 ### Observability
 

@@ -36,6 +36,18 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = get_djass_logger(__name__)
 
 
+def _user_can_create_projects(user):
+    try:
+        return user.profile.has_active_subscription
+    except Profile.DoesNotExist:
+        return False
+
+
+def _deny_project_access(request):
+    messages.error(request, "Project generation is available with an active subscription.")
+    return redirect("pricing")
+
+
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = "account_login"
     template_name = "pages/home.html"
@@ -51,6 +63,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             messages.error(self.request, "Something went wrong with the payment.")
 
         context["projects"] = Project.objects.filter(user=self.request.user)
+        context["can_generate"] = _user_can_create_projects(self.request.user)
 
         return context
 
@@ -62,12 +75,16 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["project_form"] = ProjectCreateForm(user=self.request.user)
+        context["can_generate"] = _user_can_create_projects(self.request.user)
         return context
 
 
 @login_required
 @require_POST
 def create_project(request):
+    if not _user_can_create_projects(request.user):
+        return _deny_project_access(request)
+
     form = ProjectCreateForm(request.POST, user=request.user)
     if not form.is_valid():
         for field_name, errors in form.errors.items():
@@ -108,6 +125,9 @@ def download_project_artifact(request, project_id):
 @require_POST
 @login_required
 def retry_project_generation(request, project_id):
+    if not _user_can_create_projects(request.user):
+        return _deny_project_access(request)
+
     project = get_object_or_404(Project, id=project_id, user=request.user)
     if project.status not in [ProjectStatus.FAILED, ProjectStatus.READY]:
         messages.error(request, "Project cannot be retried from its current state.")
@@ -228,6 +248,8 @@ def delete_account(request):
 def create_checkout_session(request, pk, plan):
     user = request.user
     profile = user.profile
+    plan_key = (plan or "").lower()
+    is_one_time = plan_key == "one-time"
     price_id = get_price_id_for_plan(plan)
     if not price_id:
         logger.warning("Stripe price id not configured for plan", plan=plan, user_id=user.id)
@@ -265,7 +287,7 @@ def create_checkout_session(request, pk, plan):
                 "quantity": 1,
             }
         ],
-        "mode": "subscription",
+        "mode": "payment" if is_one_time else "subscription",
         "success_url": success_url,
         "cancel_url": cancel_url,
         "customer_update": {
@@ -278,8 +300,9 @@ def create_checkout_session(request, pk, plan):
             "price_id": price_id,
             "plan": plan,
         },
-        "subscription_data": {"metadata": {"user_id": user.id, "plan": plan}},
     }
+    if not is_one_time:
+        session_params["subscription_data"] = {"metadata": {"user_id": user.id, "plan": plan}}
 
     try:
         checkout_session = stripe.checkout.Session.create(**session_params)
