@@ -93,8 +93,8 @@
     {% include 'components/feedback.html' %}
   {% endif %}
 
-  <div class="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-    <header class="sticky left-0 top-3 z-10">
+  <div class="min-h-screen text-gray-900 dark:text-gray-100 {% if request.resolver_match.url_name == 'landing' %}bg-gradient-to-b from-emerald-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950{% else %}bg-white dark:bg-gray-950{% endif %}">
+    <header class="fixed left-0 top-3 z-50 w-full">
       <div class="mx-auto w-full max-w-[1376px] px-4">
         <div class="flex gap-2 items-center px-4 py-3.5 bg-white rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-800 sm:gap-4 md:px-6 lg:rounded-full">
 
@@ -228,10 +228,10 @@
       </div>
     </header>
 
-    <div class="px-2 sm:px-0">
+    <main class="px-2 pt-24 sm:px-0">
       {% block content %}
       {% endblock content %}
-    </div>
+    </main>
 
     <footer class="bg-white dark:bg-gray-950">
       <div class="px-6 py-12 mx-auto max-w-7xl md:flex md:items-center md:justify-between lg:px-8">
