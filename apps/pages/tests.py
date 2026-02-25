@@ -9,5 +9,5 @@ def test_pricing_page_shows_one_time_copy(client):
 
     content = response.content.decode()
     assert "$999" in content
-    assert "Unlimited generations" in content
+    assert "Unlimited project generations" in content
     assert "Forever updates" in content

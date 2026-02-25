@@ -58,14 +58,14 @@ def test_settings_upgrade_copy(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "One-time - $999" in content
+    assert "$999 one-time" in content
     assert "unlimited generations" in content.lower()
     assert "forever updates" in content.lower()
 
 
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time", "monthly": "price_monthly"})
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
 def test_get_price_id_for_plan_one_time():
     assert get_price_id_for_plan("one-time") == "price_one_time"
     assert get_price_id_for_plan("ONE-TIME") == "price_one_time"
-    assert get_price_id_for_plan("monthly") == "price_monthly"
+    assert get_price_id_for_plan("monthly") is None
     assert get_price_id_for_plan("unknown") is None

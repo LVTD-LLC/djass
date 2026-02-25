@@ -32,7 +32,7 @@ class LandingPageView(TemplateView):
 
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
-            messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
+            messages.success(self.request, "Payment successful — unlimited generation is now unlocked.")
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
         
