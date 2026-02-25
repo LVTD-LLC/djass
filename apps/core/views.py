@@ -44,7 +44,7 @@ def _user_can_create_projects(user):
 
 
 def _deny_project_access(request):
-    messages.error(request, "Project generation is available with an active subscription.")
+    messages.error(request, "Project generation unlocks after the one-time $999 payment.")
     return redirect("pricing")
 
 
@@ -57,7 +57,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
-            messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
+            messages.success(
+                self.request,
+                "Payment successful — unlimited generation is now unlocked.",
+            )
             context["show_confetti"] = True
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
@@ -249,10 +252,19 @@ def create_checkout_session(request, pk, plan):
     user = request.user
     profile = user.profile
     plan_key = (plan or "").lower()
-    is_one_time = plan_key == "one-time"
-    price_id = get_price_id_for_plan(plan)
+
+    if plan_key != "one-time":
+        logger.warning(
+            "Attempted checkout for unsupported plan",
+            plan=plan,
+            user_id=user.id,
+        )
+        messages.error(request, "Only the one-time $999 lifetime plan is available.")
+        return redirect("pricing")
+
+    price_id = get_price_id_for_plan("one-time")
     if not price_id:
-        logger.warning("Stripe price id not configured for plan", plan=plan, user_id=user.id)
+        logger.warning("Stripe price id not configured for one-time plan", user_id=user.id)
         messages.error(request, "Unable to find pricing for the selected plan.")
         return redirect("pricing")
 
@@ -287,7 +299,7 @@ def create_checkout_session(request, pk, plan):
                 "quantity": 1,
             }
         ],
-        "mode": "payment" if is_one_time else "subscription",
+        "mode": "payment",
         "success_url": success_url,
         "cancel_url": cancel_url,
         "customer_update": {
@@ -298,11 +310,9 @@ def create_checkout_session(request, pk, plan):
             "user_id": user.id,
             "pk": pk,
             "price_id": price_id,
-            "plan": plan,
+            "plan": "one-time",
         },
     }
-    if not is_one_time:
-        session_params["subscription_data"] = {"metadata": {"user_id": user.id, "plan": plan}}
 
     try:
         checkout_session = stripe.checkout.Session.create(**session_params)
@@ -310,7 +320,7 @@ def create_checkout_session(request, pk, plan):
         logger.error(
             "Stripe checkout session creation failed",
             profile_id=profile.id,
-            plan=plan,
+            plan="one-time",
             error=str(exc),
         )
         messages.error(request, "Unable to start checkout. Please try again.")
