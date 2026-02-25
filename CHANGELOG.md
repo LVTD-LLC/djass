@@ -21,6 +21,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - New `Project` and `ProjectArtifact` models for persisted generation history and downloadable artifacts.
 - Background generation task scaffold (`django-q2`) for cookiecutter execution and artifact packaging.
 - Initial tests for project creation queueing, dashboard history rendering, and download authorization.
+- Passkey authentication support (signup + login) using `django-allauth` MFA/WebAuthn.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
