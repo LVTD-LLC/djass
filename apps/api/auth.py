@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from ninja.security import APIKeyQuery
 
+from apps.api.utils import _get_api_key_from_headers
 from apps.core.models import Profile
 
 from djass.utils import get_djass_logger
@@ -21,6 +22,23 @@ class APIKeyAuth(APIKeyQuery):
         except Profile.DoesNotExist:
             logger.warning("[Django Ninja Auth] Invalid API key", key=key)
             return None
+
+
+class HeaderOrQueryAPIKeyAuth:
+    """Authenticate with X-API-Key/Authorization header or ?api_key= query param."""
+
+    def authenticate(self, request: HttpRequest) -> Profile | None:
+        key = _get_api_key_from_headers(request) or request.GET.get("api_key")
+        if not key:
+            return None
+        try:
+            return Profile.objects.get(key=key)
+        except Profile.DoesNotExist:
+            logger.warning("[Django Ninja Auth] Invalid API key", key=key)
+            return None
+
+    def __call__(self, request: HttpRequest):
+        return self.authenticate(request)
 
 
 class SessionAuth:
@@ -62,5 +80,6 @@ class SuperuserAPIKeyAuth(APIKeyQuery):
 
 
 api_key_auth = APIKeyAuth()
+header_or_query_api_key_auth = HeaderOrQueryAPIKeyAuth()
 session_auth = SessionAuth()
 superuser_api_auth = SuperuserAPIKeyAuth()
