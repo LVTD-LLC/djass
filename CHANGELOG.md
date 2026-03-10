@@ -22,6 +22,15 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Background generation task scaffold (`django-q2`) for cookiecutter execution and artifact packaging.
 - Initial tests for project creation queueing, dashboard history rendering, and download authorization.
 - Passkey authentication support (signup + login) using `django-allauth` MFA/WebAuthn.
+- Spec 001 (`/api/v1/projects`) contract implementation for agent-operable create/list/get/status endpoints with canonical response fields.
+- Contract test suite for Spec 001 covering auth, happy path creation, and common failure modes.
+- Versioned API contract documentation: `apps/docs/content/api/spec-001-agent-project-api-contract.md`.
+
+### Changed
+- API key authentication for v1 project endpoints now accepts `X-API-Key` and `Authorization` header formats in addition to `?api_key=` query fallback.
+- Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
+- Spec 001 keeps async generation behavior (create returns queued project; status endpoint is canonical poll target).
+- Spec 001 returns 404 when project id is not found for the authenticated owner scope.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.

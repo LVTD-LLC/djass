@@ -24,3 +24,6 @@ navigation:
 
   configuration:
     - environment-variables
+
+  api:
+    - spec-001-agent-project-api-contract
