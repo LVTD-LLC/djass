@@ -1,5 +1,9 @@
-import pytest
+import json
 
+import pytest
+from ninja.errors import AuthenticationError, HttpError, ValidationError
+
+from apps.api.views import on_authentication_error, on_http_error, on_validation_error
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
 
 
@@ -83,3 +87,74 @@ def test_projects_api_returns_null_artifact_when_not_generated(client, django_us
     assert len(payload) == 1
     assert payload[0]["name"] == "Queued Project"
     assert payload[0]["artifact"] is None
+
+
+def test_v1_projects_unauthorized_returns_deterministic_api_error(client):
+    response = client.get("/api/v1/projects")
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "auth_required",
+            "message": "Unauthorized",
+            "details": {},
+        }
+    }
+
+
+def test_authentication_error_handler_returns_api_error_schema(rf):
+    response = on_authentication_error(rf.get("/api/v1/projects"), AuthenticationError())
+
+    assert response.status_code == 401
+    assert json.loads(response.content) == {
+        "error": {
+            "code": "auth_required",
+            "message": "Unauthorized",
+            "details": {},
+        }
+    }
+
+
+def test_validation_error_handler_returns_api_error_schema(rf):
+    response = on_validation_error(
+        rf.post("/api/v1/projects"),
+        ValidationError(
+            [
+                {
+                    "loc": ["body", "project_slug"],
+                    "msg": "Field required",
+                    "type": "missing",
+                }
+            ]
+        ),
+    )
+
+    assert response.status_code == 422
+    assert json.loads(response.content) == {
+        "error": {
+            "code": "validation_error",
+            "message": "Request validation failed.",
+            "details": {
+                "violations": [
+                    {
+                        "loc": ["body", "project_slug"],
+                        "msg": "Field required",
+                        "type": "missing",
+                    }
+                ]
+            },
+        }
+    }
+
+
+def test_http_error_handler_returns_api_error_schema(rf):
+    response = on_http_error(rf.get("/api/user/settings"), HttpError(500, "Boom"))
+
+    assert response.status_code == 500
+    assert json.loads(response.content) == {
+        "error": {
+            "code": "http_error",
+            "message": "Boom",
+            "details": {},
+        }
+    }
