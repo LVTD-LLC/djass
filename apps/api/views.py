@@ -1,21 +1,21 @@
-from django.http import HttpRequest
-from django.db import connection
 from django.core.cache import cache
+from django.db import connection
+from django.http import HttpRequest
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
 from apps.api.auth import session_auth, superuser_api_auth
-from apps.core.models import Feedback
-from apps.blog.models import BlogPost
 from apps.api.schemas import (
-    SubmitFeedbackIn,
-    SubmitFeedbackOut,
     BlogPostIn,
     BlogPostOut,
-    ProfileSettingsOut,
+    ProjectArtifactOut,
+    ProjectInspectOut,
+    SubmitFeedbackIn,
+    SubmitFeedbackOut,
     UserSettingsOut,
 )
-
+from apps.blog.models import BlogPost
+from apps.core.models import Feedback, Project
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -160,4 +160,44 @@ def user_settings(request: HttpRequest):
             profile_id=profile.id,
             exc_info=True,
         )
-        raise HttpError(500, "An unexpected error occurred.")
+        raise HttpError(500, "An unexpected error occurred.") from e
+
+
+@api.get(
+    "/projects",
+    response=list[ProjectInspectOut],
+    auth=[session_auth],
+    include_in_schema=False,
+    tags=["private"],
+)
+def list_projects(request: HttpRequest):
+    projects = Project.objects.filter(user=request.auth.user).select_related("artifact")
+    results = []
+
+    for project in projects:
+        artifact_payload = None
+        artifact = getattr(project, "artifact", None)
+        if artifact:
+            artifact_payload = ProjectArtifactOut(
+                size_bytes=artifact.size_bytes,
+                sha256=artifact.sha256,
+                zip_file=artifact.zip_file.name,
+            )
+
+        results.append(
+            ProjectInspectOut(
+                id=project.id,
+                name=project.name,
+                slug=project.slug,
+                status=project.status,
+                error_message=project.error_message,
+                input_payload=project.input_payload,
+                started_at=project.started_at,
+                finished_at=project.finished_at,
+                created_at=project.created_at,
+                updated_at=project.updated_at,
+                artifact=artifact_payload,
+            )
+        )
+
+    return results
