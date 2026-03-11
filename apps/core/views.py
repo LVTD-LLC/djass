@@ -100,10 +100,32 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
 @require_POST
 def create_project(request):
     if not _user_can_create_projects(request.user):
+        _queue_profile_event(
+            profile=request.user.profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "subscription_required",
+                "funnel_step": "project_create_failed",
+                "entrypoint": "ui",
+            },
+            source_function="create_project",
+        )
         return _deny_project_access(request)
 
     form = ProjectCreateForm(request.POST, user=request.user)
     if not form.is_valid():
+        validation_fields = sorted(form.errors.keys())
+        _queue_profile_event(
+            profile=request.user.profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "validation_error",
+                "validation_fields": validation_fields,
+                "funnel_step": "project_create_failed",
+                "entrypoint": "ui",
+            },
+            source_function="create_project",
+        )
         for field_name, errors in form.errors.items():
             for error in errors:
                 messages.error(request, f"{field_name}: {error}")
@@ -129,6 +151,7 @@ def create_project(request):
             "project_name": project.name,
             "project_slug": project.slug,
             "funnel_step": "project_created",
+            "entrypoint": "ui",
         },
         source_function="create_project",
     )
@@ -322,6 +345,8 @@ def create_checkout_session(request, pk, plan):
             properties={
                 "reason": "customer_setup_failed",
                 "error_type": exc.__class__.__name__,
+                "funnel_step": "checkout_failed",
+                "entrypoint": "ui",
             },
             source_function="create_checkout_session",
         )
@@ -379,6 +404,8 @@ def create_checkout_session(request, pk, plan):
                 "reason": "session_creation_failed",
                 "error_type": exc.__class__.__name__,
                 "plan": "one-time",
+                "funnel_step": "checkout_failed",
+                "entrypoint": "ui",
             },
             source_function="create_checkout_session",
         )
@@ -399,6 +426,7 @@ def create_checkout_session(request, pk, plan):
         properties={
             **event_properties,
             "funnel_step": "checkout_started",
+            "entrypoint": "ui",
         },
         source_function="create_checkout_session",
     )

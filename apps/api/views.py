@@ -145,6 +145,17 @@ def _project_create_quota() -> int:
     return int(getattr(settings, "PROJECT_API_MAX_PROJECTS_PER_USER", 200))
 
 
+def _queue_profile_event(profile, event_name: str, properties: dict, source_function: str) -> None:
+    async_task(
+        "apps.core.tasks.track_event",
+        profile_id=profile.id,
+        event_name=event_name,
+        properties=properties,
+        source_function=source_function,
+        group="Track Event",
+    )
+
+
 @api.get("/healthcheck", auth=None, include_in_schema=False, tags=["private"])
 def healthcheck(request: HttpRequest):
     """Comprehensive healthcheck endpoint for monitoring and load balancers."""
@@ -293,6 +304,17 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
 
     scope_error = _require_scope(principal, "projects:create")
     if scope_error:
+        _queue_profile_event(
+            profile=profile,
+            event_name="user_auth_failed",
+            properties={
+                "reason": "insufficient_scope",
+                "required_scope": "projects:create",
+                "funnel_step": "auth_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         log_project_api_action(
             request,
             action="project.create",
@@ -308,6 +330,16 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
         ProfileStates.CANCELLED,
     }
     if profile.state not in allowed_states and not profile.user.is_superuser:
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "subscription_required",
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         log_project_api_action(
             request,
             action="project.create",
@@ -323,6 +355,16 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
 
     normalized_slug = slugify(data.project_slug).replace("-", "_")
     if not normalized_slug:
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "invalid_project_slug",
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         log_project_api_action(
             request,
             action="project.create",
@@ -340,6 +382,17 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
     user_project_count = Project.objects.filter(user=profile.user).count()
     project_quota = _project_create_quota()
     if user_project_count >= project_quota:
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "quota_exceeded",
+                "quota": project_quota,
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         log_project_api_action(
             request,
             action="project.create",
@@ -369,6 +422,18 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             input_payload=payload,
             status=ProjectStatus.QUEUED,
         )
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_created",
+            properties={
+                "project_id": project.id,
+                "project_name": project.name,
+                "project_slug": project.slug,
+                "funnel_step": "project_created",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         async_task(
             "apps.core.tasks.generate_project_artifact",
             project_id=project.id,
@@ -379,6 +444,17 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             "Retryable project creation failure",
             error=str(exc),
             user_id=profile.user_id,
+        )
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "retryable_error",
+                "error_type": exc.__class__.__name__,
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
         )
         log_project_api_action(
             request,
@@ -395,6 +471,17 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
         )
     except Exception as exc:
         logger.error("Internal project creation failure", error=str(exc), user_id=profile.user_id)
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "internal_error",
+                "error_type": exc.__class__.__name__,
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
         log_project_api_action(
             request,
             action="project.create",
@@ -415,6 +502,17 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
         status_code=201,
         principal=principal,
         project=project,
+    )
+    _queue_profile_event(
+        profile=profile,
+        event_name="project_created",
+        properties={
+            "project_id": project.id,
+            "project_name": project.name,
+            "project_slug": project.slug,
+            "funnel_step": "project_created",
+        },
+        source_function="create_project_v1",
     )
     return 201, {"project": _serialize_project(project)}
 

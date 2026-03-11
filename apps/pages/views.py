@@ -65,6 +65,7 @@ class SignupTrackingMixin:
                     "passkey" if "passkey" in self.request.path else "password"
                 ),
                 "funnel_step": "signup_completed",
+                "entrypoint": "ui",
                 "$set": {
                     "email": profile.user.email,
                     "username": profile.user.username,
@@ -114,6 +115,7 @@ class PricingView(TemplateView):
                 properties={
                     "reason": checkout_status,
                     "funnel_step": "checkout_failed",
+                    "entrypoint": "ui",
                 },
                 source_function="PricingView - get_context_data",
                 group="Track Event",

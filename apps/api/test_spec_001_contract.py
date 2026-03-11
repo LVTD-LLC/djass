@@ -72,11 +72,10 @@ class TestSpec001Contract:
 
     def test_create_project_contract_happy_path(self, client, monkeypatch):
         _, profile = _create_user("specuser", "specuser@example.com", subscribed=True)
-        called = {}
+        calls = []
 
         def fake_async_task(*args, **kwargs):
-            called["args"] = args
-            called["kwargs"] = kwargs
+            calls.append((args, kwargs))
             return "task-id"
 
         monkeypatch.setattr("apps.api.views.async_task", fake_async_task)
@@ -101,12 +100,33 @@ class TestSpec001Contract:
 
         created = Project.objects.get(id=project["id"])
         assert created.user_id == profile.user_id
-        assert called["args"][0] == "apps.core.tasks.generate_project_artifact"
-        assert called["kwargs"]["project_id"] == created.id
+        assert len(calls) == 2
+
+        generate_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
+        )
+        assert generate_call[1]["project_id"] == created.id
+
+        tracking_call = next(call for call in calls if call[0][0] == "apps.core.tasks.track_event")
+        assert tracking_call[1]["profile_id"] == profile.id
+        assert tracking_call[1]["event_name"] == "project_created"
+        assert tracking_call[1]["properties"] == {
+            "project_id": created.id,
+            "project_name": created.name,
+            "project_slug": created.slug,
+            "funnel_step": "project_created",
+            "entrypoint": "api",
+        }
 
     def test_create_project_validation_errors(self, client, monkeypatch):
         _, subscribed_profile = _create_user("subbed", "subbed@example.com", subscribed=True)
-        monkeypatch.setattr("apps.api.views.async_task", lambda *args, **kwargs: "task-id")
+        calls = []
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        monkeypatch.setattr("apps.api.views.async_task", fake_async_task)
         invalid_payload = {**CREATE_PAYLOAD, "project_slug": "!!!"}
         invalid = client.post(
             "/api/v1/projects",
@@ -120,6 +140,13 @@ class TestSpec001Contract:
         assert invalid_body["error"]["category"] == "validation"
         assert invalid_body["error"]["retryable"] is False
         assert invalid_body["error"]["details"]["field"] == "project_slug"
+
+        assert len(calls) == 1
+        tracking_call = calls[0]
+        assert tracking_call[0][0] == "apps.core.tasks.track_event"
+        assert tracking_call[1]["event_name"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["reason"] == "invalid_project_slug"
+        assert tracking_call[1]["properties"]["entrypoint"] == "api"
 
     def test_list_get_and_status_contract(self, client):
         user, profile = _create_user("owner", "owner@example.com", subscribed=True)
@@ -273,7 +300,13 @@ class TestSpec001Contract:
 
     def test_scoped_key_enforces_create_scope_and_logs_denial(self, client, monkeypatch):
         _, profile = _create_user("readkey", "readkey@example.com", subscribed=True)
-        monkeypatch.setattr("apps.api.views.async_task", lambda *args, **kwargs: "task-id")
+        calls = []
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        monkeypatch.setattr("apps.api.views.async_task", fake_async_task)
 
         scoped_key = ProjectAPIKey.objects.create(
             profile=profile,
@@ -292,6 +325,13 @@ class TestSpec001Contract:
         body = response.json()
         assert body["error"]["code"] == "insufficient_scope"
         assert body["error"]["category"] == "auth"
+
+        assert len(calls) == 1
+        auth_failed_call = calls[0]
+        assert auth_failed_call[0][0] == "apps.core.tasks.track_event"
+        assert auth_failed_call[1]["event_name"] == "user_auth_failed"
+        assert auth_failed_call[1]["properties"]["reason"] == "insufficient_scope"
+        assert auth_failed_call[1]["properties"]["funnel_step"] == "auth_failed"
 
         audit = ProjectAPIAuditLog.objects.latest("created_at")
         assert audit.action == ProjectAPIAuditLog.ACTION_CREATE

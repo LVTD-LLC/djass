@@ -1,6 +1,6 @@
 from allauth.account.signals import email_confirmed, user_signed_up
 from django.contrib.auth.models import User
-from django.contrib.auth.signals import user_logged_in
+from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
@@ -72,8 +72,37 @@ def track_user_login(sender, request, user, **kwargs):
         properties={
             "auth_method": "passkey" if "passkey" in request.path else "password",
             "funnel_step": "auth_completed",
+            "entrypoint": "ui",
         },
         source_function="user_logged_in signal",
+        group="Track Event",
+    )
+
+
+@receiver(user_login_failed)
+def track_user_login_failed(sender, credentials=None, request=None, **kwargs):
+    email = (credentials or {}).get("email") or (credentials or {}).get("username")
+    if not email:
+        return
+
+    profile = Profile.objects.filter(user__email=email).select_related("user").first()
+    if not profile:
+        return
+
+    auth_method = "password"
+    if request and "passkey" in (request.path or ""):
+        auth_method = "passkey"
+
+    async_task(
+        "apps.core.tasks.track_event",
+        profile_id=profile.id,
+        event_name="user_auth_failed",
+        properties={
+            "auth_method": auth_method,
+            "reason": "invalid_credentials",
+            "funnel_step": "auth_failed",
+        },
+        source_function="user_login_failed signal",
         group="Track Event",
     )
 

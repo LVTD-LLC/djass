@@ -4,7 +4,13 @@ import pytest
 from django.contrib.auth import get_user_model
 from ninja.errors import AuthenticationError, HttpError, ValidationError
 
-from apps.api.views import on_authentication_error, on_http_error, on_validation_error
+from apps.api.views import (
+    ERROR_TAXONOMY,
+    _error,
+    on_authentication_error,
+    on_http_error,
+    on_validation_error,
+)
 from apps.core.choices import ProfileStates
 from apps.core.models import Project, ProjectStatus
 
@@ -146,3 +152,20 @@ def test_http_error_handler_returns_api_error_schema(rf):
             "details": {},
         }
     }
+
+
+def test_error_taxonomy_entries_include_required_properties():
+    for code, taxonomy in ERROR_TAXONOMY.items():
+        assert set(taxonomy.keys()) == {"category", "retryable"}, code
+        assert isinstance(taxonomy["category"], str) and taxonomy["category"], code
+        assert isinstance(taxonomy["retryable"], bool), code
+
+        status, payload = _error(400, code, "message")
+        assert status == 400
+        assert set(payload["error"].keys()) == {
+            "code",
+            "category",
+            "message",
+            "retryable",
+            "details",
+        }

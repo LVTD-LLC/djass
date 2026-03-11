@@ -29,11 +29,13 @@ Djass wires both frontend and backend capture through these settings. No PostHog
 |---|---|---|---|
 | Page view | `$pageview` | PostHog JS snippet (`capture_pageview: true`) in `base_landing.html` / `base_app.html` | standard PostHog page properties |
 | Signup | `user_signed_up` | `apps/pages/views.py` (`SignupTrackingMixin._track_signup`) | `signup_method`, `funnel_step=signup_completed` |
-| Auth/login | `user_authenticated` | `apps/core/signals.py` (`track_user_login`) | `auth_method`, `funnel_step=auth_completed` |
-| Project create | `project_created` | `apps/core/views.py` (`create_project`) | `project_id`, `project_name`, `project_slug`, `funnel_step=project_created` |
-| Checkout start | `checkout_started` | `apps/core/views.py` (`create_checkout_session`) | `plan`, `price_id`, `checkout_id`, `funnel_step=checkout_started` |
-| Checkout success | `checkout_succeeded` | `apps/core/stripe_webhooks.py` (`handle_checkout_completed`) | `checkout_id`, `payment_intent`, `amount`, `currency`, `price_id`, `plan`, `funnel_step=checkout_succeeded`, `stripe_event_id` |
-| Checkout fail | `checkout_failed` | `apps/pages/views.py` (canceled/failed return), `apps/core/views.py` (Stripe setup/session exceptions) | `reason`, optional `error_type`, `plan`, `funnel_step=checkout_failed` |
+| Auth/login | `user_authenticated` | `apps/core/signals.py` (`track_user_login`) | `auth_method`, `funnel_step=auth_completed`, `entrypoint=ui` |
+| Auth failure | `user_auth_failed` | `apps/core/signals.py` (`track_user_login_failed`), `apps/api/views.py` (`create_project_v1` insufficient scope) | `reason`, `auth_method` (UI only), `required_scope` (API scope fail), `funnel_step=auth_failed`, `entrypoint` |
+| Project create | `project_created` | `apps/core/views.py` (`create_project`), `apps/api/views.py` (`create_project_v1`) | `project_id`, `project_name`, `project_slug`, `funnel_step=project_created`, `entrypoint` |
+| Project create fail | `project_create_failed` | `apps/core/views.py` (subscription/validation), `apps/api/views.py` (subscription, quota, slug, queue/internal failures) | `reason`, optional `validation_fields`, optional `error_type`, `funnel_step=project_create_failed`, `entrypoint` |
+| Checkout start | `checkout_started` | `apps/core/views.py` (`create_checkout_session`) | `plan`, `price_id`, `checkout_id`, `funnel_step=checkout_started`, `entrypoint=ui` |
+| Checkout success | `checkout_succeeded` | `apps/core/stripe_webhooks.py` (`handle_checkout_completed`) | `checkout_id`, `payment_intent`, `amount`, `currency`, `price_id`, `plan`, `funnel_step=checkout_succeeded`, `entrypoint=api`, `stripe_event_id` |
+| Checkout fail | `checkout_failed` | `apps/pages/views.py` (canceled/failed return), `apps/core/views.py` (Stripe setup/session exceptions), `apps/core/stripe_webhooks.py` (unpaid webhook) | `reason`, optional `error_type`, `plan`, `funnel_step=checkout_failed`, `entrypoint`, optional `stripe_event_id` |
 
 ## Verification checklist
 
@@ -51,10 +53,14 @@ Djass wires both frontend and backend capture through these settings. No PostHog
 Run targeted tests:
 
 ```bash
-pytest apps/pages/tests.py apps/core/tests/test_checkout_session.py apps/core/tests/test_projects.py apps/core/tests/test_stripe_webhooks.py apps/core/tests/test_signals.py
+pytest apps/pages/tests.py apps/core/tests/test_checkout_session.py apps/core/tests/test_projects.py apps/core/tests/test_stripe_webhooks.py apps/core/tests/test_signals.py apps/api/test_spec_001_contract.py
 ```
 
-These tests assert event names/properties for signup, auth, project creation, checkout start, checkout success, and checkout failure paths.
+These tests assert event names/properties for signup, auth success/failure, project creation success/failure (UI + API), checkout start, checkout success, and checkout failure paths.
+
+## Known gaps
+
+- API requests that fail before principal resolution (missing/invalid API key) cannot be attributed to a user `profile_id`, so they are audited in `ProjectAPIAuditLog` but are not emitted as PostHog user events.
 
 ## Verification evidence (2026-03-11)
 
