@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+import stripe
 from django.test import override_settings
 from django.urls import reverse
 
@@ -43,6 +44,7 @@ def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeyp
     assert tracking_call[1]["event_name"] == "checkout_started"
     assert tracking_call[1]["properties"]["checkout_id"] == "cs_test_checkout"
     assert tracking_call[1]["properties"]["plan"] == "one-time"
+    assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
 
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
@@ -91,3 +93,66 @@ def test_create_checkout_session_prevents_duplicate_active_subscription(
 
     assert response.status_code == 302
     assert response.url == reverse("project_new")
+
+
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
+@pytest.mark.django_db
+def test_create_checkout_session_tracks_failure_when_customer_setup_fails(auth_client, monkeypatch):
+    async_calls = []
+
+    def fake_async_task(*args, **kwargs):
+        async_calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Customer.create",
+        lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("boom")),
+    )
+    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
+    response = auth_client.post(url)
+
+    assert response.status_code == 302
+    assert response.url == reverse("pricing")
+    tracking_call = next(
+        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
+    )
+    assert tracking_call[1]["event_name"] == "checkout_failed"
+    assert tracking_call[1]["properties"]["reason"] == "customer_setup_failed"
+    assert tracking_call[1]["properties"]["funnel_step"] == "checkout_failed"
+
+
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
+@pytest.mark.django_db
+def test_create_checkout_session_tracks_failure_when_session_creation_fails(
+    auth_client,
+    monkeypatch,
+):
+    async_calls = []
+
+    def fake_async_task(*args, **kwargs):
+        async_calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Customer.create",
+        lambda **_kwargs: SimpleNamespace(id="cus_one_time"),
+    )
+    monkeypatch.setattr(
+        "apps.core.views.stripe.checkout.Session.create",
+        lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("boom")),
+    )
+    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
+    response = auth_client.post(url)
+
+    assert response.status_code == 302
+    assert response.url == reverse("pricing")
+    tracking_call = next(
+        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
+    )
+    assert tracking_call[1]["event_name"] == "checkout_failed"
+    assert tracking_call[1]["properties"]["reason"] == "session_creation_failed"
+    assert tracking_call[1]["properties"]["funnel_step"] == "checkout_failed"

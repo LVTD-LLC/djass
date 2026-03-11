@@ -42,3 +42,12 @@ def sync_state_transitions(monkeypatch):
 
     monkeypatch.setattr("apps.core.models.async_task", _fake_async_task)
     return _fake_async_task
+
+
+@pytest.fixture(autouse=True)
+def disable_model_async_task(monkeypatch):
+    """Prevent Redis-backed queue usage in tests unless explicitly overridden."""
+
+    monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: None)
+    monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: None)
+    monkeypatch.setattr("django_q.tasks.async_task", lambda *args, **kwargs: None)

@@ -5,9 +5,9 @@ import pytest
 from apps.core.choices import ProfileStates
 from apps.core.models import Profile
 from apps.core.stripe_webhooks import (
+    handle_checkout_completed,
     handle_created_subscription,
     handle_deleted_subscription,
-    handle_checkout_completed,
     handle_updated_subscription,
 )
 from apps.core.tests.test_helpers import build_checkout_completed_event, build_subscription_event
@@ -142,6 +142,7 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
             "price_id": "price_one_time",
             "plan": "one-time",
             "funnel_step": "checkout_succeeded",
+            "entrypoint": "api",
             "stripe_event_id": event["id"],
         },
         source_function="stripe_webhook handle_checkout_completed",
@@ -170,3 +171,43 @@ def test_handle_checkout_completed_is_idempotent_by_checkout_id(sync_state_trans
 
     assert track_state_change.call_count == 1
     assert track_event.call_count == 1
+
+
+@pytest.mark.django_db
+def test_handle_checkout_completed_tracks_payment_failure_event(sync_state_transitions, profile):
+    event = build_checkout_completed_event(
+        customer_id="cus_unpaid",
+        checkout_id="cs_unpaid",
+        payment_status="unpaid",
+        mode="payment",
+        metadata={
+            "user_id": profile.user_id,
+            "price_id": "price_one_time",
+            "plan": "one-time",
+        },
+        payment_intent="pi_unpaid",
+    )
+
+    with (
+        patch("apps.core.stripe_webhooks.core_tasks.track_state_change") as track_state_change,
+        patch("apps.core.stripe_webhooks.core_tasks.track_event") as track_event,
+    ):
+        handle_checkout_completed(event)
+
+    track_state_change.assert_not_called()
+    track_event.assert_called_once_with(
+        profile_id=profile.id,
+        event_name="checkout_failed",
+        properties={
+            "checkout_id": "cs_unpaid",
+            "payment_status": "unpaid",
+            "mode": "payment",
+            "price_id": "price_one_time",
+            "plan": "one-time",
+            "reason": "payment_not_paid",
+            "funnel_step": "checkout_failed",
+            "entrypoint": "api",
+            "stripe_event_id": event["id"],
+        },
+        source_function="stripe_webhook handle_checkout_completed",
+    )

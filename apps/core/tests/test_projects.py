@@ -62,11 +62,10 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["project_id"] == project.id
 
     def test_create_project_requires_subscription(self, auth_client, monkeypatch):
-        called = {}
+        calls = []
 
         def fake_async_task(*args, **kwargs):
-            called["args"] = args
-            called["kwargs"] = kwargs
+            calls.append((args, kwargs))
             return "task-id"
 
         monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
@@ -101,7 +100,65 @@ class TestProjectFlow:
         assert response.status_code == 302
         assert response.url == reverse("pricing")
         assert Project.objects.filter(user=response.wsgi_request.user).count() == 0
-        assert called == {}
+        assert len(calls) == 1
+        tracking_call = calls[0]
+        assert tracking_call[0][0] == "apps.core.tasks.track_event"
+        assert tracking_call[1]["event_name"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["reason"] == "subscription_required"
+        assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
+
+    def test_create_project_validation_failure_queues_tracking_event(
+        self,
+        auth_client,
+        monkeypatch,
+        user,
+    ):
+        calls = []
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+        response = auth_client.post(
+            reverse("project_create"),
+            {
+                "project_name": "My SaaS",
+                "project_slug": "",
+                "repo_url": "https://github.com/gregagi/my-saas",
+                "project_description": "test",
+                "author_name": "Rasul",
+                "author_email": "rasul@example.com",
+                "author_url": "",
+                "project_main_color": "green",
+                "use_posthog": "y",
+                "use_buttondown": "y",
+                "use_s3": "y",
+                "use_stripe": "y",
+                "use_sentry": "y",
+                "generate_blog": "y",
+                "generate_docs": "y",
+                "use_mjml": "y",
+                "use_ai": "y",
+                "use_logfire": "y",
+                "use_healthchecks": "y",
+                "use_ci": "y",
+            },
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("project_new")
+        assert Project.objects.filter(user=user).count() == 0
+        assert len(calls) == 1
+        tracking_call = calls[0]
+        assert tracking_call[0][0] == "apps.core.tasks.track_event"
+        assert tracking_call[1]["event_name"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["reason"] == "validation_error"
+        assert "project_slug" in tracking_call[1]["properties"]["validation_fields"]
+        assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
 
     def test_retry_project_requires_subscription(self, auth_client, user):
         project = Project.objects.create(
