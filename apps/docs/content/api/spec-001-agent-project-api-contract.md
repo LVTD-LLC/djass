@@ -10,9 +10,15 @@
 All endpoints in this spec require API key auth.
 
 Accepted formats:
-- `X-API-Key: <profile_api_key>`
-- `Authorization: Bearer <profile_api_key>`
-- Query fallback: `?api_key=<profile_api_key>` (kept for compatibility)
+- `X-API-Key: <profile_api_key_or_scoped_key>`
+- `Authorization: Bearer <profile_api_key_or_scoped_key>`
+- Query fallback: `?api_key=<profile_api_key_or_scoped_key>` (kept for compatibility)
+
+Scoped key permissions:
+- `projects:create` for `POST /api/v1/projects`
+- `projects:read` for `GET` list/get/status endpoints
+
+Legacy profile API keys keep full access to maintain backward compatibility.
 
 If auth is missing/invalid, response is:
 - `401 Unauthorized`
@@ -34,6 +40,7 @@ All non-2xx responses for Spec 001 follow this schema:
 
 Common codes in this spec:
 - `auth_required`
+- `insufficient_scope`
 - `subscription_required`
 - `invalid_project_slug`
 - `project_not_found`
