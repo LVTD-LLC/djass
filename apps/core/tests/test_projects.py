@@ -8,14 +8,13 @@ from apps.core.models import Project, ProjectArtifact, ProjectStatus
 @pytest.mark.django_db
 class TestProjectFlow:
     def test_create_project_queues_job(self, auth_client, monkeypatch, user):
-        called = {}
+        calls = []
         profile = user.profile
         profile.state = ProfileStates.SUBSCRIBED
         profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
-            called["args"] = args
-            called["kwargs"] = kwargs
+            calls.append((args, kwargs))
             return "task-id"
 
         monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
@@ -51,8 +50,16 @@ class TestProjectFlow:
         assert response.status_code == 200
         project = Project.objects.get(user=response.wsgi_request.user)
         assert project.status == ProjectStatus.QUEUED
-        assert called["args"][0] == "apps.core.tasks.generate_project_artifact"
-        assert called["kwargs"]["project_id"] == project.id
+        generation_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
+        )
+        tracking_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.track_event"
+        )
+        assert generation_call[1]["project_id"] == project.id
+        assert tracking_call[1]["event_name"] == "project_create_requested"
+        assert tracking_call[1]["profile_id"] == user.profile.id
+        assert tracking_call[1]["properties"]["project_id"] == project.id
 
     def test_create_project_requires_subscription(self, auth_client, monkeypatch):
         called = {}

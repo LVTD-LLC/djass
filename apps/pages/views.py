@@ -1,11 +1,10 @@
 from allauth.account.views import SignupByPasskeyView, SignupView
-from django_q.tasks import async_task
 from django.conf import settings
 from django.contrib import messages
 from django.views.generic import TemplateView
+from django_q.tasks import async_task
 
 from apps.core.models import Profile
-
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -22,7 +21,7 @@ class LandingPageView(TemplateView):
             profile = user.profile
 
             async_task(
-                "core.tasks.try_create_posthog_alias",
+                "apps.core.tasks.try_create_posthog_alias",
                 profile_id=profile.id,
                 cookies=self.request.COOKIES,
                 source_function="LandingPageView - get_context_data",
@@ -50,7 +49,7 @@ class SignupTrackingMixin:
         profile = user.profile
 
         async_task(
-            "core.tasks.try_create_posthog_alias",
+            "apps.core.tasks.try_create_posthog_alias",
             profile_id=profile.id,
             cookies=self.request.COOKIES,
             source_function=f"{self.tracking_source_name} - form_valid",
@@ -58,7 +57,7 @@ class SignupTrackingMixin:
         )
 
         async_task(
-            "core.tasks.track_event",
+            "apps.core.tasks.track_event",
             profile_id=profile.id,
             event_name="user_signed_up",
             properties={
@@ -95,7 +94,10 @@ class PricingView(TemplateView):
 
         checkout_status = self.request.GET.get("checkout")
         if checkout_status == "canceled":
-            messages.info(self.request, "Checkout was canceled. You can resume whenever you're ready.")
+            messages.info(
+                self.request,
+                "Checkout was canceled. You can resume whenever you're ready.",
+            )
         elif checkout_status == "failed":
             messages.error(self.request, "Payment did not complete. Please try checkout again.")
 
