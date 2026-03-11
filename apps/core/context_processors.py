@@ -25,7 +25,10 @@ def pro_subscription_status(request):
 
 
 def posthog_api_key(request):
-    return {"posthog_api_key": settings.POSTHOG_API_KEY}
+    return {
+        "posthog_api_key": settings.POSTHOG_API_KEY,
+        "posthog_host": settings.POSTHOG_HOST,
+    }
 
 
 def mjml_url(request):

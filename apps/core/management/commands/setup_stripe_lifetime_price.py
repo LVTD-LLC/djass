@@ -6,14 +6,14 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
-    help = "Create (or fetch) the Djass one-time Stripe product + $999 lifetime price"
+    help = "Create (or fetch) the Djass one-time Stripe product + $1,200 premium price"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--amount",
             type=int,
-            default=99900,
-            help="Price amount in minor units (cents). Default: 99900 ($999)",
+            default=120000,
+            help="Price amount in minor units (cents). Default: 120000 ($1,200)",
         )
         parser.add_argument(
             "--currency",
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--lookup-key",
-            default="djass-lifetime-usd-999",
+            default="djass-premium-usd-1200",
             help="Price lookup key to keep idempotent references",
         )
         parser.add_argument(

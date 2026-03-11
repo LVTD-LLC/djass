@@ -1,33 +1,28 @@
 from urllib.parse import urlencode
 
 import stripe
-from django.http import FileResponse, Http404
-from django.utils import timezone
-from django.utils.text import slugify
-from django_q.tasks import async_task
-
 from allauth.account.models import EmailAddress, EmailConfirmation
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.cache import cache
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import get_object_or_404, redirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.cache import cache
 from django.db import transaction
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.text import slugify
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
-
-from apps.core.stripe_webhooks import EVENT_HANDLERS
-
+from django_q.tasks import async_task
 
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
-
+from apps.core.stripe_webhooks import EVENT_HANDLERS
 from djass.utils import get_djass_logger
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -44,8 +39,19 @@ def _user_can_create_projects(user):
 
 
 def _deny_project_access(request):
-    messages.error(request, "Project generation unlocks after the one-time $999 payment.")
+    messages.error(request, "Project generation unlocks after the one-time $1,200 payment.")
     return redirect("pricing")
+
+
+def _queue_profile_event(profile, event_name, properties, source_function):
+    async_task(
+        "apps.core.tasks.track_event",
+        profile_id=profile.id,
+        event_name=event_name,
+        properties=properties,
+        source_function=source_function,
+        group="Track Event",
+    )
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -77,6 +83,14 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        checkout_status = self.request.GET.get("checkout")
+        if checkout_status == "success":
+            messages.success(
+                self.request,
+                "Payment successful — onboarding is unlocked. Start generating your first project.",
+            )
+
         context["project_form"] = ProjectCreateForm(user=self.request.user)
         context["can_generate"] = _user_can_create_projects(self.request.user)
         return context
@@ -107,7 +121,23 @@ def create_project(request):
         status=ProjectStatus.QUEUED,
     )
 
-    async_task("apps.core.tasks.generate_project_artifact", project_id=project.id, group="Generate Project")
+    _queue_profile_event(
+        profile=request.user.profile,
+        event_name="project_created",
+        properties={
+            "project_id": project.id,
+            "project_name": project.name,
+            "project_slug": project.slug,
+            "funnel_step": "project_created",
+        },
+        source_function="create_project",
+    )
+
+    async_task(
+        "apps.core.tasks.generate_project_artifact",
+        project_id=project.id,
+        group="Generate Project",
+    )
     messages.success(request, f"Project '{project.name}' queued for generation.")
     return redirect("home")
 
@@ -140,9 +170,15 @@ def retry_project_generation(request, project_id):
     project.error_message = ""
     project.started_at = None
     project.finished_at = None
-    project.save(update_fields=["status", "error_message", "started_at", "finished_at", "updated_at"])
+    project.save(
+        update_fields=["status", "error_message", "started_at", "finished_at", "updated_at"]
+    )
 
-    async_task("apps.core.tasks.generate_project_artifact", project_id=project.id, group="Generate Project")
+    async_task(
+        "apps.core.tasks.generate_project_artifact",
+        project_id=project.id,
+        group="Generate Project",
+    )
     messages.success(request, f"Regeneration queued for '{project.name}'.")
     return redirect("home")
 
@@ -259,8 +295,12 @@ def create_checkout_session(request, pk, plan):
             plan=plan,
             user_id=user.id,
         )
-        messages.error(request, "Only the one-time $999 lifetime plan is available.")
+        messages.error(request, "Only the one-time $1,200 premium plan is available.")
         return redirect("pricing")
+
+    if profile.has_active_subscription:
+        messages.info(request, "Premium access is already active for this account.")
+        return redirect("project_new")
 
     price_id = get_price_id_for_plan("one-time")
     if not price_id:
@@ -276,16 +316,25 @@ def create_checkout_session(request, pk, plan):
             profile_id=profile.id,
             error=str(exc),
         )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "customer_setup_failed",
+                "error_type": exc.__class__.__name__,
+            },
+            source_function="create_checkout_session",
+        )
         messages.error(request, "Unable to start checkout. Please try again.")
         return redirect("pricing")
 
-    base_success_url = request.build_absolute_uri(reverse("home"))
-    base_cancel_url = request.build_absolute_uri(reverse("home"))
+    base_success_url = request.build_absolute_uri(reverse("project_new"))
+    base_cancel_url = request.build_absolute_uri(reverse("pricing"))
 
-    success_params = {"payment": "success"}
+    success_params = {"checkout": "success"}
     success_url = f"{base_success_url}?{urlencode(success_params)}"
 
-    cancel_params = {"payment": "failed"}
+    cancel_params = {"checkout": "canceled"}
     cancel_url = f"{base_cancel_url}?{urlencode(cancel_params)}"
 
     session_params = {
@@ -323,8 +372,36 @@ def create_checkout_session(request, pk, plan):
             plan="one-time",
             error=str(exc),
         )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "session_creation_failed",
+                "error_type": exc.__class__.__name__,
+                "plan": "one-time",
+            },
+            source_function="create_checkout_session",
+        )
         messages.error(request, "Unable to start checkout. Please try again.")
         return redirect("pricing")
+
+    event_properties = {
+        "plan": "one-time",
+        "price_id": price_id,
+    }
+    checkout_id = getattr(checkout_session, "id", None)
+    if checkout_id:
+        event_properties["checkout_id"] = checkout_id
+
+    _queue_profile_event(
+        profile=profile,
+        event_name="checkout_started",
+        properties={
+            **event_properties,
+            "funnel_step": "checkout_started",
+        },
+        source_function="create_checkout_session",
+    )
 
     return redirect(checkout_session.url, code=303)
 
@@ -368,11 +445,12 @@ class AdminPanelView(UserPassesTestMixin, TemplateView):
         return redirect("home")
 
     def get_context_data(self, **kwargs):
-        from django.db.models import Count
+        from datetime import timedelta
+
         from django.contrib.auth.models import User
         from django.utils import timezone
-        from datetime import timedelta
-        from apps.core.models import Profile, Feedback
+
+        from apps.core.models import Feedback, Profile
 
         context = super().get_context_data(**kwargs)
 
@@ -388,28 +466,32 @@ class AdminPanelView(UserPassesTestMixin, TemplateView):
         new_users_month = User.objects.filter(date_joined__gte=month_ago).count()
         feedback_week = Feedback.objects.filter(created_at__gte=week_ago).count()
 
-        recent_users = User.objects.select_related('profile').order_by('-date_joined')[:10]
-        recent_feedback = Feedback.objects.select_related('profile__user').order_by('-created_at')[:10]
+        recent_users = User.objects.select_related("profile").order_by("-date_joined")[:10]
+        recent_feedback = Feedback.objects.select_related("profile__user").order_by("-created_at")[
+            :10
+        ]
 
         # Calculate average users per day for last 30 days
         avg_users_per_day = new_users_month / 30 if new_users_month > 0 else 0
 
-        context.update({
-            'total_users': total_users,
-            'total_profiles': total_profiles,
-            'total_feedback': total_feedback,
-            'new_users_week': new_users_week,
-            'new_users_month': new_users_month,
-            'feedback_week': feedback_week,
-            'recent_users': recent_users,
-            'recent_feedback': recent_feedback,
-            'avg_users_per_day': avg_users_per_day,
-        })
+        context.update(
+            {
+                "total_users": total_users,
+                "total_profiles": total_profiles,
+                "total_feedback": total_feedback,
+                "new_users_week": new_users_week,
+                "new_users_month": new_users_month,
+                "feedback_week": feedback_week,
+                "recent_users": recent_users,
+                "recent_feedback": recent_feedback,
+                "avg_users_per_day": avg_users_per_day,
+            }
+        )
 
         logger.info(
             "Admin panel accessed",
             email=self.request.user.email,
-            profile_id=self.request.user.profile.id
+            profile_id=self.request.user.profile.id,
         )
 
         return context
