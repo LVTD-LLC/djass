@@ -18,6 +18,24 @@ def test_pricing_page_shows_one_time_copy(client):
     assert "Forever updates" in content
 
 
+def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch, user):
+    calls = []
+
+    def fake_async_task(*args, **kwargs):
+        calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr("apps.pages.views.async_task", fake_async_task)
+
+    response = auth_client.get(f"{reverse('pricing')}?checkout=failed")
+    assert response.status_code == 200
+
+    tracking_call = next(call for call in calls if call[0][0] == "apps.core.tasks.track_event")
+    assert tracking_call[1]["profile_id"] == user.profile.id
+    assert tracking_call[1]["event_name"] == "checkout_failed"
+    assert tracking_call[1]["properties"]["reason"] == "failed"
+
+
 def test_login_page_shows_passkey_option(client):
     response = client.get(reverse("account_login"))
     assert response.status_code == 200

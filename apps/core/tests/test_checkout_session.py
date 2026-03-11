@@ -40,7 +40,7 @@ def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeyp
     tracking_call = next(
         call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
     )
-    assert tracking_call[1]["event_name"] == "checkout_session_created"
+    assert tracking_call[1]["event_name"] == "checkout_started"
     assert tracking_call[1]["properties"]["checkout_id"] == "cs_test_checkout"
     assert tracking_call[1]["properties"]["plan"] == "one-time"
 

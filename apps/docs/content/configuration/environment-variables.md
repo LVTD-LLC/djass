@@ -92,7 +92,8 @@ The command prints `STRIPE_PRICE_ID_ONE_TIME=...` so you can copy it to your env
 
 - `SENTRY_DSN`
 - `LOGFIRE_TOKEN`
-- `POSTHOG_API_KEY`
+- `POSTHOG_API_KEY` (project API key `phc_...` used by Djass capture calls)
+- `POSTHOG_HOST` (`https://us.i.posthog.com` or `https://eu.i.posthog.com`)
 
 ### AI provider
 
@@ -116,3 +117,4 @@ Optional model overrides:
 - Never commit `.env`.
 - Rotate credentials immediately if exposed.
 - Prefer secret managers over plaintext files when possible.
+- Keep PostHog personal/management API keys out of app runtime config; Djass only needs the project API key for ingestion.

@@ -105,6 +105,20 @@ class PricingView(TemplateView):
         elif checkout_status == "failed":
             messages.error(self.request, "Payment did not complete. Please try checkout again.")
 
+        if checkout_status in {"canceled", "failed"} and self.request.user.is_authenticated:
+            profile = self.request.user.profile
+            async_task(
+                "apps.core.tasks.track_event",
+                profile_id=profile.id,
+                event_name="checkout_failed",
+                properties={
+                    "reason": checkout_status,
+                    "funnel_step": "checkout_failed",
+                },
+                source_function="PricingView - get_context_data",
+                group="Track Event",
+            )
+
         if self.request.user.is_authenticated:
             try:
                 profile = self.request.user.profile

@@ -57,7 +57,7 @@ class TestProjectFlow:
             call for call in calls if call[0][0] == "apps.core.tasks.track_event"
         )
         assert generation_call[1]["project_id"] == project.id
-        assert tracking_call[1]["event_name"] == "project_create_requested"
+        assert tracking_call[1]["event_name"] == "project_created"
         assert tracking_call[1]["profile_id"] == user.profile.id
         assert tracking_call[1]["properties"]["project_id"] == project.id
 

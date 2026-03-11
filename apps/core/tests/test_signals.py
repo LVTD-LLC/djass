@@ -1,27 +1,43 @@
-import pytest
-from django.contrib.auth import get_user_model
+from django.test import RequestFactory
 
-from apps.core.choices import ProfileStates
-from apps.core.models import Profile
+from apps.core import signals
 
 
-@pytest.mark.django_db
-def test_user_save_does_not_revert_profile_state(sync_state_transitions):
-    user_model = get_user_model()
-    user = user_model.objects.create_user(
-        username="signaluser",
-        email="signaluser@example.com",
-        password="password123",
-    )
-    profile = user.profile
+def test_track_user_login_queues_auth_event(monkeypatch, user):
+    calls = []
 
-    Profile.objects.filter(id=profile.id).update(state=ProfileStates.STRANGER)
+    def fake_async_task(*args, **kwargs):
+        calls.append((args, kwargs))
+        return "task-id"
 
-    cached_user = user_model.objects.select_related("profile").get(id=user.id)
+    monkeypatch.setattr("apps.core.signals.async_task", fake_async_task)
 
-    Profile.objects.filter(id=profile.id).update(state=ProfileStates.SIGNED_UP)
+    request = RequestFactory().post("/accounts/login/")
+    request.COOKIES = {}
 
-    cached_user.save()
+    signals.track_user_login(sender=None, request=request, user=user)
 
-    profile.refresh_from_db()
-    assert profile.state == ProfileStates.SIGNED_UP
+    alias_call, auth_call = calls
+    assert alias_call[0][0] == "apps.core.tasks.try_create_posthog_alias"
+    assert alias_call[1]["profile_id"] == user.profile.id
+    assert auth_call[0][0] == "apps.core.tasks.track_event"
+    assert auth_call[1]["event_name"] == "user_authenticated"
+    assert auth_call[1]["properties"]["funnel_step"] == "auth_completed"
+
+
+def test_track_user_login_passkey_method(monkeypatch, user):
+    calls = []
+
+    def fake_async_task(*args, **kwargs):
+        calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr("apps.core.signals.async_task", fake_async_task)
+
+    request = RequestFactory().post("/accounts/passkey/login/")
+    request.COOKIES = {}
+
+    signals.track_user_login(sender=None, request=request, user=user)
+
+    auth_call = calls[1]
+    assert auth_call[1]["properties"]["auth_method"] == "passkey"

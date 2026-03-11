@@ -305,7 +305,7 @@ def handle_checkout_completed(event):
 
         core_tasks.track_event(
             profile_id=profile.id,
-            event_name="checkout_payment_completed",
+            event_name="checkout_succeeded",
             properties={
                 "checkout_id": checkout_id,
                 "payment_intent": payment_intent,
@@ -313,6 +313,7 @@ def handle_checkout_completed(event):
                 "currency": currency,
                 "price_id": price_id,
                 "plan": metadata.get("plan") or "one-time",
+                "funnel_step": "checkout_succeeded",
                 "stripe_event_id": event_id,
             },
             source_function="stripe_webhook handle_checkout_completed",

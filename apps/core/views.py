@@ -123,11 +123,12 @@ def create_project(request):
 
     _queue_profile_event(
         profile=request.user.profile,
-        event_name="project_create_requested",
+        event_name="project_created",
         properties={
             "project_id": project.id,
             "project_name": project.name,
             "project_slug": project.slug,
+            "funnel_step": "project_created",
         },
         source_function="create_project",
     )
@@ -315,6 +316,15 @@ def create_checkout_session(request, pk, plan):
             profile_id=profile.id,
             error=str(exc),
         )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "customer_setup_failed",
+                "error_type": exc.__class__.__name__,
+            },
+            source_function="create_checkout_session",
+        )
         messages.error(request, "Unable to start checkout. Please try again.")
         return redirect("pricing")
 
@@ -362,6 +372,16 @@ def create_checkout_session(request, pk, plan):
             plan="one-time",
             error=str(exc),
         )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "session_creation_failed",
+                "error_type": exc.__class__.__name__,
+                "plan": "one-time",
+            },
+            source_function="create_checkout_session",
+        )
         messages.error(request, "Unable to start checkout. Please try again.")
         return redirect("pricing")
 
@@ -375,8 +395,11 @@ def create_checkout_session(request, pk, plan):
 
     _queue_profile_event(
         profile=profile,
-        event_name="checkout_session_created",
-        properties=event_properties,
+        event_name="checkout_started",
+        properties={
+            **event_properties,
+            "funnel_step": "checkout_started",
+        },
         source_function="create_checkout_session",
     )
 

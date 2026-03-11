@@ -133,7 +133,7 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
     assert profile.current_state == ProfileStates.SUBSCRIBED
     track_event.assert_called_once_with(
         profile_id=profile.id,
-        event_name="checkout_payment_completed",
+        event_name="checkout_succeeded",
         properties={
             "checkout_id": "cs_paid",
             "payment_intent": "pi_paid",
@@ -141,6 +141,7 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
             "currency": "usd",
             "price_id": "price_one_time",
             "plan": "one-time",
+            "funnel_step": "checkout_succeeded",
             "stripe_event_id": event["id"],
         },
         source_function="stripe_webhook handle_checkout_completed",

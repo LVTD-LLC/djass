@@ -518,6 +518,7 @@ if SENTRY_DSN and ENVIRONMENT == "prod":
 
 
 POSTHOG_API_KEY = env("POSTHOG_API_KEY", default="")
+POSTHOG_HOST = env("POSTHOG_HOST", default="https://us.i.posthog.com")
 
 
 BUTTONDOWN_API_KEY=env("BUTTONDOWN_API_KEY", default="")
