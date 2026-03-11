@@ -102,7 +102,8 @@ def test_v1_projects_unauthorized_returns_deterministic_api_error(client):
     }
 
 
-def test_authentication_error_handler_returns_api_error_schema(rf):
+def test_authentication_error_handler_returns_api_error_schema(rf, monkeypatch):
+    monkeypatch.setattr("apps.api.views.log_project_api_action", lambda *args, **kwargs: None)
     response = on_authentication_error(rf.get("/api/v1/projects"), AuthenticationError())
 
     assert response.status_code == 401
