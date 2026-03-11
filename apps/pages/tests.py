@@ -34,6 +34,7 @@ def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch,
     assert tracking_call[1]["profile_id"] == user.profile.id
     assert tracking_call[1]["event_name"] == "checkout_failed"
     assert tracking_call[1]["properties"]["reason"] == "failed"
+    assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
 
 def test_login_page_shows_passkey_option(client):
@@ -87,6 +88,7 @@ def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     assert signup_call[1]["profile_id"] == user.profile.id
     assert signup_call[1]["properties"]["funnel_step"] == "signup_completed"
     assert signup_call[1]["properties"]["signup_method"] == "password"
+    assert signup_call[1]["properties"]["entrypoint"] == "ui"
 
 
 def test_landing_authenticated_user_gets_checkout_cta(auth_client, user):

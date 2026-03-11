@@ -60,6 +60,7 @@ class TestProjectFlow:
         assert tracking_call[1]["event_name"] == "project_created"
         assert tracking_call[1]["profile_id"] == user.profile.id
         assert tracking_call[1]["properties"]["project_id"] == project.id
+        assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
     def test_create_project_requires_subscription(self, auth_client, monkeypatch):
         calls = []
@@ -106,6 +107,7 @@ class TestProjectFlow:
         assert tracking_call[1]["event_name"] == "project_create_failed"
         assert tracking_call[1]["properties"]["reason"] == "subscription_required"
         assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
     def test_create_project_validation_failure_queues_tracking_event(
         self,
@@ -159,6 +161,7 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["reason"] == "validation_error"
         assert "project_slug" in tracking_call[1]["properties"]["validation_fields"]
         assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
     def test_retry_project_requires_subscription(self, auth_client, user):
         project = Project.objects.create(

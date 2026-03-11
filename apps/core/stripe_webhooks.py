@@ -250,6 +250,24 @@ def handle_checkout_completed(event):
     )
 
     if payment_status != "paid":
+        profile = get_profile_for_customer(customer_id, metadata)
+        if profile:
+            core_tasks.track_event(
+                profile_id=profile.id,
+                event_name="checkout_failed",
+                properties={
+                    "checkout_id": checkout_id,
+                    "payment_status": payment_status,
+                    "mode": mode,
+                    "price_id": price_id,
+                    "plan": metadata.get("plan") or "one-time",
+                    "reason": "payment_not_paid",
+                    "funnel_step": "checkout_failed",
+                    "entrypoint": "api",
+                    "stripe_event_id": event_id,
+                },
+                source_function="stripe_webhook handle_checkout_completed",
+            )
         logger.warning(
             "Checkout completed but payment not successful",
             event_id=event_id,
@@ -314,6 +332,7 @@ def handle_checkout_completed(event):
                 "price_id": price_id,
                 "plan": metadata.get("plan") or "one-time",
                 "funnel_step": "checkout_succeeded",
+                "entrypoint": "api",
                 "stripe_event_id": event_id,
             },
             source_function="stripe_webhook handle_checkout_completed",
