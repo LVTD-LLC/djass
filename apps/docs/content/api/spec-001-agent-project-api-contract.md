@@ -10,9 +10,15 @@
 All endpoints in this spec require API key auth.
 
 Accepted formats:
-- `X-API-Key: <profile_api_key>`
-- `Authorization: Bearer <profile_api_key>`
-- Query fallback: `?api_key=<profile_api_key>` (kept for compatibility)
+- `X-API-Key: <profile_api_key_or_scoped_key>`
+- `Authorization: Bearer <profile_api_key_or_scoped_key>`
+- Query fallback: `?api_key=<profile_api_key_or_scoped_key>` (kept for compatibility)
+
+Scoped key permissions:
+- `projects:create` for `POST /api/v1/projects`
+- `projects:read` for `GET` list/get/status endpoints
+
+Legacy profile API keys keep full access to maintain backward compatibility.
 
 If auth is missing/invalid, response is:
 - `401 Unauthorized`
@@ -26,7 +32,9 @@ All non-2xx responses for Spec 001 follow this schema:
 {
   "error": {
     "code": "machine_readable_code",
+    "category": "validation|auth|quota|retryable|internal",
     "message": "Human readable summary",
+    "retryable": false,
     "details": {}
   }
 }
@@ -34,9 +42,15 @@ All non-2xx responses for Spec 001 follow this schema:
 
 Common codes in this spec:
 - `auth_required`
+- `insufficient_scope`
 - `subscription_required`
+- `quota_exceeded`
 - `invalid_project_slug`
 - `project_not_found`
+- `retryable_error`
+- `internal_error`
+
+Retry guidance is provided in `error.details.retry_guidance` where relevant.
 
 ## Endpoint: Create Project
 
@@ -74,18 +88,32 @@ Common codes in this spec:
 - `400 Bad Request`: invalid payload (for example non-normalizable `project_slug`)
 - `401 Unauthorized`: auth required
 - `403 Forbidden`: active subscription required
+- `429 Too Many Requests`: per-identity project quota reached (`quota_exceeded`)
+- `503 Service Unavailable`: temporary queue/generation dispatch failure (`retryable_error`)
+- `500 Internal Server Error`: unexpected server error (`internal_error`)
 
 ## Endpoint: List Projects
 
 `GET /api/v1/projects`
+
+### Query parameters
+- `limit` (default `20`, max `100`)
+- `offset` (default `0`)
+- `status` (optional: `queued|generating|ready|failed`)
 
 ### Responses
 - `200 OK`
 
 ```json
 {
-  "projects": ["<Project>"] ,
-  "total": 1
+  "projects": ["<Project>"],
+  "total": 1,
+  "limit": 20,
+  "offset": 0,
+  "has_next": false,
+  "filters": {
+    "status": "ready"
+  }
 }
 ```
 

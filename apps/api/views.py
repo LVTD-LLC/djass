@@ -1,12 +1,19 @@
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import HttpRequest
 from django.utils.text import slugify
 from django_q.tasks import async_task
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Query
 from ninja.errors import AuthenticationError, HttpError, ValidationError
 
-from apps.api.auth import header_or_query_api_key_auth, session_auth, superuser_api_auth
+from apps.api.audit import action_for_request, log_project_api_action
+from apps.api.auth import (
+    APIAuthPrincipal,
+    header_or_query_api_key_auth,
+    session_auth,
+    superuser_api_auth,
+)
 from apps.api.schemas import (
     ApiError,
     BlogPostIn,
@@ -30,11 +37,28 @@ logger = get_djass_logger(__name__)
 api = NinjaAPI()
 
 
+ERROR_TAXONOMY = {
+    "auth_required": {"category": "auth", "retryable": False},
+    "insufficient_scope": {"category": "auth", "retryable": False},
+    "subscription_required": {"category": "quota", "retryable": False},
+    "quota_exceeded": {"category": "quota", "retryable": False},
+    "invalid_project_slug": {"category": "validation", "retryable": False},
+    "validation_error": {"category": "validation", "retryable": False},
+    "project_not_found": {"category": "validation", "retryable": False},
+    "retryable_error": {"category": "retryable", "retryable": True},
+    "internal_error": {"category": "internal", "retryable": False},
+    "http_error": {"category": "internal", "retryable": False},
+}
+
+
 def _error(status: int, code: str, message: str, *, details: dict | None = None):
+    taxonomy = ERROR_TAXONOMY.get(code, {"category": "internal", "retryable": False})
     return status, {
         "error": {
             "code": code,
+            "category": taxonomy["category"],
             "message": message,
+            "retryable": taxonomy["retryable"],
             "details": details or {},
         }
     }
@@ -42,6 +66,18 @@ def _error(status: int, code: str, message: str, *, details: dict | None = None)
 
 @api.exception_handler(AuthenticationError)
 def on_authentication_error(request: HttpRequest, exc: AuthenticationError):
+    action = action_for_request(request)
+    if action:
+        log_project_api_action(
+            request,
+            action=action,
+            status_code=401,
+            metadata={
+                "error": "auth_required",
+                "api_key_present": bool(getattr(request, "api_key_attempt", None)),
+            },
+        )
+
     return api.create_response(
         request,
         _error(401, "auth_required", str(exc))[1],
@@ -92,6 +128,21 @@ def _serialize_project(project: Project) -> dict:
         "artifact_ready": hasattr(project, "artifact"),
         "input_payload": project.input_payload,
     }
+
+
+def _require_scope(principal: APIAuthPrincipal, scope: str):
+    if principal.has_scope(scope):
+        return None
+    return _error(
+        403,
+        "insufficient_scope",
+        f"API key is missing required scope: {scope}",
+        details={"required_scope": scope},
+    )
+
+
+def _project_create_quota() -> int:
+    return int(getattr(settings, "PROJECT_API_MAX_PROJECTS_PER_USER", 200))
 
 
 @api.get("/healthcheck", auth=None, include_in_schema=False, tags=["private"])
@@ -222,14 +273,34 @@ def user_settings(request: HttpRequest):
 
 @api.post(
     "/v1/projects",
-    response={201: ProjectCreateOut, 400: ApiError, 401: ApiError, 403: ApiError},
+    response={
+        201: ProjectCreateOut,
+        400: ApiError,
+        401: ApiError,
+        403: ApiError,
+        429: ApiError,
+        500: ApiError,
+        503: ApiError,
+    },
     auth=[header_or_query_api_key_auth],
     tags=["v1"],
 )
 def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
-    profile = request.auth
+    principal = request.auth
+    profile = principal.profile if principal else None
     if not profile:
         return _error(401, "auth_required", "Authentication required.")
+
+    scope_error = _require_scope(principal, "projects:create")
+    if scope_error:
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=403,
+            principal=principal,
+            metadata={"error": "insufficient_scope", "required_scope": "projects:create"},
+        )
+        return scope_error
 
     allowed_states = {
         ProfileStates.TRIAL_STARTED,
@@ -237,6 +308,13 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
         ProfileStates.CANCELLED,
     }
     if profile.state not in allowed_states and not profile.user.is_superuser:
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=403,
+            principal=principal,
+            metadata={"error": "subscription_required"},
+        )
         return _error(
             403,
             "subscription_required",
@@ -245,6 +323,13 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
 
     normalized_slug = slugify(data.project_slug).replace("-", "_")
     if not normalized_slug:
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=400,
+            principal=principal,
+            metadata={"error": "invalid_project_slug"},
+        )
         return _error(
             400,
             "invalid_project_slug",
@@ -252,89 +337,286 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             details={"field": "project_slug"},
         )
 
+    user_project_count = Project.objects.filter(user=profile.user).count()
+    project_quota = _project_create_quota()
+    if user_project_count >= project_quota:
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=429,
+            principal=principal,
+            metadata={"error": "quota_exceeded", "quota": project_quota},
+        )
+        return _error(
+            429,
+            "quota_exceeded",
+            "Project quota exceeded for this API identity.",
+            details={
+                "quota": project_quota,
+                "retry_guidance": "Delete old projects or request limit bump.",
+            },
+        )
+
     payload = data.dict()
     if not payload.get("author_email"):
         payload["author_email"] = profile.user.email or ""
 
-    project = Project.objects.create(
-        user=profile.user,
-        name=data.project_name,
-        slug=normalized_slug[:255],
-        input_payload=payload,
-        status=ProjectStatus.QUEUED,
-    )
-    async_task(
-        "apps.core.tasks.generate_project_artifact",
-        project_id=project.id,
-        group="Generate Project",
-    )
+    try:
+        project = Project.objects.create(
+            user=profile.user,
+            name=data.project_name,
+            slug=normalized_slug[:255],
+            input_payload=payload,
+            status=ProjectStatus.QUEUED,
+        )
+        async_task(
+            "apps.core.tasks.generate_project_artifact",
+            project_id=project.id,
+            group="Generate Project",
+        )
+    except OSError as exc:
+        logger.warning(
+            "Retryable project creation failure",
+            error=str(exc),
+            user_id=profile.user_id,
+        )
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=503,
+            principal=principal,
+            metadata={"error": "retryable_error"},
+        )
+        return _error(
+            503,
+            "retryable_error",
+            "Temporary failure while queueing project generation.",
+            details={"retry_guidance": "Retry with exponential backoff."},
+        )
+    except Exception as exc:
+        logger.error("Internal project creation failure", error=str(exc), user_id=profile.user_id)
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=500,
+            principal=principal,
+            metadata={"error": "internal_error"},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while creating project.",
+            details={"retry_guidance": "Retry later or contact support if persistent."},
+        )
 
+    log_project_api_action(
+        request,
+        action="project.create",
+        status_code=201,
+        principal=principal,
+        project=project,
+    )
     return 201, {"project": _serialize_project(project)}
 
 
 @api.get(
     "/v1/projects",
-    response={200: ProjectListOut, 401: ApiError},
+    response={200: ProjectListOut, 401: ApiError, 403: ApiError, 422: ApiError, 500: ApiError},
     auth=[header_or_query_api_key_auth],
     tags=["v1"],
 )
-def list_projects_v1(request: HttpRequest):
-    profile = request.auth
+def list_projects_v1(
+    request: HttpRequest,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    status: ProjectStatus | None = None,
+):
+    principal = request.auth
+    profile = principal.profile if principal else None
     if not profile:
         return _error(401, "auth_required", "Authentication required.")
 
-    projects = [
-        _serialize_project(project)
-        for project in Project.objects.filter(user=profile.user).prefetch_related("artifact")
-    ]
-    return {"projects": projects, "total": len(projects)}
+    scope_error = _require_scope(principal, "projects:read")
+    if scope_error:
+        log_project_api_action(
+            request,
+            action="project.list",
+            status_code=403,
+            principal=principal,
+            metadata={"error": "insufficient_scope", "required_scope": "projects:read"},
+        )
+        return scope_error
+
+    try:
+        queryset = Project.objects.filter(user=profile.user).prefetch_related("artifact")
+        filters = {}
+        if status:
+            queryset = queryset.filter(status=status)
+            filters["status"] = status
+
+        total = queryset.count()
+        rows = list(queryset[offset : offset + limit])
+        projects = [_serialize_project(project) for project in rows]
+    except Exception as exc:
+        logger.error("Internal project list failure", error=str(exc), user_id=profile.user_id)
+        log_project_api_action(
+            request,
+            action="project.list",
+            status_code=500,
+            principal=principal,
+            metadata={"error": "internal_error"},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while listing projects.",
+            details={"retry_guidance": "Retry later."},
+        )
+
+    log_project_api_action(
+        request,
+        action="project.list",
+        status_code=200,
+        principal=principal,
+        metadata={"count": len(projects), "total": total, "limit": limit, "offset": offset},
+    )
+    return {
+        "projects": projects,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "has_next": offset + len(projects) < total,
+        "filters": filters,
+    }
 
 
 @api.get(
     "/v1/projects/{project_id}",
-    response={200: ProjectOut, 401: ApiError, 404: ApiError},
+    response={200: ProjectOut, 401: ApiError, 403: ApiError, 404: ApiError, 500: ApiError},
     auth=[header_or_query_api_key_auth],
     tags=["v1"],
 )
 def get_project_v1(request: HttpRequest, project_id: int):
-    profile = request.auth
+    principal = request.auth
+    profile = principal.profile if principal else None
     if not profile:
         return _error(401, "auth_required", "Authentication required.")
+
+    scope_error = _require_scope(principal, "projects:read")
+    if scope_error:
+        log_project_api_action(
+            request,
+            action="project.get",
+            status_code=403,
+            principal=principal,
+            metadata={"error": "insufficient_scope", "required_scope": "projects:read"},
+        )
+        return scope_error
 
     try:
         project = Project.objects.prefetch_related("artifact").get(id=project_id, user=profile.user)
     except Project.DoesNotExist:
+        log_project_api_action(
+            request,
+            action="project.get",
+            status_code=404,
+            principal=principal,
+            metadata={"error": "project_not_found", "project_id": project_id},
+        )
         return _error(
             404,
             "project_not_found",
             "Project not found.",
             details={"project_id": project_id},
         )
+    except Exception as exc:
+        logger.error("Internal project get failure", error=str(exc), user_id=profile.user_id)
+        log_project_api_action(
+            request,
+            action="project.get",
+            status_code=500,
+            principal=principal,
+            metadata={"error": "internal_error", "project_id": project_id},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while fetching project.",
+            details={"project_id": project_id, "retry_guidance": "Retry later."},
+        )
 
+    log_project_api_action(
+        request,
+        action="project.get",
+        status_code=200,
+        principal=principal,
+        project=project,
+    )
     return _serialize_project(project)
 
 
 @api.get(
     "/v1/projects/{project_id}/status",
-    response={200: ProjectStatusOut, 401: ApiError, 404: ApiError},
+    response={200: ProjectStatusOut, 401: ApiError, 403: ApiError, 404: ApiError, 500: ApiError},
     auth=[header_or_query_api_key_auth],
     tags=["v1"],
 )
 def get_project_status_v1(request: HttpRequest, project_id: int):
-    profile = request.auth
+    principal = request.auth
+    profile = principal.profile if principal else None
     if not profile:
         return _error(401, "auth_required", "Authentication required.")
+
+    scope_error = _require_scope(principal, "projects:read")
+    if scope_error:
+        log_project_api_action(
+            request,
+            action="project.status",
+            status_code=403,
+            principal=principal,
+            metadata={"error": "insufficient_scope", "required_scope": "projects:read"},
+        )
+        return scope_error
 
     try:
         project = Project.objects.prefetch_related("artifact").get(id=project_id, user=profile.user)
     except Project.DoesNotExist:
+        log_project_api_action(
+            request,
+            action="project.status",
+            status_code=404,
+            principal=principal,
+            metadata={"error": "project_not_found", "project_id": project_id},
+        )
         return _error(
             404,
             "project_not_found",
             "Project not found.",
             details={"project_id": project_id},
         )
+    except Exception as exc:
+        logger.error("Internal project status failure", error=str(exc), user_id=profile.user_id)
+        log_project_api_action(
+            request,
+            action="project.status",
+            status_code=500,
+            principal=principal,
+            metadata={"error": "internal_error", "project_id": project_id},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while fetching project status.",
+            details={"project_id": project_id, "retry_guidance": "Retry later."},
+        )
 
+    log_project_api_action(
+        request,
+        action="project.status",
+        status_code=200,
+        principal=principal,
+        project=project,
+    )
     return {
         "id": project.id,
         "status": project.status,

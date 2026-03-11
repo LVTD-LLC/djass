@@ -43,7 +43,9 @@ class UserSettingsOut(Schema):
 
 class ApiErrorBody(Schema):
     code: str
+    category: Literal["validation", "auth", "quota", "retryable", "internal"]
     message: str
+    retryable: bool = False
     details: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -104,6 +106,10 @@ class ProjectStatusOut(Schema):
 class ProjectListOut(Schema):
     projects: list[ProjectOut]
     total: int
+    limit: int
+    offset: int
+    has_next: bool
+    filters: dict[str, Any] = Field(default_factory=dict)
 
 
 class ProjectCreateOut(Schema):
