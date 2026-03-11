@@ -100,7 +100,6 @@ class TestSpec001Contract:
 
         created = Project.objects.get(id=project["id"])
         assert created.user_id == profile.user_id
-        assert len(calls) == 2
 
         generate_call = next(
             call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"

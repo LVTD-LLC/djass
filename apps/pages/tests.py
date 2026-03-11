@@ -8,6 +8,21 @@ from apps.pages.views import SignupTrackingMixin
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def user(django_user_model):
+    return django_user_model.objects.create_user(
+        username="testuser",
+        email="testuser@example.com",
+        password="password123",
+    )
+
+
+@pytest.fixture
+def auth_client(client, user):
+    client.force_login(user)
+    return client
+
+
 def test_pricing_page_shows_one_time_copy(client):
     response = client.get(reverse("pricing"))
     assert response.status_code == 200

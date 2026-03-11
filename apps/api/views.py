@@ -146,14 +146,22 @@ def _project_create_quota() -> int:
 
 
 def _queue_profile_event(profile, event_name: str, properties: dict, source_function: str) -> None:
-    async_task(
-        "apps.core.tasks.track_event",
-        profile_id=profile.id,
-        event_name=event_name,
-        properties=properties,
-        source_function=source_function,
-        group="Track Event",
-    )
+    try:
+        async_task(
+            "apps.core.tasks.track_event",
+            profile_id=profile.id,
+            event_name=event_name,
+            properties=properties,
+            source_function=source_function,
+            group="Track Event",
+        )
+    except Exception as exc:
+        logger.warning(
+            "Failed to queue profile event",
+            event_name=event_name,
+            profile_id=getattr(profile, "id", None),
+            error=str(exc),
+        )
 
 
 @api.get("/healthcheck", auth=None, include_in_schema=False, tags=["private"])

@@ -1,9 +1,7 @@
-# Djass Project API v1 (Agent-Readable Contract)
+# Djass Projects API (v1)
 
-**Status:** publish-ready draft  
-**Version:** `spec-001`  
 **Base URL:** `https://<your-djass-host>/api/v1`  
-**Scope:** `create`, `list`, `get`, `status` endpoints for project generation.
+**Coverage:** `create`, `list`, `get`, `status` endpoints for project generation.
 
 ---
 
@@ -399,16 +397,16 @@ Polling recommendation:
 
 ---
 
-## 7) Validation proof for this draft
+## 7) Implementation references
 
-This contract is aligned with backend implementation and tests:
+This API reference is aligned with backend implementation and tests:
 - endpoint logic: `apps/api/views.py`
 - schema definitions: `apps/api/schemas.py`
 - auth parsing/scoping: `apps/api/auth.py`, `apps/api/utils.py`
-- contract tests: `apps/api/test_spec_001_contract.py`
+- API tests: `apps/api/test_spec_001_contract.py`
 
-Local execution note (current repo state):
-- running contract tests in this environment requires PostgreSQL with pgvector migration support (`CREATE EXTENSION vector`)
+Local execution note:
+- running API tests in this environment requires PostgreSQL with pgvector migration support (`CREATE EXTENSION vector`)
 - sqlite fallback test run fails by design on that migration
 
 ---
