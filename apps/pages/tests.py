@@ -7,6 +7,12 @@ from apps.core.choices import ProfileStates
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def auth_client(client, user):
+    client.force_login(user)
+    return client
+
+
 def test_pricing_page_shows_one_time_copy(client):
     response = client.get(reverse("pricing"))
     assert response.status_code == 200
