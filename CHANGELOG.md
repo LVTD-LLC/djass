@@ -32,6 +32,10 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
 - Spec 001 keeps async generation behavior (create returns queued project; status endpoint is canonical poll target).
 - Spec 001 returns 404 when project id is not found for the authenticated owner scope.
+- Project generation now normalizes cookiecutter payloads against deterministic defaults before render.
+- Generated repositories now include standardized `project-metadata.json` and retrieval-friendly `djass-manifest.json`.
+- ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
+- Generation failures now persist more actionable diagnostics in `Project.error_message`.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.

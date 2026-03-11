@@ -28,9 +28,51 @@ Both live in `apps/core/models.py`.
 ## Key implementation points
 
 - Generation is asynchronous by design to avoid blocking web requests.
+- Input payload is normalized against known template defaults before generation (stable key set and deterministic defaults).
 - Cookiecutter Python API is attempted first, then CLI fallback is used.
+- Every generated project includes:
+  - `project-metadata.json` (standardized metadata envelope),
+  - `djass-manifest.json` (retrieval-friendly manifest for agents/tools).
+- ZIP packaging is deterministic (sorted traversal + fixed archive timestamps) to reduce output drift.
 - Artifacts include SHA-256 and size for integrity and traceability.
-- Failures are persisted on `Project.error_message` for user feedback.
+- Failures are persisted on `Project.error_message` with actionable diagnostics for user feedback.
+
+## Generated metadata + manifest specification
+
+### `project-metadata.json`
+
+Stable JSON object with:
+
+- `metadata_version`
+- `project_id`
+- `project_name`
+- `project_slug`
+- `generator_version`
+- `timestamps` (`created_at`, `started_at`, `finished_at`)
+- `module_flags` (all generator toggles)
+
+### `djass-manifest.json`
+
+Retrieval-oriented JSON object with:
+
+- `manifest_version`
+- `kind` (`djass-cookiecutter-generation`)
+- `generator` (`name`, `cookiecutter_version`, `template`)
+- `project` (`id`, `name`, `slug`)
+- `metadata_file` (pointer to `project-metadata.json`)
+- `input_payload` (normalized payload used for generation)
+- `module_flags`
+- `top_level_paths` (sorted file/directory names at repository root)
+- `timestamps` (`created_at`, `started_at`, `finished_at`)
+
+## Intentional nondeterminism
+
+The generated output is structurally deterministic for the same normalized payload, but some values remain intentionally time-varying:
+
+- lifecycle timestamps in metadata/manifest (`started_at`, `finished_at`),
+- project identity fields (`project_id`) tied to database rows.
+
+These are preserved for auditability and troubleshooting. Determinism is enforced on payload normalization, manifest shape, module flags, and archive structure.
 
 ## Configuration knobs
 
