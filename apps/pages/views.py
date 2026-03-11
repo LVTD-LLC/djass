@@ -61,6 +61,10 @@ class SignupTrackingMixin:
             profile_id=profile.id,
             event_name="user_signed_up",
             properties={
+                "signup_method": (
+                    "passkey" if "passkey" in self.request.path else "password"
+                ),
+                "funnel_step": "signup_completed",
                 "$set": {
                     "email": profile.user.email,
                     "username": profile.user.username,

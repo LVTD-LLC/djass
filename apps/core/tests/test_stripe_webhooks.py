@@ -114,18 +114,37 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
         checkout_id="cs_paid",
         payment_status="paid",
         mode="payment",
-        metadata={"user_id": profile.user_id, "price_id": "price_one_time"},
+        metadata={
+            "user_id": profile.user_id,
+            "price_id": "price_one_time",
+            "plan": "one-time",
+        },
         amount_total=2500,
         currency="usd",
         payment_intent="pi_paid",
     )
 
-    handle_checkout_completed(event)
+    with patch("apps.core.stripe_webhooks.core_tasks.track_event") as track_event:
+        handle_checkout_completed(event)
 
     profile.refresh_from_db()
     assert profile.stripe_customer_id == "cus_paid"
     assert profile.state == ProfileStates.SUBSCRIBED
     assert profile.current_state == ProfileStates.SUBSCRIBED
+    track_event.assert_called_once_with(
+        profile_id=profile.id,
+        event_name="checkout_payment_completed",
+        properties={
+            "checkout_id": "cs_paid",
+            "payment_intent": "pi_paid",
+            "amount": 2500,
+            "currency": "usd",
+            "price_id": "price_one_time",
+            "plan": "one-time",
+            "stripe_event_id": event["id"],
+        },
+        source_function="stripe_webhook handle_checkout_completed",
+    )
 
 
 @pytest.mark.django_db
@@ -141,8 +160,12 @@ def test_handle_checkout_completed_is_idempotent_by_checkout_id(sync_state_trans
         payment_intent="pi_idempotent",
     )
 
-    with patch("apps.core.stripe_webhooks.core_tasks.track_state_change") as track_state_change:
+    with (
+        patch("apps.core.stripe_webhooks.core_tasks.track_state_change") as track_state_change,
+        patch("apps.core.stripe_webhooks.core_tasks.track_event") as track_event,
+    ):
         handle_checkout_completed(event)
         handle_checkout_completed(event)
 
     assert track_state_change.call_count == 1
+    assert track_event.call_count == 1

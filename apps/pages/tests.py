@@ -67,6 +67,8 @@ def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     assert signup_call[0][0] == "apps.core.tasks.track_event"
     assert signup_call[1]["event_name"] == "user_signed_up"
     assert signup_call[1]["profile_id"] == user.profile.id
+    assert signup_call[1]["properties"]["funnel_step"] == "signup_completed"
+    assert signup_call[1]["properties"]["signup_method"] == "password"
 
 
 def test_landing_authenticated_user_gets_checkout_cta(auth_client, user):
