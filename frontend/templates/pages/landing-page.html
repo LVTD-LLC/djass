@@ -1,149 +1,152 @@
 {% extends "base_landing.html" %}
-
 {% block content %}
-<div class="relative isolate overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
-  <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl" aria-hidden="true">
-    <div class="relative left-1/2 aspect-[1155/678] w-[36rem] -translate-x-1/2 bg-gradient-to-tr from-emerald-300 to-green-600 opacity-20 dark:from-emerald-900 dark:to-green-900 dark:opacity-30 sm:w-[72rem]"></div>
-  </div>
-
-  <div class="mx-auto max-w-7xl px-6 pb-20 pt-16 sm:pt-24 lg:px-8 lg:pt-28">
-    {% if request.GET.account_deleted %}
-    <div class="mx-auto mb-10 max-w-3xl rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-      Your account has been deleted.
+    <div class="relative isolate overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950">
+        <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl"
+             aria-hidden="true">
+            <div class="relative left-1/2 aspect-[1155/678] w-[36rem] -translate-x-1/2 bg-gradient-to-tr from-emerald-300 to-green-600 opacity-20 dark:from-emerald-900 dark:to-green-900 dark:opacity-30 sm:w-[72rem]">
+            </div>
+        </div>
+        <div class="mx-auto max-w-7xl px-6 pb-20 pt-16 sm:pt-24 lg:px-8 lg:pt-28">
+            {% if request.GET.account_deleted %}
+                <div class="mx-auto mb-10 max-w-3xl rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                    Your account has been deleted.
+                </div>
+            {% endif %}
+            <div class="mx-auto max-w-4xl text-center">
+                <p class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                    Django SaaS, without boilerplate pain
+                </p>
+                <h1 class="mt-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
+                    Launch your Django SaaS starter in minutes, not days.
+                </h1>
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
+                    Djass is a clean web interface for <strong>django-saas-starter</strong>. Fill out a simple form, we generate your project in the background, and you download a production-ready codebase ZIP.
+                </p>
+                <div class="mt-10 flex items-center justify-center gap-4">
+                    <a href="{% url 'pricing' %}"
+                       class="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">See the premium agency plan</a>
+                    <a href="{% url 'account_login' %}"
+                       class="rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800">Sign In</a>
+                </div>
+            </div>
+            <div class="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-3">
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">1. Configure</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Enter project name, integrations, and starter options.</p>
+                </div>
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">2. Generate</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">We queue and run generation with django-q2 + Redis.</p>
+                </div>
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">3. Download</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Get ZIP instantly when ready. Keep project history in your dashboard.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
-
-    <div class="mx-auto max-w-4xl text-center">
-      <p class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-        Django SaaS, without boilerplate pain
-      </p>
-      <h1 class="mt-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
-        Launch your Django SaaS starter in minutes, not days.
-      </h1>
-      <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-        Djass is a clean web interface for <strong>django-saas-starter</strong>. Fill out a simple form, we generate your project in the background, and you download a production-ready codebase ZIP.
-      </p>
-
-      <div class="mt-10 flex items-center justify-center gap-4">
-        {% if user.is_authenticated %}
-          {% if has_pro_subscription %}
-            <a href="{% url 'project_new' %}" class="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">Start onboarding</a>
-          {% else %}
-            <form method="post" action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}">
-              {% csrf_token %}
-              <button type="submit" class="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">Get premium access — $1,200</button>
-            </form>
-          {% endif %}
-          <a href="{% url 'home' %}" class="rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800">Dashboard</a>
-        {% else %}
-          <a href="{% url 'account_signup' %}" class="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">Create account to continue</a>
-          <a href="{% url 'account_login' %}" class="rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800">Sign In</a>
-        {% endif %}
-      </div>
+    <div class="bg-gray-50 py-20 dark:bg-gray-950 sm:py-24">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+            <div class="mx-auto max-w-3xl text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
+                    Everything you get with django-saas-starter
+                </h2>
+                <p class="mt-4 text-gray-600 dark:text-gray-300">
+                    Not just a template — a production-ready Django SaaS foundation with modern defaults and optional power-ups.
+                </p>
+            </div>
+            <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Core</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Django 6 + Python 3.14</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Modern baseline with clean defaults and up-to-date dependencies.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Frontend</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Tailwind + Stimulus + Webpack</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Preconfigured UI stack with theme toggle and production build pipeline.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Auth</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">django-allauth user system</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Signup, login, email confirmation, reset flows, plus optional social login.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Content</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Landing + pricing + auth pages</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">SEO-ready templates with optional blog and docs sections.</p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">API</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">django-ninja API foundation</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Flexible auth modes: session, token, or superuser for internal tools.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Data</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Postgres 18 + pgvector</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Database setup with pgvector and pg_stat_statements enabled out of the box.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Email</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Anymail + Mailgun + Mailhog local</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Production email integrations with local dev email preview support.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">DX</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">pytest + ruff + djlint</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Opinionated test and code-quality workflow to ship with confidence.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Deploy</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">CapRover deploy via GitHub Actions</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Ready-to-run CI/CD path for automated deploys and repeatable releases.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">S3-compatible media storage</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Swap local media for object storage when your app scales.</p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Observability integrations</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Pluggable Sentry, Logfire, PostHog, and healthcheck endpoint support.
+                    </p>
+                </div>
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Newsletter + MJML emails</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        Enable Buttondown and MJML email templates when you need richer messaging.
+                    </p>
+                </div>
+            </div>
+            <div class="mx-auto mt-12 max-w-3xl rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 p-8 text-center text-white shadow-lg">
+                <h3 class="text-2xl font-bold">Built for teams that ship, not template shoppers</h3>
+                <p class="mt-2 text-sm text-emerald-50">
+                    Use one premium plan to reduce setup time, delivery risk, and project-to-project variance.
+                </p>
+                <a href="{% url 'pricing' %}"
+                   class="mt-6 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Check if Djass fits your agency workflow</a>
+            </div>
+        </div>
     </div>
-
-    <div class="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-3">
-      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">1. Configure</p>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Enter project name, integrations, and starter options.</p>
-      </div>
-      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">2. Generate</p>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">We queue and run generation with django-q2 + Redis.</p>
-      </div>
-      <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 p-5 shadow-sm">
-        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">3. Download</p>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Get ZIP instantly when ready. Keep project history in your dashboard.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="bg-gray-50 py-20 dark:bg-gray-950 sm:py-24">
-  <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="mx-auto max-w-3xl text-center">
-      <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">Everything you get with django-saas-starter</h2>
-      <p class="mt-4 text-gray-600 dark:text-gray-300">Not just a template — a production-ready Django SaaS foundation with modern defaults and optional power-ups.</p>
-    </div>
-    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Core</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Django 6 + Python 3.14</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Modern baseline with clean defaults and up-to-date dependencies.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Frontend</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Tailwind + Stimulus + Webpack</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Preconfigured UI stack with theme toggle and production build pipeline.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Auth</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">django-allauth user system</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Signup, login, email confirmation, reset flows, plus optional social login.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Content</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Landing + pricing + auth pages</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">SEO-ready templates with optional blog and docs sections.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">API</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">django-ninja API foundation</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Flexible auth modes: session, token, or superuser for internal tools.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Data</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Postgres 18 + pgvector</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Database setup with pgvector and pg_stat_statements enabled out of the box.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Email</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Anymail + Mailgun + Mailhog local</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Production email integrations with local dev email preview support.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">DX</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">pytest + ruff + djlint</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Opinionated test and code-quality workflow to ship with confidence.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Deploy</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">CapRover deploy via GitHub Actions</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Ready-to-run CI/CD path for automated deploys and repeatable releases.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">S3-compatible media storage</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Swap local media for object storage when your app scales.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Observability integrations</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Pluggable Sentry, Logfire, PostHog, and healthcheck endpoint support.</p>
-      </div>
-
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Optional</p>
-        <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Newsletter + MJML emails</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Enable Buttondown and MJML email templates when you need richer messaging.</p>
-      </div>
-    </div>
-
-    <div class="mx-auto mt-12 max-w-3xl rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 p-8 text-center text-white shadow-lg">
-      <h3 class="text-2xl font-bold">Start from a serious Django foundation</h3>
-      <p class="mt-2 text-sm text-emerald-50">Skip boilerplate setup and focus on your product logic from day one.</p>
-      <a href="{% url 'account_signup' %}" class="mt-6 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Create your starter project</a>
-    </div>
-  </div>
-</div>
 {% endblock content %}

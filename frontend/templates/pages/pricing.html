@@ -1,102 +1,196 @@
 {% extends "base_landing.html" %}
 {% load webpack_loader static %}
-
 {% block meta %}
-<title>Djass - Pricing</title>
-<meta name="description" content="How much to use Djass?" />
-<meta name="keywords" content="" />
-<meta name="robots" content="index, follow" />
-<link rel="canonical" href="https://{{ request.get_host }}{% url 'pricing' %}"/>
-
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Djass - Pricing" />
-<meta property="og:url" content="https://{{ request.get_host }}{% url 'pricing' %}"/>
-<meta property="og:description" content="How much to use Djass?" />
-<meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=How much to use Djass?&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-<meta property="og:locale" content="en_US" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:creator" content="@rasulkireev" />
-<meta name="twitter:site" content="@rasulkireev" />
-<meta name="twitter:title" content="Djass - Pricing" />
-<meta name="twitter:description" content="How much to use Djass?" />
-<meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=How much to use Djass?&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    <title>Djass - Premium Agency Plan</title>
+    <meta name="description"
+          content="One premium Djass plan for small agencies that need faster, safer, repeatable Django SaaS delivery." />
+    <meta name="keywords" content="" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical"
+          href="https://{{ request.get_host }}{% url 'pricing' %}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Djass - Premium Agency Plan" />
+    <meta property="og:url"
+          content="https://{{ request.get_host }}{% url 'pricing' %}" />
+    <meta property="og:description"
+          content="One premium Djass plan for small agencies that need faster, safer, repeatable Django SaaS delivery." />
+    <meta property="og:image"
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Premium Agency Plan&subtitle=Faster, safer Django SaaS delivery for agencies&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@rasulkireev" />
+    <meta name="twitter:site" content="@rasulkireev" />
+    <meta name="twitter:title" content="Djass - Premium Agency Plan" />
+    <meta name="twitter:description"
+          content="One premium Djass plan for small agencies that need faster, safer, repeatable Django SaaS delivery." />
+    <meta name="twitter:image"
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Premium Agency Plan&subtitle=Faster, safer Django SaaS delivery for agencies&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
-
 {% block content %}
-<div class="py-24 bg-white dark:bg-gray-950 sm:py-32">
-  <div class="px-6 mx-auto max-w-4xl lg:px-8">
-    <div class="mx-auto text-center">
-      <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">Pricing</h2>
-      <p class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">$1,200 one-time premium access</p>
-      <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-        Unlock unlimited project generations and forever updates with one purchase.
-        You can still
-        <a href="https://github.com/rasulkireev/osig" class="font-semibold text-green-700 hover:underline dark:text-green-400">self-host</a>
-        for free.
-      </p>
+    <div class="py-24 bg-white dark:bg-gray-950 sm:py-32">
+        <div class="px-6 mx-auto max-w-5xl lg:px-8">
+            <div class="mx-auto max-w-3xl text-center">
+                <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">One Plan. Premium Delivery.</h2>
+                <p class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
+                    $999 one-time for agencies that ship client SaaS repeatedly
+                </p>
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
+                    Djass is for small agencies that value <strong>speed, reliability, and repeatability</strong> over DIY setup. You get one premium plan with unlimited generations and lifetime updates.
+                </p>
+                <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    If you only need a one-off template to tinker with, this is not the right product.
+                </p>
+            </div>
+            <div class="mx-auto mt-14 grid gap-6 lg:grid-cols-5">
+                <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900 lg:col-span-3">
+                    <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">Djass Premium Agency Plan</h3>
+                    <p class="flex items-baseline gap-x-1 mt-6">
+                        <span class="text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">$999</span>
+                        <span class="text-sm font-semibold leading-6 text-gray-600 dark:text-gray-300">one-time</span>
+                    </p>
+                    {% if user.is_authenticated %}
+                        {% if has_pro_subscription %}
+                            <a href="#"
+                               aria-describedby="tier-lifetime"
+                               class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Premium access unlocked</a>
+                        {% else %}
+                            <form method="post"
+                                  action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}"
+                                  class="mt-10">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="block w-full px-3 py-2 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
+                                    Unlock premium agency access
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'account_signup' %}"
+                           aria-describedby="tier-lifetime"
+                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to unlock premium access</a>
+                    {% endif %}
+                    <ul role="list"
+                        class="mt-8 space-y-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        <li class="flex gap-x-3">
+                            <svg class="flex-none w-5 h-6 text-green-600"
+                                 viewBox="0 0 20 20"
+                                 fill="currentColor"
+                                 aria-hidden="true"
+                                 data-slot="icon">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                            </svg>
+                            Unlimited project generations for client and internal products
+                        </li>
+                        <li class="flex gap-x-3">
+                            <svg class="flex-none w-5 h-6 text-green-600"
+                                 viewBox="0 0 20 20"
+                                 fill="currentColor"
+                                 aria-hidden="true"
+                                 data-slot="icon">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                            </svg>
+                            Lifetime updates to the starter so each new build starts from current best practices
+                        </li>
+                        <li class="flex gap-x-3">
+                            <svg class="flex-none w-5 h-6 text-green-600"
+                                 viewBox="0 0 20 20"
+                                 fill="currentColor"
+                                 aria-hidden="true"
+                                 data-slot="icon">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                            </svg>
+                            Faster project kickoff with a repeatable baseline your team can trust
+                        </li>
+                        <li class="flex gap-x-3">
+                            <svg class="flex-none w-5 h-6 text-green-600"
+                                 viewBox="0 0 20 20"
+                                 fill="currentColor"
+                                 aria-hidden="true"
+                                 data-slot="icon">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                            </svg>
+                            Lower delivery risk from standardized scaffolding instead of ad-hoc project setup
+                        </li>
+                        <li class="flex gap-x-3">
+                            <svg class="flex-none w-5 h-6 text-green-600"
+                                 viewBox="0 0 20 20"
+                                 fill="currentColor"
+                                 aria-hidden="true"
+                                 data-slot="icon">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                            </svg>
+                            No recurring billing
+                        </li>
+                    </ul>
+                </div>
+                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-800 dark:bg-gray-900/50 lg:col-span-2">
+                    <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">Who this is for</h4>
+                    <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        <li>Small agencies shipping multiple Django projects per year</li>
+                        <li>Teams that need predictable project startup and handoff quality</li>
+                        <li>Operators optimizing for margin, delivery consistency, and client trust</li>
+                    </ul>
+                    <h4 class="mt-8 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">
+                        Who this is not for
+                    </h4>
+                    <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        <li>Template collectors looking for the cheapest one-off download</li>
+                        <li>Teams that prefer rebuilding infrastructure from scratch every project</li>
+                        <li>Buyers without active delivery work in Django</li>
+                    </ul>
+                    <p class="mt-8 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Need full control? You can still
+                        <a href="https://github.com/rasulkireev/osig"
+                           class="font-semibold text-green-700 hover:underline dark:text-green-400">self-host for free</a>.
+                        Premium is for teams paying to reduce delivery friction.
+                    </p>
+                </div>
+            </div>
+            <div class="mx-auto mt-16 max-w-4xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">FAQ</h3>
+                <dl class="mt-6 space-y-6 text-sm leading-6">
+                    <div>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Why is this priced at $999?</dt>
+                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
+                            Because it is built for agencies that repeatedly deliver Django work. The value is in fewer setup cycles, fewer avoidable mistakes, and a more repeatable process across projects.
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">What exactly is included?</dt>
+                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
+                            One premium plan: unlimited project generations, lifetime updates, and access to the same structured starter used for delivery-focused Django projects.
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">How do I know this is not just another template?</dt>
+                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
+                            You can review the open-source baseline and self-host path before buying. Premium is for teams that want the hosted workflow and repeatable execution advantage.
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Is this right for solo builders?</dt>
+                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
+                            If you are shipping client or product builds regularly, yes. If you are only browsing for a cheap one-time template, no.
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
     </div>
-
-    <div class="mx-auto mt-16 max-w-xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">Djass Lifetime Access</h3>
-      <p class="flex items-baseline gap-x-1 mt-6">
-        <span class="text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">$1,200</span>
-        <span class="text-sm font-semibold leading-6 text-gray-600 dark:text-gray-300">one-time</span>
-      </p>
-
-      {% if user.is_authenticated %}
-        {% if has_pro_subscription %}
-          <a href="#" aria-describedby="tier-lifetime" class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Generation unlocked</a>
-        {% else %}
-          <form method="post" action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}" class="mt-10">
-            {% csrf_token %}
-            <button type="submit" class="block w-full px-3 py-2 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
-              Buy premium access
-            </button>
-          </form>
-        {% endif %}
-      {% else %}
-        <a href="{% url 'account_signup' %}" aria-describedby="tier-lifetime" class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to buy</a>
-      {% endif %}
-
-      <ul role="list" class="mt-8 space-y-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-        <li class="flex gap-x-3">
-          <svg class="flex-none w-5 h-6 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-          </svg>
-          Unlimited project generations
-        </li>
-        <li class="flex gap-x-3">
-          <svg class="flex-none w-5 h-6 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-          </svg>
-          Forever updates
-        </li>
-        <li class="flex gap-x-3">
-          <svg class="flex-none w-5 h-6 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-          </svg>
-          No recurring billing
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
 {% endblock content %}
-
 {% block schema %}
-<script type="application/ld+json">
+    <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Djass - Pricing",
-    "description": "How much to use Djass?",
-    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=How much to use Djass?&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+    "name": "Djass - Premium Agency Plan",
+    "description": "One premium Djass plan for small agencies that need faster, safer, repeatable Django SaaS delivery.",
+    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Premium Agency Plan&subtitle=Faster, safer Django SaaS delivery for agencies&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}{% url 'pricing' %}",
     "author": {
       "@type": "Person",
       "name": "Rasul"
     }
   }
-  </script>
+    </script>
 {% endblock schema %}

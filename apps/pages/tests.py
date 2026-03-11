@@ -28,9 +28,9 @@ def test_pricing_page_shows_one_time_copy(client):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "$1,200" in content
-    assert "Unlimited project generations" in content
-    assert "Forever updates" in content
+    assert "$999" in content
+    assert "Unlimited project generations for client and internal products" in content
+    assert "Lifetime updates to the starter" in content
 
 
 def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch, user):
@@ -106,16 +106,16 @@ def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     assert signup_call[1]["properties"]["entrypoint"] == "ui"
 
 
-def test_landing_authenticated_user_gets_checkout_cta(auth_client, user):
+def test_landing_authenticated_user_gets_pricing_cta(auth_client, user):
     response = auth_client.get(reverse("landing"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Get premium access — $1,200" in content
-    assert reverse("user_upgrade_checkout_session", args=[user.id, "one-time"]) in content
+    assert "See the premium agency plan" in content
+    assert reverse("pricing") in content
 
 
-def test_landing_subscribed_user_gets_onboarding_cta(auth_client, user):
+def test_landing_subscribed_user_gets_pricing_cta(auth_client, user):
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])
 
@@ -123,5 +123,5 @@ def test_landing_subscribed_user_gets_onboarding_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Start onboarding" in content
-    assert reverse("project_new") in content
+    assert "See the premium agency plan" in content
+    assert reverse("pricing") in content
