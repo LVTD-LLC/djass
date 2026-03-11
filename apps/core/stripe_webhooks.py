@@ -1,5 +1,6 @@
 import stripe
 from django.conf import settings
+from django.core.cache import cache
 
 from djass.utils import get_djass_logger
 from apps.core.choices import ProfileStates
@@ -257,6 +258,18 @@ def handle_checkout_completed(event):
         )
         return
 
+    idempotency_token = checkout_id or checkout_data.get("payment_intent")
+    if idempotency_token:
+        idempotency_cache_key = f"stripe_checkout_paid:{idempotency_token}"
+        if cache.get(idempotency_cache_key):
+            logger.info(
+                "Checkout completion already processed",
+                event_id=event_id,
+                checkout_id=checkout_id,
+                idempotency_token=idempotency_token,
+            )
+            return
+
     profile = get_profile_for_customer(customer_id, metadata)
     if not profile:
         logger.error(
@@ -306,6 +319,9 @@ def handle_checkout_completed(event):
             mode=mode,
             profile_id=profile.id,
         )
+
+    if idempotency_token:
+        cache.set(f"stripe_checkout_paid:{idempotency_token}", True, timeout=60 * 60 * 24)
 
 
 EVENT_HANDLERS = {

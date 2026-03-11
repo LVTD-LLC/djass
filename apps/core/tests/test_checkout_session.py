@@ -4,6 +4,8 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.core.choices import ProfileStates
+
 
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
 @pytest.mark.django_db
@@ -26,6 +28,8 @@ def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeyp
     assert response.status_code == 302
     assert captured["mode"] == "payment"
     assert captured["metadata"]["plan"] == "one-time"
+    assert captured["success_url"].endswith(f"{reverse('project_new')}?checkout=success")
+    assert captured["cancel_url"].endswith(f"{reverse('pricing')}?checkout=canceled")
     assert "subscription_data" not in captured
 
 
@@ -51,3 +55,21 @@ def test_create_checkout_session_rejects_non_one_time_plan(auth_client, monkeypa
     assert response.status_code == 302
     assert response.url == reverse("pricing")
     assert called == {}
+
+
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
+@pytest.mark.django_db
+def test_create_checkout_session_prevents_duplicate_active_subscription(auth_client, user, monkeypatch):
+    user.profile.state = ProfileStates.SUBSCRIBED
+    user.profile.save(update_fields=["state"])
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.checkout.Session.create",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("Checkout session should not be created")),
+    )
+
+    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
+    response = auth_client.post(url)
+
+    assert response.status_code == 302
+    assert response.url == reverse("project_new")

@@ -44,7 +44,7 @@ def _user_can_create_projects(user):
 
 
 def _deny_project_access(request):
-    messages.error(request, "Project generation unlocks after the one-time $999 payment.")
+    messages.error(request, "Project generation unlocks after the one-time $1,200 payment.")
     return redirect("pricing")
 
 
@@ -77,6 +77,14 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        checkout_status = self.request.GET.get("checkout")
+        if checkout_status == "success":
+            messages.success(
+                self.request,
+                "Payment successful — onboarding is unlocked. Start generating your first project.",
+            )
+
         context["project_form"] = ProjectCreateForm(user=self.request.user)
         context["can_generate"] = _user_can_create_projects(self.request.user)
         return context
@@ -259,8 +267,12 @@ def create_checkout_session(request, pk, plan):
             plan=plan,
             user_id=user.id,
         )
-        messages.error(request, "Only the one-time $999 lifetime plan is available.")
+        messages.error(request, "Only the one-time $1,200 premium plan is available.")
         return redirect("pricing")
+
+    if profile.has_active_subscription:
+        messages.info(request, "Premium access is already active for this account.")
+        return redirect("project_new")
 
     price_id = get_price_id_for_plan("one-time")
     if not price_id:
@@ -279,13 +291,13 @@ def create_checkout_session(request, pk, plan):
         messages.error(request, "Unable to start checkout. Please try again.")
         return redirect("pricing")
 
-    base_success_url = request.build_absolute_uri(reverse("home"))
-    base_cancel_url = request.build_absolute_uri(reverse("home"))
+    base_success_url = request.build_absolute_uri(reverse("project_new"))
+    base_cancel_url = request.build_absolute_uri(reverse("pricing"))
 
-    success_params = {"payment": "success"}
+    success_params = {"checkout": "success"}
     success_url = f"{base_success_url}?{urlencode(success_params)}"
 
-    cancel_params = {"payment": "failed"}
+    cancel_params = {"checkout": "canceled"}
     cancel_url = f"{base_cancel_url}?{urlencode(cancel_params)}"
 
     session_params = {

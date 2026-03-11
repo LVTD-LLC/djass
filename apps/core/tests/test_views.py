@@ -58,7 +58,7 @@ def test_settings_upgrade_copy(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "$999 one-time" in content
+    assert "$1,200 one-time" in content
     assert "unlimited generations" in content.lower()
     assert "forever updates" in content.lower()
 

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from apps.core.choices import ProfileStates
@@ -124,3 +126,23 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
     assert profile.stripe_customer_id == "cus_paid"
     assert profile.state == ProfileStates.SUBSCRIBED
     assert profile.current_state == ProfileStates.SUBSCRIBED
+
+
+@pytest.mark.django_db
+def test_handle_checkout_completed_is_idempotent_by_checkout_id(sync_state_transitions, profile):
+    event = build_checkout_completed_event(
+        customer_id="cus_paid",
+        checkout_id="cs_idempotent",
+        payment_status="paid",
+        mode="payment",
+        metadata={"user_id": profile.user_id, "price_id": "price_one_time"},
+        amount_total=120000,
+        currency="usd",
+        payment_intent="pi_idempotent",
+    )
+
+    with patch("apps.core.stripe_webhooks.core_tasks.track_state_change") as track_state_change:
+        handle_checkout_completed(event)
+        handle_checkout_completed(event)
+
+    assert track_state_change.call_count == 1

@@ -30,12 +30,14 @@ class LandingPageView(TemplateView):
             )
         
 
-        payment_status = self.request.GET.get("payment")
-        if payment_status == "success":
-            messages.success(self.request, "Payment successful — unlimited generation is now unlocked.")
-        elif payment_status == "failed":
-            messages.error(self.request, "Something went wrong with the payment.")
-        
+        if self.request.user.is_authenticated:
+            try:
+                profile = self.request.user.profile
+                context["has_pro_subscription"] = profile.has_active_subscription
+            except Profile.DoesNotExist:
+                context["has_pro_subscription"] = False
+        else:
+            context["has_pro_subscription"] = False
 
         return context
 
@@ -90,6 +92,12 @@ class PricingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        checkout_status = self.request.GET.get("checkout")
+        if checkout_status == "canceled":
+            messages.info(self.request, "Checkout was canceled. You can resume whenever you're ready.")
+        elif checkout_status == "failed":
+            messages.error(self.request, "Payment did not complete. Please try checkout again.")
 
         if self.request.user.is_authenticated:
             try:
