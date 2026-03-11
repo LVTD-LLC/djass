@@ -1,10 +1,14 @@
 import json
 
 import pytest
+from django.contrib.auth import get_user_model
 from ninja.errors import AuthenticationError, HttpError, ValidationError
 
 from apps.api.views import on_authentication_error, on_http_error, on_validation_error
-from apps.core.models import Project, ProjectArtifact, ProjectStatus
+from apps.core.choices import ProfileStates
+from apps.core.models import Project, ProjectStatus
+
+User = get_user_model()
 
 
 @pytest.fixture(autouse=True)
@@ -12,65 +16,42 @@ def disable_state_transition_tasks(monkeypatch):
     monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: None)
 
 
+def _auth_headers(api_key: str):
+    return {"HTTP_X_API_KEY": api_key}
+
+
+def _create_subscribed_user(username: str):
+    user = User.objects.create_user(
+        username=username,
+        email=f"{username}@example.com",
+        password="password123",
+    )
+    profile = user.profile
+    profile.state = ProfileStates.SUBSCRIBED
+    profile.save(update_fields=["state"])
+    return user, profile
+
+
 @pytest.mark.django_db
-def test_projects_api_requires_authentication(client):
-    response = client.get("/api/projects")
+def test_v1_projects_requires_authentication(client):
+    response = client.get("/api/v1/projects")
+
     assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "auth_required",
+            "category": "auth",
+            "message": "Unauthorized",
+            "retryable": False,
+            "details": {},
+        }
+    }
 
 
 @pytest.mark.django_db
-def test_projects_api_returns_only_authenticated_user_projects(client, django_user_model):
-    user = django_user_model.objects.create_user(
-        username="owner",
-        email="owner@example.com",
-        password="password123",
-    )
-    other_user = django_user_model.objects.create_user(
-        username="other",
-        email="other@example.com",
-        password="password123",
-    )
+def test_v1_projects_pagination_and_filtering(client):
+    user, profile = _create_subscribed_user("owner")
 
-    user_project = Project.objects.create(
-        user=user,
-        name="Owner Project",
-        slug="owner_project",
-        input_payload={"project_name": "Owner Project"},
-        status=ProjectStatus.READY,
-    )
-    ProjectArtifact.objects.create(
-        project=user_project,
-        zip_file="generated-projects/owner-project.zip",
-        size_bytes=1024,
-        sha256="a" * 64,
-    )
-    Project.objects.create(
-        user=other_user,
-        name="Other Project",
-        slug="other_project",
-        input_payload={"project_name": "Other Project"},
-        status=ProjectStatus.FAILED,
-        error_message="other error",
-    )
-
-    client.force_login(user)
-    response = client.get("/api/projects")
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert len(payload) == 1
-    assert payload[0]["name"] == "Owner Project"
-    assert payload[0]["status"] == ProjectStatus.READY
-    assert payload[0]["artifact"]["zip_file"] == "generated-projects/owner-project.zip"
-
-
-@pytest.mark.django_db
-def test_projects_api_returns_null_artifact_when_not_generated(client, django_user_model):
-    user = django_user_model.objects.create_user(
-        username="noartifact",
-        email="noartifact@example.com",
-        password="password123",
-    )
     Project.objects.create(
         user=user,
         name="Queued Project",
@@ -78,28 +59,28 @@ def test_projects_api_returns_null_artifact_when_not_generated(client, django_us
         input_payload={"project_name": "Queued Project"},
         status=ProjectStatus.QUEUED,
     )
+    ready_project = Project.objects.create(
+        user=user,
+        name="Ready Project",
+        slug="ready_project",
+        input_payload={"project_name": "Ready Project"},
+        status=ProjectStatus.READY,
+    )
 
-    client.force_login(user)
-    response = client.get("/api/projects")
+    response = client.get(
+        "/api/v1/projects?status=ready&limit=1&offset=0",
+        **_auth_headers(profile.key),
+    )
 
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload) == 1
-    assert payload[0]["name"] == "Queued Project"
-    assert payload[0]["artifact"] is None
-
-
-def test_v1_projects_unauthorized_returns_deterministic_api_error(client):
-    response = client.get("/api/v1/projects")
-
-    assert response.status_code == 401
-    assert response.json() == {
-        "error": {
-            "code": "auth_required",
-            "message": "Unauthorized",
-            "details": {},
-        }
-    }
+    assert payload["total"] == 1
+    assert payload["limit"] == 1
+    assert payload["offset"] == 0
+    assert payload["has_next"] is False
+    assert payload["filters"] == {"status": "ready"}
+    assert len(payload["projects"]) == 1
+    assert payload["projects"][0]["id"] == ready_project.id
 
 
 def test_authentication_error_handler_returns_api_error_schema(rf, monkeypatch):
@@ -110,7 +91,9 @@ def test_authentication_error_handler_returns_api_error_schema(rf, monkeypatch):
     assert json.loads(response.content) == {
         "error": {
             "code": "auth_required",
+            "category": "auth",
             "message": "Unauthorized",
+            "retryable": False,
             "details": {},
         }
     }
@@ -134,7 +117,9 @@ def test_validation_error_handler_returns_api_error_schema(rf):
     assert json.loads(response.content) == {
         "error": {
             "code": "validation_error",
+            "category": "validation",
             "message": "Request validation failed.",
+            "retryable": False,
             "details": {
                 "violations": [
                     {
@@ -155,7 +140,9 @@ def test_http_error_handler_returns_api_error_schema(rf):
     assert json.loads(response.content) == {
         "error": {
             "code": "http_error",
+            "category": "internal",
             "message": "Boom",
+            "retryable": False,
             "details": {},
         }
     }

@@ -117,6 +117,8 @@ class TestSpec001Contract:
         assert invalid.status_code == 400
         invalid_body = invalid.json()
         assert invalid_body["error"]["code"] == "invalid_project_slug"
+        assert invalid_body["error"]["category"] == "validation"
+        assert invalid_body["error"]["retryable"] is False
         assert invalid_body["error"]["details"]["field"] == "project_slug"
 
     def test_list_get_and_status_contract(self, client):
@@ -142,6 +144,10 @@ class TestSpec001Contract:
         assert listing.status_code == 200
         list_body = listing.json()
         assert list_body["total"] == 1
+        assert list_body["limit"] == 20
+        assert list_body["offset"] == 0
+        assert list_body["has_next"] is False
+        assert list_body["filters"] == {}
         assert len(list_body["projects"]) == 1
         assert list_body["projects"][0]["id"] == owner_project.id
 
@@ -176,6 +182,94 @@ class TestSpec001Contract:
         assert missing.status_code == 404
         missing_body = missing.json()
         assert missing_body["error"]["code"] == "project_not_found"
+        assert missing_body["error"]["category"] == "validation"
+
+    def test_list_projects_supports_status_filter_and_pagination(self, client):
+        user, profile = _create_user("pager", "pager@example.com", subscribed=True)
+        Project.objects.create(
+            user=user,
+            name="Queued Project",
+            slug="queued_project",
+            input_payload={"project_name": "Queued Project"},
+            status=ProjectStatus.QUEUED,
+        )
+        first_ready = Project.objects.create(
+            user=user,
+            name="First Ready",
+            slug="first_ready",
+            input_payload={"project_name": "First Ready"},
+            status=ProjectStatus.READY,
+        )
+        Project.objects.create(
+            user=user,
+            name="Second Ready",
+            slug="second_ready",
+            input_payload={"project_name": "Second Ready"},
+            status=ProjectStatus.READY,
+        )
+
+        response = client.get(
+            "/api/v1/projects?status=ready&limit=1&offset=1",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["total"] == 2
+        assert body["limit"] == 1
+        assert body["offset"] == 1
+        assert body["has_next"] is False
+        assert body["filters"] == {"status": "ready"}
+        assert len(body["projects"]) == 1
+        assert body["projects"][0]["id"] == first_ready.id
+
+    def test_create_project_quota_error(self, client, monkeypatch, settings):
+        _, profile = _create_user("quota", "quota@example.com", subscribed=True)
+        settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
+        monkeypatch.setattr("apps.api.views.async_task", lambda *args, **kwargs: "task-id")
+
+        Project.objects.create(
+            user=profile.user,
+            name="Existing",
+            slug="existing",
+            input_payload={"project_name": "Existing"},
+            status=ProjectStatus.READY,
+        )
+
+        response = client.post(
+            "/api/v1/projects",
+            data=CREATE_PAYLOAD,
+            content_type="application/json",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 429
+        body = response.json()
+        assert body["error"]["code"] == "quota_exceeded"
+        assert body["error"]["category"] == "quota"
+        assert body["error"]["retryable"] is False
+        assert body["error"]["details"]["quota"] == 1
+
+    def test_create_project_retryable_error(self, client, monkeypatch):
+        _, profile = _create_user("retry", "retry@example.com", subscribed=True)
+
+        def raise_oserror(*args, **kwargs):
+            raise OSError("queue unavailable")
+
+        monkeypatch.setattr("apps.api.views.async_task", raise_oserror)
+
+        response = client.post(
+            "/api/v1/projects",
+            data=CREATE_PAYLOAD,
+            content_type="application/json",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 503
+        body = response.json()
+        assert body["error"]["code"] == "retryable_error"
+        assert body["error"]["category"] == "retryable"
+        assert body["error"]["retryable"] is True
 
     def test_scoped_key_enforces_create_scope_and_logs_denial(self, client, monkeypatch):
         _, profile = _create_user("readkey", "readkey@example.com", subscribed=True)
@@ -197,6 +291,7 @@ class TestSpec001Contract:
         assert response.status_code == 403
         body = response.json()
         assert body["error"]["code"] == "insufficient_scope"
+        assert body["error"]["category"] == "auth"
 
         audit = ProjectAPIAuditLog.objects.latest("created_at")
         assert audit.action == ProjectAPIAuditLog.ACTION_CREATE
