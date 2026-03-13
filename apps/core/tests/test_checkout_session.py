@@ -181,7 +181,7 @@ def test_create_checkout_session_tracks_failure_when_price_validation_fails(auth
 
     monkeypatch.setattr(
         "apps.core.views.stripe.Price.retrieve",
-        lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("bad price")),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("bad price")),
     )
     monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
 
