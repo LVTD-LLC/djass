@@ -104,6 +104,15 @@ def test_passkey_signup_page_uses_custom_template(client):
     assert "Continue with passkey" in content
 
 
+def test_passkey_signup_page_is_email_only(client):
+    response = client.get(reverse("account_signup_by_passkey"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert 'name="email"' in content
+    assert 'name="username"' not in content
+
+
 def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     calls = []
 
