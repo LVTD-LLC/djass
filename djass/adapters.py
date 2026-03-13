@@ -54,9 +54,17 @@ class CustomAccountAdapter(DefaultAccountAdapter):
             )
             return result
         except Exception as error:
+            response = getattr(error, "response", None)
+            response_text = None
+            if response is not None:
+                response_text = getattr(response, "text", None)
+
             logger.error(
                 "[Send Confirmation Mail] Failed to send email",
                 error=str(error),
+                error_type=type(error).__name__,
+                status_code=getattr(error, "status_code", None),
+                response_text=response_text,
                 exc_info=True,
                 user_id=emailconfirmation.email_address.user.id,
                 email=emailconfirmation.email_address.email,

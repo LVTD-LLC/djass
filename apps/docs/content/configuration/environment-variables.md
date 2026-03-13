@@ -65,6 +65,10 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 ### Email and newsletter
 
 - `MAILGUN_API_KEY`
+- `MAILGUN_SENDER_DOMAIN` (e.g. `mg.gregagi.com`)
+- `MAILGUN_API_URL` (optional, set `https://api.eu.mailgun.net` for EU-region accounts)
+- `DEFAULT_FROM_EMAIL` (optional sender override)
+- `SERVER_EMAIL` (optional error sender override)
 - `BUTTONDOWN_API_KEY`
 
 ### Billing

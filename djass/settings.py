@@ -316,12 +316,18 @@ if GITHUB_CLIENT_ID != "":
     }
 
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
+MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="")
+MAILGUN_API_URL = env("MAILGUN_API_URL", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Rasul from Djass <hello@djass.app>")
+SERVER_EMAIL = env("SERVER_EMAIL", default="Djass Errors <error@djass.app>")
+
 ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
-    "MAILGUN_SENDER_DOMAIN": "mg.djass.app",
 }
-DEFAULT_FROM_EMAIL = "Rasul from Djass <hello@djass.app>"
-SERVER_EMAIL = "Djass Errors <error@djass.app>"
+if MAILGUN_SENDER_DOMAIN:
+    ANYMAIL["MAILGUN_SENDER_DOMAIN"] = MAILGUN_SENDER_DOMAIN
+if MAILGUN_API_URL:
+    ANYMAIL["MAILGUN_API_URL"] = MAILGUN_API_URL
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
