@@ -1,5 +1,5 @@
 import pytest
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 from django.urls import reverse
 
 from apps.core.choices import ProfileStates
@@ -59,6 +59,7 @@ def test_login_page_shows_passkey_option(client):
     content = response.content.decode()
     assert "Sign in with a passkey" in content
     assert 'id="mfa_login"' in content
+    assert 'name="login"' in content
 
 
 def test_signup_page_shows_passkey_option(client):
@@ -67,6 +68,31 @@ def test_signup_page_shows_passkey_option(client):
 
     content = response.content.decode()
     assert "Sign up using a passkey" in content
+
+
+def test_signup_page_is_email_only(client):
+    response = client.get(reverse("account_signup"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert 'name="email"' in content
+    assert 'name="username"' not in content
+
+
+@override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
+def test_signup_without_username_creates_user(client, django_user_model):
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "email-only-user@example.com",
+            "password1": "StrongPass123!!",
+            "password2": "StrongPass123!!",
+        },
+    )
+
+    assert response.status_code == 302
+    user = django_user_model.objects.get(email="email-only-user@example.com")
+    assert user.username
 
 
 def test_passkey_signup_page_uses_custom_template(client):
