@@ -39,7 +39,7 @@ def _user_can_create_projects(user):
 
 
 def _deny_project_access(request):
-    messages.error(request, "Project generation unlocks after the one-time $1,200 payment.")
+    messages.error(request, "Project generation unlocks after the one-time $999 payment.")
     return redirect("pricing")
 
 
@@ -318,7 +318,7 @@ def create_checkout_session(request, pk, plan):
             plan=plan,
             user_id=user.id,
         )
-        messages.error(request, "Only the one-time $1,200 premium plan is available.")
+        messages.error(request, "Only the one-time $999 premium plan is available.")
         return redirect("pricing")
 
     if profile.has_active_subscription:
@@ -329,6 +329,56 @@ def create_checkout_session(request, pk, plan):
     if not price_id:
         logger.warning("Stripe price id not configured for one-time plan", user_id=user.id)
         messages.error(request, "Unable to find pricing for the selected plan.")
+        return redirect("pricing")
+
+    expected_amount_cents = settings.STRIPE_ONE_TIME_AMOUNT_CENTS
+    try:
+        price = stripe.Price.retrieve(price_id)
+    except stripe.error.StripeError as exc:
+        logger.error(
+            "Stripe price validation failed",
+            profile_id=profile.id,
+            price_id=price_id,
+            error=str(exc),
+        )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "price_validation_failed",
+                "error_type": exc.__class__.__name__,
+                "plan": "one-time",
+                "funnel_step": "checkout_failed",
+                "entrypoint": "ui",
+            },
+            source_function="create_checkout_session",
+        )
+        messages.error(request, "Unable to validate pricing. Please try again.")
+        return redirect("pricing")
+
+    price_amount = getattr(price, "unit_amount", None)
+    if price_amount != expected_amount_cents:
+        logger.error(
+            "Stripe one-time price amount mismatch",
+            profile_id=profile.id,
+            price_id=price_id,
+            expected_amount_cents=expected_amount_cents,
+            actual_amount_cents=price_amount,
+        )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                "reason": "price_amount_mismatch",
+                "plan": "one-time",
+                "funnel_step": "checkout_failed",
+                "entrypoint": "ui",
+                "expected_amount_cents": expected_amount_cents,
+                "actual_amount_cents": price_amount,
+            },
+            source_function="create_checkout_session",
+        )
+        messages.error(request, "Pricing is being updated. Please try again in a moment.")
         return redirect("pricing")
 
     try:
@@ -415,6 +465,7 @@ def create_checkout_session(request, pk, plan):
     event_properties = {
         "plan": "one-time",
         "price_id": price_id,
+        "amount_cents": price_amount,
     }
     checkout_id = getattr(checkout_session, "id", None)
     if checkout_id:

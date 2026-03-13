@@ -36,7 +36,7 @@ def test_setup_stripe_lifetime_price_creates_product_and_price(monkeypatch, caps
 
     def fake_price_create(**kwargs):
         calls["price_create"] = kwargs
-        return SimpleNamespace(id="price_djass_1200")
+        return SimpleNamespace(id="price_djass_999")
 
     monkeypatch.setattr(
         "apps.core.management.commands.setup_stripe_lifetime_price.stripe.Product.list",
@@ -58,9 +58,9 @@ def test_setup_stripe_lifetime_price_creates_product_and_price(monkeypatch, caps
     call_command("setup_stripe_lifetime_price")
 
     output = capsys.readouterr().out
-    assert "STRIPE_PRICE_ID_ONE_TIME=price_djass_1200" in output
+    assert "STRIPE_PRICE_ID_ONE_TIME=price_djass_999" in output
     assert calls["product_create"]["metadata"]["slug"] == "djass-lifetime"
-    assert calls["price_create"]["unit_amount"] == 120000
+    assert calls["price_create"]["unit_amount"] == 99900
     assert calls["price_create"]["currency"] == "usd"
 
 
@@ -77,9 +77,9 @@ def test_setup_stripe_lifetime_price_reuses_existing_product_and_price(monkeypat
         {
             "id": "price_existing",
             "type": "one_time",
-            "unit_amount": 120000,
+            "unit_amount": 99900,
             "currency": "usd",
-            "lookup_key": "djass-premium-usd-1200",
+            "lookup_key": "djass-premium-usd-999",
             "metadata": {"slug": "djass-lifetime"},
         }
     )
