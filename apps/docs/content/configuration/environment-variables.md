@@ -78,7 +78,7 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_ID_ONE_TIME`
 
-Create or fetch the premium Stripe product + one-time `$1,200` price id with:
+Create or fetch the premium Stripe product + one-time `$999` price id with:
 
 ```bash
 python manage.py setup_stripe_lifetime_price

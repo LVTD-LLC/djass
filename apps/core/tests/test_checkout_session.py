@@ -26,6 +26,10 @@ def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeyp
         return "task-id"
 
     monkeypatch.setattr("apps.core.views.stripe.Customer.create", fake_customer_create)
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
+    )
     monkeypatch.setattr("apps.core.views.stripe.checkout.Session.create", fake_session_create)
     monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
 
@@ -105,6 +109,10 @@ def test_create_checkout_session_tracks_failure_when_customer_setup_fails(auth_c
         return "task-id"
 
     monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
+    )
+    monkeypatch.setattr(
         "apps.core.views.stripe.Customer.create",
         lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("boom")),
     )
@@ -136,6 +144,10 @@ def test_create_checkout_session_tracks_failure_when_session_creation_fails(
         return "task-id"
 
     monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
+    )
+    monkeypatch.setattr(
         "apps.core.views.stripe.Customer.create",
         lambda **_kwargs: SimpleNamespace(id="cus_one_time"),
     )
@@ -156,3 +168,65 @@ def test_create_checkout_session_tracks_failure_when_session_creation_fails(
     assert tracking_call[1]["event_name"] == "checkout_failed"
     assert tracking_call[1]["properties"]["reason"] == "session_creation_failed"
     assert tracking_call[1]["properties"]["funnel_step"] == "checkout_failed"
+
+
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
+@pytest.mark.django_db
+def test_create_checkout_session_tracks_failure_when_price_validation_fails(auth_client, monkeypatch):
+    async_calls = []
+
+    def fake_async_task(*args, **kwargs):
+        async_calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("bad price")),
+    )
+    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
+    response = auth_client.post(url)
+
+    assert response.status_code == 302
+    assert response.url == reverse("pricing")
+    tracking_call = next(
+        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
+    )
+    assert tracking_call[1]["event_name"] == "checkout_failed"
+    assert tracking_call[1]["properties"]["reason"] == "price_validation_failed"
+
+
+@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
+@pytest.mark.django_db
+def test_create_checkout_session_rejects_price_amount_mismatch(auth_client, monkeypatch):
+    async_calls = []
+
+    def fake_async_task(*args, **kwargs):
+        async_calls.append((args, kwargs))
+        return "task-id"
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=120000),
+    )
+    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+    monkeypatch.setattr(
+        "apps.core.views.stripe.checkout.Session.create",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("Checkout session should not be created on amount mismatch")
+        ),
+    )
+
+    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
+    response = auth_client.post(url)
+
+    assert response.status_code == 302
+    assert response.url == reverse("pricing")
+    tracking_call = next(
+        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
+    )
+    assert tracking_call[1]["event_name"] == "checkout_failed"
+    assert tracking_call[1]["properties"]["reason"] == "price_amount_mismatch"
+    assert tracking_call[1]["properties"]["expected_amount_cents"] == 99900
+    assert tracking_call[1]["properties"]["actual_amount_cents"] == 120000
