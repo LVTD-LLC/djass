@@ -316,10 +316,10 @@ if GITHUB_CLIENT_ID != "":
     }
 
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
-MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="")
+MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="djass.dev")
 MAILGUN_API_URL = env("MAILGUN_API_URL", default="")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Rasul from Djass <hello@djass.app>")
-SERVER_EMAIL = env("SERVER_EMAIL", default="Djass Errors <error@djass.app>")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Greg from Djass <greg@djass.dev>")
+SERVER_EMAIL = env("SERVER_EMAIL", default="Djass Errors <greg@djass.dev>")
 
 ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
