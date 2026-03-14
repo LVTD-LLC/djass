@@ -1,5 +1,5 @@
 import pytest
-from allauth.account.models import EmailAddress
+from allauth.account.models import EmailAddress, EmailConfirmation
 from django.test import override_settings
 from django.urls import reverse
 
@@ -61,6 +61,35 @@ def test_settings_upgrade_copy(auth_client, user):
     assert "$999 one-time" in content
     assert "unlimited generations" in content.lower()
     assert "forever updates" in content.lower()
+
+
+@pytest.mark.django_db
+def test_email_confirm_page_uses_branded_template(client, user):
+    email_address = EmailAddress.objects.create(
+        user=user,
+        email=user.email,
+        verified=False,
+        primary=True,
+    )
+    confirmation = EmailConfirmation.create(email_address)
+
+    response = client.get(reverse("account_confirm_email", args=[confirmation.key]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Djass Account Security" in content
+    assert "Confirm email address" in content
+    assert "dark:bg-gray-900" in content
+
+
+@pytest.mark.django_db
+def test_email_confirm_page_handles_invalid_link(client):
+    response = client.get(reverse("account_confirm_email", args=["invalid-key"]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "expired or is invalid" in content
+    assert "Request a new confirmation email" in content
 
 
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
