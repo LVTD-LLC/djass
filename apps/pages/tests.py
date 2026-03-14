@@ -174,3 +174,17 @@ def test_agent_first_copy_present_on_landing_and_pricing(client):
     pricing_content = pricing_response.content.decode()
     assert "API-first, Agent-ready Delivery" in pricing_content
     assert "humans and coding agents" in pricing_content
+
+
+def test_signup_cta_copy_uses_sign_up_not_start_for_free(client):
+    landing_response = client.get(reverse("landing"))
+    assert landing_response.status_code == 200
+    landing_content = landing_response.content.decode()
+    assert "Sign up" in landing_content
+    assert "Start for Free" not in landing_content
+
+    pricing_response = client.get(reverse("pricing"))
+    assert pricing_response.status_code == 200
+    pricing_content = pricing_response.content.decode()
+    assert "Sign up" in pricing_content
+    assert "Start for Free" not in pricing_content
