@@ -1,43 +1,61 @@
 {% extends "base_landing.html" %}
 {% load webpack_loader static %}
 {% load markdown_extras %}
-
 {% block meta %}
-<title>{{ blog_post.title }} | Djass Blog</title>
-<meta name="description" content="{{ blog_post.description }}" />
-<meta name="keywords" content="{{ blog_post.tags }}" />
-<meta name="robots" content="index, follow" />
-<link rel="canonical" href="https://{{ request.get_host }}{{ blog_post.get_absolute_url }}" />
-
-<meta property="og:type" content="article" />
-<meta property="og:title" content="{{ blog_post.title }}" />
-<meta property="og:url" content="https://{{ request.get_host }}{{ blog_post.get_absolute_url }}" />
-<meta property="og:description" content="{{ blog_post.description }}" />
-<meta property="og:image" content="https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | Djass Blog&subtitle={{ blog_post.description }}&image_url={% if blog_post.image %}{{ blog_post.image.url }}{% else %}https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}{% endif %}" />
-<meta property="og:locale" content="en_US" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:creator" content="@rasulkireev" />
-<meta name="twitter:site" content="@rasulkireev" />
-<meta name="twitter:title" content="{{ blog_post.title }}" />
-<meta name="twitter:description" content="{{ blog_post.description }}" />
-<meta name="twitter:image" content="https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | Djass Blog&subtitle={{ blog_post.description }}&image_url={% if blog_post.image %}{{ blog_post.image.url }}{% else %}https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}{% endif %}" />
+    <title>{{ blog_post.title }} | Djass Blog</title>
+    <meta name="description" content="{{ blog_post.description }}" />
+    <meta name="keywords" content="{{ blog_post.tags }}" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical"
+          href="https://{{ request.get_host }}{{ blog_post.get_absolute_url }}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="{{ blog_post.title }}" />
+    <meta property="og:url"
+          content="https://{{ request.get_host }}{{ blog_post.get_absolute_url }}" />
+    <meta property="og:description" content="{{ blog_post.description }}" />
+    <meta property="og:image"
+          content="https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | Djass Blog&subtitle={{ blog_post.description }}&image_url={% if blog_post.image %}{{ blog_post.image.url }}{% else %}https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}{% endif %}" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@rasulkireev" />
+    <meta name="twitter:site" content="@rasulkireev" />
+    <meta name="twitter:title" content="{{ blog_post.title }}" />
+    <meta name="twitter:description" content="{{ blog_post.description }}" />
+    <meta name="twitter:image"
+          content="https://osig.app/g?site=x&style=base&font=markerfelt&title={{ blog_post.title }} | Djass Blog&subtitle={{ blog_post.description }}&image_url={% if blog_post.image %}{{ blog_post.image.url }}{% else %}https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}{% endif %}" />
 {% endblock meta %}
-
 {% block content %}
-<article class="container px-4 py-8 mx-auto md:relative">
-  <div class="mx-auto max-w-3xl">
-    <h1 class="mb-6 text-3xl font-bold">{{ blog_post.title }}</h1>
-
-    <div class="max-w-none prose prose-lg">
-      {{ blog_post.content|markdown|safe }}
-    </div>
-  </div>
-</article>
+    <article class="relative px-4 pb-10 pt-4 md:pt-8">
+        <div class="mx-auto max-w-4xl">
+            <a href="{% url 'blog_posts' %}"
+               class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600 dark:text-emerald-300 dark:hover:text-emerald-200">
+                <span aria-hidden="true">←</span>
+                Back to blog
+            </a>
+            <header class="mt-4 rounded-3xl border border-gray-200/80 bg-white/80 p-8 shadow-md shadow-emerald-100/60 backdrop-blur dark:border-gray-800 dark:bg-gray-900/70 dark:shadow-none md:p-10">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
+                    {% if blog_post.created_at %}
+                        <time datetime="{{ blog_post.created_at|date:'c' }}">{{ blog_post.created_at|date:"M j, Y" }}</time>
+                    {% endif %}
+                    {% if blog_post.tags %}
+                        <span class="rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ blog_post.tags }}</span>
+                    {% endif %}
+                </div>
+                <h1 class="mt-3 text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">{{ blog_post.title }}</h1>
+                {% if blog_post.description %}
+                    <p class="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">{{ blog_post.description }}</p>
+                {% endif %}
+            </header>
+            <section class="mt-6 rounded-3xl border border-gray-200/80 bg-white/85 px-6 py-8 shadow-sm dark:border-gray-800 dark:bg-gray-900/75 md:px-10 md:py-10">
+                <div class="prose prose-lg prose-gray max-w-none dark:prose-invert prose-headings:font-semibold prose-a:text-emerald-700 hover:prose-a:text-emerald-600 dark:prose-a:text-emerald-300">
+                    {{ blog_post.content|markdown|safe }}
+                </div>
+            </section>
+        </div>
+    </article>
 {% endblock content %}
-
 {% block schema %}
-<script type="application/ld+json">
+    <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -65,5 +83,5 @@
       "@id": "https://{{ request.get_host }}{{ blog_post.get_absolute_url }}"
     }
   }
-</script>
+    </script>
 {% endblock schema %}
