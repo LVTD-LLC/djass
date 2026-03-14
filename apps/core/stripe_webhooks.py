@@ -40,6 +40,28 @@ def update_profile_stripe_ids(profile, customer_id=None, subscription_id=None):
         profile.save(update_fields=update_fields)
 
 
+def get_profile_for_checkout(checkout_data):
+    metadata = checkout_data.get("metadata", {}) or {}
+    profile = get_profile_for_customer(checkout_data.get("customer"), metadata)
+    if profile:
+        return profile
+
+    client_reference_id = checkout_data.get("client_reference_id")
+    if client_reference_id:
+        try:
+            profile = Profile.objects.get(user_id=int(client_reference_id))
+            return profile
+        except (Profile.DoesNotExist, ValueError, TypeError):
+            profile = None
+
+    customer_details = checkout_data.get("customer_details") or {}
+    customer_email = customer_details.get("email") or checkout_data.get("customer_email")
+    if customer_email:
+        return Profile.objects.filter(user__email__iexact=customer_email).order_by("id").first()
+
+    return None
+
+
 def get_subscription_target_state(subscription_data, previous_status=None):
     status = subscription_data.get("status")
     cancel_at_period_end = subscription_data.get("cancel_at_period_end")
@@ -288,13 +310,15 @@ def handle_checkout_completed(event):
             )
             return
 
-    profile = get_profile_for_customer(customer_id, metadata)
+    profile = get_profile_for_checkout(checkout_data)
     if not profile:
         logger.error(
             "Error processing checkout completion: customer or profile not found",
             event_id=event_id,
             checkout_id=checkout_id,
             customer_id=customer_id,
+            client_reference_id=checkout_data.get("client_reference_id"),
+            customer_email=(checkout_data.get("customer_details") or {}).get("email"),
         )
         return
 

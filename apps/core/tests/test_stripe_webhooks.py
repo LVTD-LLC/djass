@@ -211,3 +211,43 @@ def test_handle_checkout_completed_tracks_payment_failure_event(sync_state_trans
         },
         source_function="stripe_webhook handle_checkout_completed",
     )
+
+
+@pytest.mark.django_db
+def test_handle_checkout_completed_falls_back_to_client_reference_id(sync_state_transitions, profile):
+    event = build_checkout_completed_event(
+        customer_id="",
+        checkout_id="cs_ref_only",
+        payment_status="paid",
+        mode="payment",
+        metadata={"price_id": "price_one_time", "plan": "one-time"},
+        client_reference_id=str(profile.user_id),
+        amount_total=99900,
+        currency="usd",
+        payment_intent="pi_ref_only",
+    )
+
+    handle_checkout_completed(event)
+
+    profile.refresh_from_db()
+    assert profile.state == ProfileStates.SUBSCRIBED
+
+
+@pytest.mark.django_db
+def test_handle_checkout_completed_falls_back_to_customer_email(sync_state_transitions, profile):
+    event = build_checkout_completed_event(
+        customer_id="",
+        checkout_id="cs_email_only",
+        payment_status="paid",
+        mode="payment",
+        metadata={"price_id": "price_one_time", "plan": "one-time"},
+        customer_details={"email": profile.user.email},
+        amount_total=99900,
+        currency="usd",
+        payment_intent="pi_email_only",
+    )
+
+    handle_checkout_completed(event)
+
+    profile.refresh_from_db()
+    assert profile.state == ProfileStates.SUBSCRIBED
