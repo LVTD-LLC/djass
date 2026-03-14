@@ -1,13 +1,13 @@
 ---
 title: Introduction
-description: What Djass generates, who this documentation is for, and how to use it.
-keywords: Djass, django-saas-starter, getting started
+description: API-first, agent-ready orientation for Djass generated projects.
+keywords: Djass, django-saas-starter, API-first, AI agents, getting started
 author: Rasul
 ---
 
-Djass helps you generate a production-ready Django SaaS codebase from `django-saas-starter`.
+Djass helps you generate a production-ready Django SaaS codebase from `django-saas-starter`, with an **API-first, agent-ready** project shape.
 
-The goal of this documentation is simple: help you understand the generated repository quickly, ship features safely, and avoid architecture drift.
+The goal of this documentation is simple: help you understand the generated repository quickly, ship features safely, and keep human + agent execution aligned.
 
 ## Who this documentation is for
 
@@ -16,7 +16,8 @@ Use these docs if you are:
 - building a product with a generated Djass project,
 - joining an existing generated codebase,
 - extending the starter with custom business logic,
-- or using AI tools to accelerate development.
+- operating API-first workflows for internal tools or integrations,
+- or using AI coding agents to accelerate implementation.
 
 ## What you get from a generated project
 
@@ -27,6 +28,7 @@ By default, generated projects are opinionated around:
 - **Tailwind CSS** via the frontend build pipeline
 - **App boundaries** under `apps/` (`core`, `api`, `pages`, optional `blog`, optional `docs`)
 - **Configuration-first setup** through explicit environment variables and clear app boundaries
+- **Agent-ready architecture** where common tasks map cleanly to stable files, routes, and services
 
 ## Suggested reading path
 
@@ -38,4 +40,4 @@ By default, generated projects are opinionated around:
 
 ## Scope note
 
-This documentation focuses on the generated project and the architecture choices Djass applies. It is intentionally practical and implementation-oriented.
+This documentation focuses on the generated project and the architecture choices Djass applies. It is intentionally practical and implementation-oriented so teams can ship reliably whether work is done by humans, agents, or both.

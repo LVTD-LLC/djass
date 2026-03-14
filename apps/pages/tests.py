@@ -160,3 +160,17 @@ def test_landing_subscribed_user_gets_pricing_cta(auth_client, user):
     content = response.content.decode()
     assert "See the premium agency plan" in content
     assert reverse("pricing") in content
+
+
+def test_agent_first_copy_present_on_landing_and_pricing(client):
+    landing_response = client.get(reverse("landing"))
+    assert landing_response.status_code == 200
+    landing_content = landing_response.content.decode()
+    assert "API-first operational layer" in landing_content
+    assert "API-first, agent-ready" in landing_content
+
+    pricing_response = client.get(reverse("pricing"))
+    assert pricing_response.status_code == 200
+    pricing_content = pricing_response.content.decode()
+    assert "API-first, Agent-ready Delivery" in pricing_content
+    assert "humans and coding agents" in pricing_content
