@@ -182,8 +182,10 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Generate your starter" in content
-    assert reverse("account_signup") in content
+    assert "Open your dashboard" in content
+    assert "See pricing and what’s included" in content
+    assert reverse("home") in content
+    assert reverse("pricing") in content
 
 
 def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
@@ -194,8 +196,10 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Generate your starter" in content
-    assert reverse("account_signup") in content
+    assert "Open your dashboard" in content
+    assert "See pricing and what’s included" in content
+    assert reverse("home") in content
+    assert reverse("pricing") in content
 
 
 def test_landing_and_pricing_copy_is_product_led(client):
@@ -218,11 +222,22 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "agency" not in pricing_content.lower()
 
 
+def test_landing_guest_ctas_explain_destination(client):
+    response = client.get(reverse("landing"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "Create your Djass account" in content
+    assert "Create an account to configure your starter, run generation, and track project history." in content
+    assert "Sign in to your dashboard" in content
+    assert "Go to your existing Djass account and continue from your project dashboard." in content
+
+
 def test_signup_cta_copy_does_not_use_free_trial_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Generate your starter" in landing_content
+    assert "Create your Djass account" in landing_content
     assert "Start for Free" not in landing_content
 
     pricing_response = client.get(reverse("pricing"))
