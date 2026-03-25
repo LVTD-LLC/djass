@@ -281,8 +281,9 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_FORMS = {
     "signup": "apps.core.forms.CustomSignUpForm",
     "login": "apps.core.forms.CustomLoginForm",
@@ -315,7 +316,7 @@ if GITHUB_CLIENT_ID != "":
     }
 
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
-MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="djass.dev")
+MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="mg.djass.dev")
 MAILGUN_API_URL = env("MAILGUN_API_URL", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Greg from Djass <greg@djass.dev>")
 SERVER_EMAIL = env("SERVER_EMAIL", default="Djass Errors <greg@djass.dev>")

@@ -30,6 +30,12 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ### Fixed
 - Temporarily disabled passkey-based signup and login paths while passkey auth is unstable; auth pages now hide passkey actions and `/accounts/signup/passkey/` is no longer exposed.
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
+- Mailgun sender-domain default now matches the verified Djass Mailgun domain (`mg.djass.dev`) to prevent `401 Forbidden` during signup confirmation sends when env overrides are not set.
+
+### Changed
+- Signup/email verification flow now allows immediate post-signup dashboard access (`ACCOUNT_EMAIL_VERIFICATION=optional`) while still sending verification emails.
+- Switched email verification to link-based confirmation (`ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED=False`) with one-click confirm on GET.
+- Added a branded `account/verification_sent.html` so fallback verification-sent UX matches Djass styling instead of the default allauth page.
 
 ### Changed
 - Pricing page copy now frames Djass as a product-led Django SaaS plan for founders, builders, and teams instead of agency/service work, while keeping pricing unchanged.
