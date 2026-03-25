@@ -23,5 +23,8 @@ def test_pricing_template_uses_product_led_copy():
     assert "$999 one-time for founders and teams shipping Django SaaS repeatedly" in content
     assert "Unlimited starter generations for new SaaS products, experiments, and internal tools" in content
     assert "Djass Premium Plan" in content
+    assert "Review the open-source baseline" in content
+    assert "Need full control?" not in content
+    assert "self-host for free" not in content
     assert "Premium Agency Plan" not in content
     assert "agencies that ship client SaaS repeatedly" not in content

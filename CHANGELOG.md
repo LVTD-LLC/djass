@@ -41,6 +41,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
 - Landing page “How it works” section now spells out the UI flow and API flow separately, then explains the background generation and handoff steps in scan-friendly cards.
+- Pricing page and premium-offer workflow copy now remove the legacy “Need full control?” bridge in favor of product-first messaging that points buyers to the open-source baseline without agency framing.
 
 ### Fixed
 - Signup no longer fails account creation when welcome/confirmation email delivery errors during registration; the failure is logged, the user gets a retry warning, and explicit resend failures still surface normally.
