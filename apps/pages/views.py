@@ -1,4 +1,4 @@
-from allauth.account.views import SignupByPasskeyView, SignupView
+from allauth.account.views import SignupView
 from django.conf import settings
 from django.contrib import messages
 from django.views.generic import TemplateView
@@ -85,10 +85,6 @@ class AccountSignupView(SignupTrackingMixin, SignupView):
     template_name = "account/signup.html"
     tracking_source_name = "AccountSignupView"
 
-
-class AccountSignupByPasskeyView(SignupTrackingMixin, SignupByPasskeyView):
-    template_name = "account/signup_by_passkey.html"
-    tracking_source_name = "AccountSignupByPasskeyView"
 
 
 class PricingView(TemplateView):
