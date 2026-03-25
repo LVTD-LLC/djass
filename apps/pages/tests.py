@@ -84,6 +84,36 @@ def test_signup_page_is_email_only(client):
     assert 'name="password2"' not in content
 
 
+def test_email_verification_sent_page_uses_branded_template(client):
+    response = client.get(reverse("account_email_verification_sent"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "Check your inbox" in content
+    assert "Continue to dashboard" in content
+
+
+def test_signup_redirects_to_dashboard_without_blocking_on_email_confirmation(client, monkeypatch):
+    monkeypatch.setattr(
+        "allauth.account.adapter.DefaultAccountAdapter.send_confirmation_mail",
+        lambda *args, **kwargs: "ok",
+    )
+    monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: "task-id")
+
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "signup-redirect@example.com",
+            "password1": "StrongPass123!!",
+        },
+    )
+
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+
+
 @override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
 def test_signup_without_username_creates_user(client, django_user_model, monkeypatch):
     monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: "task-id")
