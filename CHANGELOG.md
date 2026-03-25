@@ -42,6 +42,9 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
 - Landing page “How it works” section now spells out the UI flow and API flow separately, then explains the background generation and handoff steps in scan-friendly cards.
 
+### Fixed
+- Signup no longer fails account creation when welcome/confirmation email delivery errors during registration; the failure is logged, the user gets a retry warning, and explicit resend failures still surface normally.
+
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
 - Landing and pricing copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
