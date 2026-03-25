@@ -38,6 +38,9 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
 
+### Fixed
+- Signup no longer fails account creation when welcome/confirmation email delivery errors during registration; the failure is logged, the user gets a retry warning, and explicit resend failures still surface normally.
+
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
 - Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.

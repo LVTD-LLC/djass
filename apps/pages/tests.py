@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.messages import get_messages
 from django.test import RequestFactory, override_settings
 from django.urls import reverse
 
@@ -93,6 +94,34 @@ def test_signup_without_username_creates_user(client, django_user_model):
     assert response.status_code == 302
     user = django_user_model.objects.get(email="email-only-user@example.com")
     assert user.username
+
+
+def test_signup_survives_confirmation_mail_failure(client, django_user_model, monkeypatch):
+    def _raise_mailgun_error(*args, **kwargs):
+        raise RuntimeError("Mailgun API response 401: Forbidden")
+
+    monkeypatch.setattr(
+        "allauth.account.adapter.DefaultAccountAdapter.send_confirmation_mail",
+        _raise_mailgun_error,
+    )
+
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "signup-mail-failure@example.com",
+            "password1": "StrongPass123!!",
+            "password2": "StrongPass123!!",
+        },
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    user = django_user_model.objects.get(email="signup-mail-failure@example.com")
+    assert user.username
+    messages = [message.message for message in get_messages(response.wsgi_request)]
+    assert messages == [
+        "Your account was created, but we could not send the confirmation email right now. Please retry from your account page in a few minutes."
+    ]
 
 
 def test_passkey_signup_page_uses_custom_template(client):

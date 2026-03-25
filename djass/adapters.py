@@ -3,6 +3,7 @@ import uuid
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 
 from apps.core.choices import EmailType
@@ -68,7 +69,18 @@ class CustomAccountAdapter(DefaultAccountAdapter):
                 exc_info=True,
                 user_id=emailconfirmation.email_address.user.id,
                 email=emailconfirmation.email_address.email,
+                signup=signup,
             )
+
+            if signup:
+                if request is not None and hasattr(request, "_messages"):
+                    messages.warning(
+                        request,
+                        "Your account was created, but we could not send the confirmation email right now. "
+                        "Please retry from your account page in a few minutes.",
+                    )
+                return None
+
             raise
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
