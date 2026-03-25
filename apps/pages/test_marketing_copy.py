@@ -11,7 +11,8 @@ def test_landing_template_uses_product_led_copy():
     assert "Django SaaS starter, without setup drag" in content
     assert "production-ready" in content
     assert "Founders, product teams, and solo builders" in content
-    assert "Generate your starter" in content
+    assert "Create your Djass account" in content
+    assert "Sign in to your dashboard" in content
     assert "See the premium agency plan" not in content
     assert "API-first delivery for modern Django agencies" not in content
 
