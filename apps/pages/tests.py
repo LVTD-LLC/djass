@@ -23,14 +23,16 @@ def auth_client(client, user):
     return client
 
 
-def test_pricing_page_shows_one_time_copy(client):
+def test_pricing_page_shows_product_led_one_time_copy(client):
     response = client.get(reverse("pricing"))
     assert response.status_code == 200
 
     content = response.content.decode()
     assert "$999" in content
-    assert "Unlimited project generations for client and internal products" in content
-    assert "Lifetime updates to the starter" in content
+    assert "founders and teams shipping Django SaaS repeatedly" in content
+    assert "Unlimited starter generations for new SaaS products, experiments, and internal tools" in content
+    assert "Djass Premium Agency Plan" not in content
+    assert "client SaaS repeatedly" not in content
 
 
 def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch, user):
@@ -141,16 +143,16 @@ def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     assert signup_call[1]["properties"]["entrypoint"] == "ui"
 
 
-def test_landing_authenticated_user_gets_pricing_cta(auth_client, user):
+def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
     response = auth_client.get(reverse("landing"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "See the premium agency plan" in content
-    assert reverse("pricing") in content
+    assert "Generate your starter" in content
+    assert reverse("account_signup") in content
 
 
-def test_landing_subscribed_user_gets_pricing_cta(auth_client, user):
+def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])
 
@@ -158,37 +160,39 @@ def test_landing_subscribed_user_gets_pricing_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "See the premium agency plan" in content
-    assert reverse("pricing") in content
+    assert "Generate your starter" in content
+    assert reverse("account_signup") in content
 
 
-def test_agent_first_copy_present_on_landing_and_pricing(client):
+def test_landing_and_pricing_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "API-first operational layer" in landing_content
-    assert "API-first, agent-ready" in landing_content
+    assert "hosted workflow for <strong>django-saas-starter</strong>" in landing_content
+    assert "Founders, product teams, and solo builders" in landing_content
     assert "How it works" in landing_content
     assert "UI flow" in landing_content
     assert "API flow" in landing_content
     assert "Djass generates in the background" in landing_content
+    assert "agency" not in landing_content.lower()
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "API-first, Agent-ready Delivery" in pricing_content
-    assert "humans and coding agents" in pricing_content
+    assert "One plan for serious Django SaaS work" in pricing_content
+    assert "founders and teams shipping Django SaaS repeatedly" in pricing_content
+    assert "agency" not in pricing_content.lower()
 
 
-def test_signup_cta_copy_uses_sign_up_not_start_for_free(client):
+def test_signup_cta_copy_does_not_use_free_trial_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Sign up" in landing_content
+    assert "Generate your starter" in landing_content
     assert "Start for Free" not in landing_content
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "Sign up" in pricing_content
+    assert "Create account to unlock premium access" in pricing_content
     assert "Start for Free" not in pricing_content
