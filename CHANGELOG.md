@@ -42,3 +42,6 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.
 - Generation now uses Cookiecutter Python API first with CLI fallback for resilience.
 - Media/artifact storage path is now configurable via `MEDIA_ROOT` and defaults to `/data/media` in production for persistent volumes.
+
+## Unreleased
+- Make shared footer and auth email footer years render dynamically instead of hardcoding 2025.
