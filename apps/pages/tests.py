@@ -168,6 +168,10 @@ def test_agent_first_copy_present_on_landing_and_pricing(client):
     landing_content = landing_response.content.decode()
     assert "API-first operational layer" in landing_content
     assert "API-first, agent-ready" in landing_content
+    assert "How it works" in landing_content
+    assert "UI flow" in landing_content
+    assert "API flow" in landing_content
+    assert "Djass generates in the background" in landing_content
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200

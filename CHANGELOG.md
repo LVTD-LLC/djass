@@ -36,6 +36,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Generated repositories now include standardized `project-metadata.json` and retrieval-friendly `djass-manifest.json`.
 - ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
+- Landing page “How it works” section now spells out the UI flow and API flow separately, then explains the background generation and handoff steps in scan-friendly cards.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.

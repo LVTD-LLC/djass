@@ -33,27 +33,53 @@
                     </a>
                 </div>
             </div>
-            <div class="mx-auto mt-14 grid max-w-5xl gap-4 sm:grid-cols-3">
-                <div class="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-md shadow-emerald-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Step 1</p>
-                    <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Configure once</p>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Select integrations and options through a clear API-first contract built for repeatable delivery.
+            <div class="mx-auto mt-14 max-w-5xl rounded-[2rem] border border-white/80 bg-white/70 p-6 text-left shadow-xl shadow-emerald-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none sm:p-8">
+                <div class="max-w-3xl">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">How it works</p>
+                    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-3xl">
+                        Pick your input path, then let Djass generate the starter for you.
+                    </h2>
+                    <p class="mt-4 text-sm leading-7 text-gray-600 dark:text-gray-300 sm:text-base">
+                        New visitors should be able to scan this once and understand the full flow: start in the web app or through the API, let Djass build in the background, then continue from a clean generated codebase.
                     </p>
                 </div>
-                <div class="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-md shadow-teal-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300">Step 2</p>
-                    <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Generate safely</p>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Background jobs handle creation so humans and AI agents can keep moving without waiting on local setup.
-                    </p>
-                </div>
-                <div class="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-md shadow-cyan-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-300">Step 3</p>
-                    <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Hand off faster</p>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Download a clean ZIP and keep project history centralized for future iterations.
-                    </p>
+                <div class="mt-8 grid gap-4 lg:grid-cols-[1.2fr_repeat(2,minmax(0,1fr))]">
+                    <div class="rounded-2xl border border-emerald-200/80 bg-white/85 p-5 shadow-md shadow-emerald-100/70 dark:border-emerald-500/20 dark:bg-gray-950/40 dark:shadow-none">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Step 1</p>
+                            <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200">UI + API</span>
+                        </div>
+                        <h3 class="mt-3 text-base font-semibold text-gray-900 dark:text-gray-100">Choose how you create the project</h3>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                            Use the path that matches your workflow, while keeping the same generated output.
+                        </p>
+                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                            <div class="rounded-xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/80">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">UI flow</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Open the web app, fill in your stack, and submit.</p>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Best when a founder or teammate wants to configure a project manually in a few clicks.</p>
+                            </div>
+                            <div class="rounded-xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/80">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">API flow</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Send the same project spec over the API from your own tools or agents.</p>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Best when you want repeatable project setup inside scripts, internal platforms, or agent workflows.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-md shadow-teal-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none">
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300">Step 2</p>
+                        <h3 class="mt-3 text-base font-semibold text-gray-900 dark:text-gray-100">Djass generates in the background</h3>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                            The build runs asynchronously, so you are not blocked on local setup, long commands, or template babysitting.
+                        </p>
+                    </div>
+                    <div class="rounded-2xl border border-white/80 bg-white/75 p-5 shadow-md shadow-cyan-100/70 backdrop-blur dark:border-gray-800 dark:bg-gray-900/65 dark:shadow-none">
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-300">Step 3</p>
+                        <h3 class="mt-3 text-base font-semibold text-gray-900 dark:text-gray-100">Download, inspect, and keep shipping</h3>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                            Grab the generated ZIP, review the project history, and hand the codebase to your team or coding agent for the next iteration.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
