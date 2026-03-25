@@ -186,6 +186,9 @@ def test_landing_and_pricing_copy_is_product_led(client):
     pricing_content = pricing_response.content.decode()
     assert "One plan for serious Django SaaS work" in pricing_content
     assert "founders and teams shipping Django SaaS repeatedly" in pricing_content
+    assert "Review the open-source baseline" in pricing_content
+    assert "Need full control?" not in pricing_content
+    assert "self-host for free" not in pricing_content
     assert "agency" not in pricing_content.lower()
 
 
