@@ -293,8 +293,8 @@ if ENVIRONMENT != "dev":
 
 # Passkey (WebAuthn) auth support via django-allauth MFA.
 MFA_SUPPORTED_TYPES = ["webauthn"]
-MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_PASSKEY_SIGNUP_ENABLED = True
+MFA_PASSKEY_LOGIN_ENABLED = False
+MFA_PASSKEY_SIGNUP_ENABLED = False
 # Local dev uses http://localhost, so allow insecure origin only in debug.
 MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG
 

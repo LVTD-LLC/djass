@@ -19,13 +19,12 @@ from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
 
 from djass.sitemaps import sitemaps
-from apps.pages.views import AccountSignupByPasskeyView, AccountSignupView
+from apps.pages.views import AccountSignupView
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # Override allauth signup with custom views.
-    path("accounts/signup/passkey/", AccountSignupByPasskeyView.as_view(), name="account_signup_by_passkey"),
+    # Override allauth signup with custom view.
     path("accounts/signup/", AccountSignupView.as_view(), name="account_signup"),
     path("accounts/", include("allauth.urls")),
     path("anymail/", include("anymail.urls")),

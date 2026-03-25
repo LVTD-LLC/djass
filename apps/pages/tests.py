@@ -55,22 +55,22 @@ def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch,
     assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
 
-def test_login_page_shows_passkey_option(client):
+def test_login_page_hides_passkey_option(client):
     response = client.get(reverse("account_login"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Sign in with a passkey" in content
-    assert 'id="mfa_login"' in content
+    assert "Sign in with a passkey" not in content
+    assert 'id="mfa_login"' not in content
     assert 'name="login"' in content
 
 
-def test_signup_page_shows_passkey_option(client):
+def test_signup_page_hides_passkey_option(client):
     response = client.get(reverse("account_signup"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Sign up using a passkey" in content
+    assert "Sign up using a passkey" not in content
 
 
 def test_signup_page_is_email_only(client):
@@ -131,22 +131,9 @@ def test_signup_survives_confirmation_mail_failure(client, django_user_model, mo
     ]
 
 
-def test_passkey_signup_page_uses_custom_template(client):
-    response = client.get(reverse("account_signup_by_passkey"))
-    assert response.status_code == 200
-
-    content = response.content.decode()
-    assert "Create your account with a passkey" in content
-    assert "Continue with passkey" in content
-
-
-def test_passkey_signup_page_is_email_only(client):
-    response = client.get(reverse("account_signup_by_passkey"))
-    assert response.status_code == 200
-
-    content = response.content.decode()
-    assert 'name="email"' in content
-    assert 'name="username"' not in content
+def test_passkey_signup_page_is_disabled(client):
+    response = client.get("/accounts/signup/passkey/")
+    assert response.status_code == 404
 
 
 def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):

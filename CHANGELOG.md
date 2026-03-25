@@ -28,6 +28,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Stable error taxonomy fields in API responses: `error.category` (`validation|auth|quota|retryable|internal`) and `error.retryable`.
 
 ### Fixed
+- Temporarily disabled passkey-based signup and login paths while passkey auth is unstable; auth pages now hide passkey actions and `/accounts/signup/passkey/` is no longer exposed.
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
 
 ### Changed
