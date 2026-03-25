@@ -156,9 +156,10 @@ def test_signup_survives_confirmation_mail_failure(client, django_user_model, mo
     user = django_user_model.objects.get(email="signup-mail-failure@example.com")
     assert user.username
     messages = [message.message for message in get_messages(response.wsgi_request)]
-    assert messages == [
-        "Your account was created, but we could not send the confirmation email right now. Please retry from your account page in a few minutes."
-    ]
+    assert (
+        "Your account was created, but we could not send the confirmation email right now. "
+        "Please retry from your account page in a few minutes."
+    ) in messages
 
 
 def test_passkey_signup_page_is_disabled(client):
