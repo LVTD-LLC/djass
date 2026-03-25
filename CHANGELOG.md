@@ -28,6 +28,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Stable error taxonomy fields in API responses: `error.category` (`validation|auth|quota|retryable|internal`) and `error.retryable`.
 
 ### Changed
+- Blog list/detail pages no longer render top tag chips in the page header/card metadata, reducing visual clutter while keeping layout spacing intact.
 - API key authentication for v1 project endpoints now accepts `X-API-Key` and `Authorization` header formats in addition to `?api_key=` query fallback.
 - Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
 - Spec 001 keeps async generation behavior (create returns queued project; status endpoint is canonical poll target).

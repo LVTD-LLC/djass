@@ -26,6 +26,7 @@ def test_blog_index_uses_redesigned_header(client):
     content = response.content.decode()
     assert "Djass Journal" in content
     assert "Build logs, product notes, and implementation details" in content
+    assert '<span class="rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">release</span>' not in content
 
 
 def test_blog_detail_uses_redesigned_shell(client):
@@ -44,6 +45,7 @@ def test_blog_detail_uses_redesigned_shell(client):
     content = response.content.decode()
     assert "Back to blog" in content
     assert post.title in content
+    assert '<span class="rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">architecture</span>' not in content
 
 
 def test_blog_posts_are_sorted_newest_first(client):
