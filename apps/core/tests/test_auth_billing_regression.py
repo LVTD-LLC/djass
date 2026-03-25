@@ -19,6 +19,8 @@ def test_signup_page_remains_email_only(client):
     content = response.content.decode()
     assert 'name="email"' in content
     assert 'name="username"' not in content
+    assert 'name="password1"' in content
+    assert 'name="password2"' not in content
 
 
 @pytest.mark.django_db
