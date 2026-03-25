@@ -3,7 +3,7 @@
 {% block meta %}
     <title>Djass - Pricing</title>
     <meta name="description"
-          content="One premium Djass plan for founders and teams who want a faster, cleaner Django SaaS starting point." />
+          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
     <meta name="keywords" content="" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical"
@@ -13,7 +13,7 @@
     <meta property="og:url"
           content="https://{{ request.get_host }}{% url 'pricing' %}" />
     <meta property="og:description"
-          content="One premium Djass plan for founders and teams who want a faster, cleaner Django SaaS starting point." />
+          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
     <meta property="og:image"
           content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
     <meta property="og:locale" content="en_US" />
@@ -22,7 +22,7 @@
     <meta name="twitter:site" content="@rasulkireev" />
     <meta name="twitter:title" content="Djass - Pricing" />
     <meta name="twitter:description"
-          content="One premium Djass plan for founders and teams who want a faster, cleaner Django SaaS starting point." />
+          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
     <meta name="twitter:image"
           content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
@@ -32,13 +32,13 @@
             <div class="mx-auto max-w-3xl text-center">
                 <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">One plan for serious Django SaaS work</h2>
                 <p class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
-                    $999 one-time for founders and teams shipping Django SaaS repeatedly
+                    $999 one-time for founders, builders, and teams shipping Django SaaS repeatedly
                 </p>
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
                     Djass is for builders who want <strong>speed, reliability, and repeatability</strong> without redoing the same setup on every new product. You get one premium plan for generating a strong baseline, then focusing on the work that makes your SaaS unique.
                 </p>
                 <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    If you only need a one-off template to tinker with, this is not the right product.
+                    If you only want a cheap template download to poke around once, this is not the right fit.
                 </p>
             </div>
             <div class="mx-auto mt-14 grid gap-6 lg:grid-cols-5">
@@ -60,14 +60,14 @@
                                 {% csrf_token %}
                                 <button type="submit"
                                         class="block w-full px-3 py-2 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
-                                    Unlock premium access
+                                    Unlock premium plan
                                 </button>
                             </form>
                         {% endif %}
                     {% else %}
                         <a href="{% url 'account_signup' %}"
                            aria-describedby="tier-lifetime"
-                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to unlock premium access</a>
+                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to unlock the premium plan</a>
                     {% endif %}
                     <ul role="list"
                         class="mt-8 space-y-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
@@ -89,7 +89,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Lifetime updates to the starter so each new build starts from current best practices
+                            Lifetime updates to the starter so every new build starts from a current, maintained baseline
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -99,7 +99,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Faster project kickoff with a repeatable baseline your team can trust
+                            Faster project kickoff with a repeatable baseline your team and coding agents can use the same way every time
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -109,7 +109,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Lower delivery risk from standardized scaffolding instead of ad-hoc project setup
+                            Lower setup risk with standardized scaffolding instead of rebuilding the same foundation from scratch
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -184,7 +184,7 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Djass - Pricing",
-    "description": "One premium Djass plan for founders and teams who want a faster, cleaner Django SaaS starting point.",
+    "description": "One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point.",
     "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}{% url 'pricing' %}",
     "author": {
