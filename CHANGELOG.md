@@ -44,6 +44,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
+- Landing and pricing copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
 - Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.
 - Generation now uses Cookiecutter Python API first with CLI fallback for resilience.
 - Media/artifact storage path is now configurable via `MEDIA_ROOT` and defaults to `/data/media` in production for persistent volumes.

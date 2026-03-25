@@ -14,18 +14,18 @@
             {% endif %}
             <div class="mx-auto max-w-5xl text-center">
                 <p class="inline-flex items-center rounded-full border border-emerald-300/80 bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
-                    API-first delivery for modern Django agencies
+                    Django SaaS starter, without setup drag
                 </p>
                 <h1 class="mt-8 text-balance text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl lg:text-7xl">
-                    Ship <span class="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">API-first, agent-ready</span> Django SaaS products with less setup drag.
+                    Generate a <span class="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">production-ready</span> Django SaaS starter without rebuilding the basics.
                 </h1>
                 <p class="mx-auto mt-7 max-w-3xl text-lg leading-8 text-gray-700 dark:text-gray-300">
-                    Djass is the API-first operational layer on top of <strong>django-saas-starter</strong>: agencies and coding agents define a project once, generation runs in the background, and teams get a production-grade codebase ZIP without template wrangling.
+                    Djass is the hosted workflow for <strong>django-saas-starter</strong>. Founders, product teams, and solo builders configure a project once, run generation in the background, and download a clean codebase ZIP ready for real product work.
                 </p>
                 <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-                    <a href="{% url 'pricing' %}"
+                    <a href="{% url 'account_signup' %}"
                        class="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:-translate-y-0.5 hover:bg-emerald-500">
-                        See the premium agency plan
+                        Generate your starter
                     </a>
                     <a href="{% url 'account_login' %}"
                        class="rounded-xl border border-gray-300/90 bg-white/80 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-gray-400 hover:bg-white dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-100 dark:hover:border-gray-600 dark:hover:bg-gray-900">
@@ -56,7 +56,7 @@
                         <div class="mt-4 grid gap-3 sm:grid-cols-2">
                             <div class="rounded-xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/80">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">UI flow</p>
-                                <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Open the web app, fill in your stack, and submit.</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Open the web app, choose your stack, and submit.</p>
                                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Best when a founder or teammate wants to configure a project manually in a few clicks.</p>
                             </div>
                             <div class="rounded-xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/80">
@@ -77,7 +77,7 @@
                         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-300">Step 3</p>
                         <h3 class="mt-3 text-base font-semibold text-gray-900 dark:text-gray-100">Download, inspect, and keep shipping</h3>
                         <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                            Grab the generated ZIP, review the project history, and hand the codebase to your team or coding agent for the next iteration.
+                            Grab the generated ZIP, review the project history, and hand the codebase to your team for the next iteration.
                         </p>
                     </div>
                 </div>
@@ -88,10 +88,10 @@
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mx-auto max-w-3xl text-center">
                 <h2 class="text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
-                    Production defaults, packaged for agency speed
+                    What you get with Djass
                 </h2>
                 <p class="mt-4 text-gray-600 dark:text-gray-300">
-                    Keep your delivery flow simple without sacrificing reliability. Djass keeps the baseline opinionated and practical.
+                    A serious Django SaaS foundation with the defaults most teams need before they start adding product-specific logic.
                 </p>
             </div>
             <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,7 +120,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Content</p>
                     <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">Marketing surfaces included</h3>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Landing, pricing, auth pages, docs, and blog support to ship customer-facing faster.
+                        Landing, pricing, auth pages, docs, and blog support so you can ship the whole product faster.
                     </p>
                 </div>
                 <div class="rounded-2xl border border-gray-200/80 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900/70">
@@ -148,7 +148,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">DX</p>
                     <h3 class="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">pytest + ruff + djlint</h3>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Opinionated quality tooling so teams can move quickly with guardrails.
+                        Opinionated quality tooling so you can move fast without losing confidence in the baseline.
                     </p>
                 </div>
                 <div class="rounded-2xl border border-gray-200/80 bg-white/80 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900/70">
@@ -158,13 +158,13 @@
                 </div>
             </div>
             <div class="mx-auto mt-12 max-w-4xl rounded-3xl border border-emerald-300/70 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 text-center text-white shadow-xl shadow-emerald-500/25 dark:border-emerald-500/30">
-                <h3 class="text-2xl font-semibold">Built for teams that need fast execution and clean handoff</h3>
+                <h3 class="text-2xl font-semibold">Start from a Django SaaS foundation that is ready for real work</h3>
                 <p class="mt-3 text-sm text-emerald-50">
-                    Use one premium plan to reduce setup variance and keep project delivery predictable across client work.
+                    Skip repetitive setup, keep your stack consistent, and spend your time on the parts users will actually notice.
                 </p>
                 <a href="{% url 'pricing' %}"
                    class="mt-6 inline-block rounded-xl bg-white px-6 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
-                    Check if Djass fits your workflow
+                    See pricing
                 </a>
             </div>
         </div>
