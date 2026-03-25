@@ -31,6 +31,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
 
 ### Changed
+- Pricing page copy now frames Djass as a product-led Django SaaS plan for founders, builders, and teams instead of agency/service work, while keeping pricing unchanged.
 - Blog list/detail pages no longer render top tag chips in the page header/card metadata, reducing visual clutter while keeping layout spacing intact.
 - API key authentication for v1 project endpoints now accepts `X-API-Key` and `Authorization` header formats in addition to `?api_key=` query fallback.
 - Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
