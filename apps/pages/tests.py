@@ -77,16 +77,21 @@ def test_signup_page_is_email_only(client):
     content = response.content.decode()
     assert 'name="email"' in content
     assert 'name="username"' not in content
+    assert 'name="password1"' in content
+    assert 'name="password2"' not in content
 
 
 @override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
-def test_signup_without_username_creates_user(client, django_user_model):
+def test_signup_without_username_creates_user(client, django_user_model, monkeypatch):
+    monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: "task-id")
+
     response = client.post(
         reverse("account_signup"),
         data={
             "email": "email-only-user@example.com",
             "password1": "StrongPass123!!",
-            "password2": "StrongPass123!!",
         },
     )
 
