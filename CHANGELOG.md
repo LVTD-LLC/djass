@@ -26,6 +26,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Initial tests for project creation queueing, dashboard history rendering, and download authorization.
 - Passkey authentication support (signup + login) using `django-allauth` MFA/WebAuthn.
 - Spec 001 (`/api/v1/projects`) contract implementation for agent-operable create/list/get/status endpoints with canonical response fields.
+- Spec 001 agent artifact download endpoint at `GET /api/v1/projects/{project_id}/download` for retrieving generated ZIPs with API keys.
 - Contract test suite for Spec 001 covering auth, happy path creation, pagination/filtering, and representative failure modes (`quota_exceeded`, `retryable_error`).
 - Versioned API contract documentation: `apps/docs/content/api/spec-001-agent-project-api-contract.md`.
 - Stable error taxonomy fields in API responses: `error.category` (`validation|auth|quota|retryable|internal`) and `error.retryable`.

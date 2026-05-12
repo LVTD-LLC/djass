@@ -28,6 +28,9 @@ def action_for_request(request: HttpRequest) -> str | None:
     if path.endswith("/status") and method == "GET":
         return ProjectAPIAuditLog.ACTION_STATUS
 
+    if path.endswith("/download") and method == "GET":
+        return ProjectAPIAuditLog.ACTION_DOWNLOAD
+
     if "/api/v1/projects/" in path and method == "GET":
         return ProjectAPIAuditLog.ACTION_GET
 

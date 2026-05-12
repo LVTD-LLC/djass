@@ -46,12 +46,14 @@ class ProjectAPIAuditLog(BaseModel):
     ACTION_LIST = "project.list"
     ACTION_GET = "project.get"
     ACTION_STATUS = "project.status"
+    ACTION_DOWNLOAD = "project.download"
 
     ACTION_CHOICES = (
         (ACTION_CREATE, "Create project"),
         (ACTION_LIST, "List projects"),
         (ACTION_GET, "Get project"),
         (ACTION_STATUS, "Get project status"),
+        (ACTION_DOWNLOAD, "Download project artifact"),
     )
 
     profile = models.ForeignKey(

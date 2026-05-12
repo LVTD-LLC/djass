@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.http import HttpRequest
+from django.http import FileResponse, HttpRequest
+from django.utils import timezone
 from django.utils.text import slugify
 from django_q.tasks import async_task
 from ninja import NinjaAPI, Query
@@ -14,6 +15,7 @@ from apps.api.auth import (
     session_auth,
     superuser_api_auth,
 )
+from apps.api.models import ProjectAPIAuditLog
 from apps.api.schemas import (
     ApiError,
     BlogPostIn,
@@ -45,6 +47,7 @@ ERROR_TAXONOMY = {
     "invalid_project_slug": {"category": "validation", "retryable": False},
     "validation_error": {"category": "validation", "retryable": False},
     "project_not_found": {"category": "validation", "retryable": False},
+    "artifact_not_ready": {"category": "retryable", "retryable": True},
     "retryable_error": {"category": "retryable", "retryable": True},
     "internal_error": {"category": "internal", "retryable": False},
     "http_error": {"category": "internal", "retryable": False},
@@ -732,3 +735,117 @@ def get_project_status_v1(request: HttpRequest, project_id: int):
         "finished_at": project.finished_at,
         "updated_at": project.updated_at,
     }
+
+
+@api.get(
+    "/v1/projects/{project_id}/download",
+    response={401: ApiError, 403: ApiError, 404: ApiError, 409: ApiError, 500: ApiError},
+    auth=[header_or_query_api_key_auth],
+    tags=["v1"],
+)
+def download_project_artifact_v1(request: HttpRequest, project_id: int):
+    principal = request.auth
+    profile = principal.profile if principal else None
+    if not profile:
+        return _error(401, "auth_required", "Authentication required.")
+
+    scope_error = _require_scope(principal, "projects:read")
+    if scope_error:
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=403,
+            principal=principal,
+            metadata={"error": "insufficient_scope", "required_scope": "projects:read"},
+        )
+        return scope_error
+
+    try:
+        project = Project.objects.select_related("artifact").get(id=project_id, user=profile.user)
+    except Project.DoesNotExist:
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=404,
+            principal=principal,
+            metadata={"error": "project_not_found", "project_id": project_id},
+        )
+        return _error(
+            404,
+            "project_not_found",
+            "Project not found.",
+            details={"project_id": project_id},
+        )
+    except Exception as exc:
+        logger.error(
+            "Internal project artifact download lookup failure",
+            error=str(exc),
+            user_id=profile.user_id,
+        )
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=500,
+            principal=principal,
+            metadata={"error": "internal_error", "project_id": project_id},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while fetching project artifact.",
+            details={"project_id": project_id, "retry_guidance": "Retry later."},
+        )
+
+    if project.status != ProjectStatus.READY or not hasattr(project, "artifact"):
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=409,
+            principal=principal,
+            project=project,
+            metadata={"error": "artifact_not_ready", "project_status": project.status},
+        )
+        return _error(
+            409,
+            "artifact_not_ready",
+            "Project artifact is not ready yet.",
+            details={
+                "project_id": project_id,
+                "status": project.status,
+                "retry_guidance": "Poll the status endpoint until artifact_ready is true.",
+            },
+        )
+
+    artifact = project.artifact
+    try:
+        artifact.zip_file.open("rb")
+    except Exception as exc:
+        logger.error(
+            "Internal project artifact file open failure", error=str(exc), project_id=project.id
+        )
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=500,
+            principal=principal,
+            project=project,
+            metadata={"error": "internal_error", "project_id": project_id},
+        )
+        return _error(
+            500,
+            "internal_error",
+            "Internal error while opening project artifact.",
+            details={"project_id": project_id, "retry_guidance": "Retry later."},
+        )
+
+    safe_slug = project.slug or slugify(project.name) or "project"
+    filename = f"{safe_slug}-{timezone.now().strftime('%Y%m%d')}.zip"
+    log_project_api_action(
+        request,
+        action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+        status_code=200,
+        principal=principal,
+        project=project,
+        metadata={"size_bytes": artifact.size_bytes, "sha256": artifact.sha256},
+    )
+    return FileResponse(artifact.zip_file, as_attachment=True, filename=filename)

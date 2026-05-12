@@ -1,9 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
 
 from apps.api.models import ProjectAPIAuditLog, ProjectAPIKey
 from apps.core.choices import ProfileStates
-from apps.core.models import Project, ProjectStatus
+from apps.core.models import Project, ProjectArtifact, ProjectStatus
 
 User = get_user_model()
 
@@ -69,6 +71,7 @@ class TestSpec001Contract:
         )
         assert client.get("/api/v1/projects/1").status_code == 401
         assert client.get("/api/v1/projects/1/status").status_code == 401
+        assert client.get("/api/v1/projects/1/download").status_code == 401
 
     def test_create_project_contract_happy_path(self, client, monkeypatch):
         _, profile = _create_user("specuser", "specuser@example.com", subscribed=True)
@@ -375,3 +378,92 @@ class TestSpec001Contract:
         assert audit.action == ProjectAPIAuditLog.ACTION_LIST
         assert audit.status_code == 401
         assert audit.metadata["api_key_present"] is True
+
+    def test_download_project_artifact_contract(self, client, tmp_path, settings, monkeypatch):
+        settings.MEDIA_ROOT = tmp_path
+        monkeypatch.setattr(
+            ProjectArtifact.zip_file.field, "storage", FileSystemStorage(location=tmp_path)
+        )
+        user, profile = _create_user("download", "download@example.com", subscribed=True)
+        project = Project.objects.create(
+            user=user,
+            name="Download Project",
+            slug="download_project",
+            input_payload={"project_name": "Download Project"},
+            status=ProjectStatus.READY,
+        )
+        artifact = ProjectArtifact.objects.create(
+            project=project,
+            size_bytes=8,
+            sha256="abc123",
+        )
+        artifact.zip_file.save("download_project.zip", ContentFile(b"PK\x03\x04test"), save=True)
+
+        response = client.get(
+            f"/api/v1/projects/{project.id}/download",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 200
+        assert response["Content-Type"] == "application/zip"
+        assert response["Content-Disposition"].startswith('attachment; filename="download_project-')
+        assert b"".join(response.streaming_content) == b"PK\x03\x04test"
+
+        audit = ProjectAPIAuditLog.objects.latest("created_at")
+        assert audit.action == ProjectAPIAuditLog.ACTION_DOWNLOAD
+        assert audit.status_code == 200
+        assert audit.project_id == project.id
+        assert audit.metadata == {"size_bytes": 8, "sha256": "abc123"}
+
+    def test_download_project_artifact_not_ready(self, client):
+        user, profile = _create_user("notready", "notready@example.com", subscribed=True)
+        project = Project.objects.create(
+            user=user,
+            name="Queued Project",
+            slug="queued_project",
+            input_payload={"project_name": "Queued Project"},
+            status=ProjectStatus.GENERATING,
+        )
+
+        response = client.get(
+            f"/api/v1/projects/{project.id}/download",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 409
+        body = response.json()
+        assert body["error"]["code"] == "artifact_not_ready"
+        assert body["error"]["category"] == "retryable"
+        assert body["error"]["retryable"] is True
+        assert body["error"]["details"]["status"] == ProjectStatus.GENERATING
+
+    def test_scoped_key_download_requires_read_scope(self, client, tmp_path, settings, monkeypatch):
+        settings.MEDIA_ROOT = tmp_path
+        monkeypatch.setattr(
+            ProjectArtifact.zip_file.field, "storage", FileSystemStorage(location=tmp_path)
+        )
+        user, profile = _create_user("downloadscope", "downloadscope@example.com", subscribed=True)
+        project = Project.objects.create(
+            user=user,
+            name="Download Scope",
+            slug="download_scope",
+            input_payload={"project_name": "Download Scope"},
+            status=ProjectStatus.READY,
+        )
+        artifact = ProjectArtifact.objects.create(project=project, size_bytes=8, sha256="abc123")
+        artifact.zip_file.save("download_scope.zip", ContentFile(b"PK\x03\x04test"), save=True)
+        scoped_key = ProjectAPIKey.objects.create(
+            profile=profile,
+            name="Create only",
+            scopes=["projects:create"],
+        )
+
+        response = client.get(
+            f"/api/v1/projects/{project.id}/download",
+            **_auth_headers(scoped_key.key),
+        )
+
+        assert response.status_code == 403
+        body = response.json()
+        assert body["error"]["code"] == "insufficient_scope"
+        assert body["error"]["details"]["required_scope"] == "projects:read"
