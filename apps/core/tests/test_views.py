@@ -63,6 +63,21 @@ def test_settings_upgrade_copy(auth_client, user):
     assert "forever updates" in content.lower()
 
 
+@pytest.mark.django_db
+def test_settings_shows_copyable_agent_api_key(auth_client, user):
+    EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
+
+    response = auth_client.get(reverse("settings"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Agent API key" in content
+    assert "Copy key" in content
+    assert "X-API-Key" in content
+    assert "Authorization: Bearer" in content
+    assert f'value="{user.profile.key}"' in content
+
+
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
 def test_get_price_id_for_plan_one_time():
     assert get_price_id_for_plan("one-time") == "price_one_time"
