@@ -10,21 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
+
 import environ
-import structlog
-import logging
+import logfire
 import sentry_sdk
+import structlog
+from sentry_sdk.integrations.anthropic import AnthropicIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.google_genai import GoogleGenAIIntegration
+from sentry_sdk.integrations.openai import OpenAIIntegration
+from sentry_sdk.integrations.pydantic_ai import PydanticAIIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from structlog_sentry import SentryProcessor
 
-import logfire
 from djass.logging_utils import scrubbing_callback
-
-
+from djass.sentry_utils import CustomLoggingIntegration, before_send, before_send_transaction
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +53,20 @@ if LOGFIRE_TOKEN:
     )
 
 SENTRY_DSN = env("SENTRY_DSN", default="")
+SENTRY_ENABLED = env.bool("SENTRY_ENABLED", default=bool(SENTRY_DSN) and ENVIRONMENT == "prod")
+SENTRY_ENVIRONMENT = env("SENTRY_ENVIRONMENT", default=ENVIRONMENT)
+SENTRY_RELEASE = env("SENTRY_RELEASE", default="")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=1.0)
+SENTRY_PROFILE_SESSION_SAMPLE_RATE = env.float("SENTRY_PROFILE_SESSION_SAMPLE_RATE", default=1.0)
+SENTRY_ENABLE_LOGS = env.bool("SENTRY_ENABLE_LOGS", default=True)
+SENTRY_SEND_DEFAULT_PII = env.bool("SENTRY_SEND_DEFAULT_PII", default=False)
+SENTRY_INCLUDE_LOCAL_VARIABLES = env.bool("SENTRY_INCLUDE_LOCAL_VARIABLES", default=False)
+SENTRY_MAX_BREADCRUMBS = env.int("SENTRY_MAX_BREADCRUMBS", default=100)
+SENTRY_AI_INCLUDE_PROMPTS = env.bool("SENTRY_AI_INCLUDE_PROMPTS", default=False)
+SENTRY_AI_HANDLED_TOOL_CALL_EXCEPTIONS = env.bool(
+    "SENTRY_AI_HANDLED_TOOL_CALL_EXCEPTIONS",
+    default=True,
+)
 
 
 # Quick-start development settings - unsuitable for production
@@ -59,7 +76,7 @@ SENTRY_DSN = env("SENTRY_DSN", default="")
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 SITE_URL = env("SITE_URL")
 
@@ -94,7 +111,6 @@ THIRD_PARTY_APPS = [
     "django_q",
     "django_extensions",
     "mjml",
-    
     "django_structlog",
 ]
 
@@ -103,9 +119,7 @@ CUSTOM_APPS = [
     "apps.api.ApiConfig",
     "apps.pages.PagesConfig",
     "apps.blog.BlogConfig",
-    
     "apps.docs.DocsConfig",
-    
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + CUSTOM_APPS
@@ -138,9 +152,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.current_state",
                 "apps.core.context_processors.posthog_api_key",
-                
                 "apps.core.context_processors.mjml_url",
-                
                 "apps.core.context_processors.available_social_providers",
                 "apps.pages.context_processors.referrer_banner",
             ],
@@ -218,10 +230,13 @@ aws_s3_endpoint_url = env("AWS_S3_ENDPOINT_URL", default="")
 
 # In production on CapRover, mount a persistent volume to this path.
 # Example: /captain/data/<app-name>/media -> /data/media
-MEDIA_ROOT = env("MEDIA_ROOT", default="/data/media" if ENVIRONMENT == "prod" else os.path.join(BASE_DIR, "media/"))
+MEDIA_ROOT = env(
+    "MEDIA_ROOT",
+    default="/data/media" if ENVIRONMENT == "prod" else os.path.join(BASE_DIR, "media/"),
+)
 
 if not aws_s3_endpoint_url:
-    MEDIA_URL = f"/media/"
+    MEDIA_URL = "/media/"
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -362,6 +377,7 @@ Q_CLUSTER = {
     "error_reporter": {},
 }
 
+
 def extract_from_record(logger, name, event_dict):
     """
     Extract thread name and add them to the event dict.
@@ -369,6 +385,7 @@ def extract_from_record(logger, name, event_dict):
     record = event_dict["_record"]
     event_dict["thread_id"] = record.thread
     return event_dict
+
 
 LOGGING = {
     "version": 1,
@@ -465,7 +482,7 @@ structlog_processors = [
     # structlog.processors.format_exc_info,
 ]
 
-if SENTRY_DSN and ENVIRONMENT == "prod":
+if SENTRY_ENABLED:
     structlog_processors.append(
         SentryProcessor(
             event_level=logging.ERROR,
@@ -501,25 +518,39 @@ if ENVIRONMENT == "prod":
     LOGGING["loggers"]["djass"]["level"] = env("DJANGO_LOG_LEVEL", default="INFO")
     LOGGING["loggers"]["djass"]["handlers"].append("json_console")
 
-if SENTRY_DSN and ENVIRONMENT == "prod":
+if SENTRY_ENABLED:
     Q_CLUSTER["error_reporter"]["sentry"] = {"dsn": SENTRY_DSN}
     sentry_sdk.init(
         debug=DEBUG,
         dsn=SENTRY_DSN,
-        environment=ENVIRONMENT,
-        send_default_pii=False,
-        traces_sample_rate=1,
-        profile_session_sample_rate=1,
+        environment=SENTRY_ENVIRONMENT,
+        release=SENTRY_RELEASE or None,
+        send_default_pii=SENTRY_SEND_DEFAULT_PII,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        profile_session_sample_rate=SENTRY_PROFILE_SESSION_SAMPLE_RATE,
         profile_lifecycle="trace",
+        enable_logs=SENTRY_ENABLE_LOGS,
+        max_breadcrumbs=SENTRY_MAX_BREADCRUMBS,
         integrations=[
-            DjangoIntegration(),
+            DjangoIntegration(
+                middleware_spans=True,
+                signals_spans=True,
+                cache_spans=True,
+            ),
             RedisIntegration(),
+            PydanticAIIntegration(
+                include_prompts=SENTRY_AI_INCLUDE_PROMPTS,
+                handled_tool_call_exceptions=SENTRY_AI_HANDLED_TOOL_CALL_EXCEPTIONS,
+            ),
+            OpenAIIntegration(include_prompts=SENTRY_AI_INCLUDE_PROMPTS),
+            AnthropicIntegration(include_prompts=SENTRY_AI_INCLUDE_PROMPTS),
+            GoogleGenAIIntegration(include_prompts=SENTRY_AI_INCLUDE_PROMPTS),
+            CustomLoggingIntegration(level=logging.INFO, event_level=logging.ERROR),
         ],
-        disabled_integrations=[
-            LoggingIntegration(),
-        ],
+        before_send=before_send,
+        before_send_transaction=before_send_transaction,
         attach_stacktrace=True,
-        include_local_variables=True,
+        include_local_variables=SENTRY_INCLUDE_LOCAL_VARIABLES,
     )
 
 
@@ -527,7 +558,7 @@ POSTHOG_API_KEY = env("POSTHOG_API_KEY", default="")
 POSTHOG_HOST = env("POSTHOG_HOST", default="https://us.i.posthog.com")
 
 
-BUTTONDOWN_API_KEY=env("BUTTONDOWN_API_KEY", default="")
+BUTTONDOWN_API_KEY = env("BUTTONDOWN_API_KEY", default="")
 
 
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
