@@ -17,6 +17,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 
 ### Added
+- Production Sentry observability configuration for Djass errors, logs, traces, profiles, Django/Redis/cache spans, and AI-agent spans via Pydantic AI/OpenAI/Anthropic/Google GenAI integrations.
 - Project dashboard flow for generated codebases: create project, queued generation status, retry, and ZIP download actions.
 - New `Project` and `ProjectArtifact` models for persisted generation history and downloadable artifacts.
 - Background generation task scaffold (`django-q2`) for cookiecutter execution and artifact packaging.

@@ -95,6 +95,17 @@ The command prints `STRIPE_PRICE_ID_ONE_TIME=...` so you can copy it to your env
 ### Observability
 
 - `SENTRY_DSN`
+- `SENTRY_ENABLED` (optional; defaults to enabled only when `SENTRY_DSN` is set in `prod`)
+- `SENTRY_ENVIRONMENT` (optional Sentry environment override)
+- `SENTRY_RELEASE` (optional release/version, ideally the deployed commit SHA)
+- `SENTRY_TRACES_SAMPLE_RATE` (default `1.0`)
+- `SENTRY_PROFILE_SESSION_SAMPLE_RATE` (default `1.0`)
+- `SENTRY_ENABLE_LOGS` (default `True`)
+- `SENTRY_SEND_DEFAULT_PII` (default `False`)
+- `SENTRY_INCLUDE_LOCAL_VARIABLES` (default `False`)
+- `SENTRY_MAX_BREADCRUMBS` (default `100`)
+- `SENTRY_AI_INCLUDE_PROMPTS` (default `False`; set to `True` only if prompt/response capture is acceptable)
+- `SENTRY_AI_HANDLED_TOOL_CALL_EXCEPTIONS` (default `True`)
 - `LOGFIRE_TOKEN`
 - `POSTHOG_API_KEY` (project API key `phc_...` used by Djass capture calls)
 - `POSTHOG_HOST` (`https://us.i.posthog.com` or `https://eu.i.posthog.com`)
