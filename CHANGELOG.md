@@ -31,6 +31,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Stable error taxonomy fields in API responses: `error.category` (`validation|auth|quota|retryable|internal`) and `error.retryable`.
 
 ### Fixed
+- Deployment workflows now use lowercase GHCR image names after the repository move to `LVTD-LLC`.
 - Temporarily disabled passkey-based signup and login paths while passkey auth is unstable; auth pages now hide passkey actions and `/accounts/signup/passkey/` is no longer exposed.
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
 - Mailgun sender-domain default now matches the verified Djass Mailgun domain (`mg.djass.dev`) to prevent `401 Forbidden` during signup confirmation sends when env overrides are not set.
