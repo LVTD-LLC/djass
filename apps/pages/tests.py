@@ -65,6 +65,36 @@ def test_login_page_hides_passkey_option(client):
     assert 'name="login"' in content
 
 
+def test_login_page_accepts_username_or_email_input(client):
+    response = client.get(reverse("account_login"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "Username or email" in content
+    assert 'type="text"' in content
+    assert 'autocomplete="username"' in content
+
+
+def test_login_accepts_email(client, user):
+    response = client.post(
+        reverse("account_login"),
+        data={"login": user.email, "password": "password123"},
+    )
+
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+
+
+def test_login_accepts_username(client, user):
+    response = client.post(
+        reverse("account_login"),
+        data={"login": user.username, "password": "password123"},
+    )
+
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+
+
 def test_signup_page_hides_passkey_option(client):
     response = client.get(reverse("account_signup"))
     assert response.status_code == 200
