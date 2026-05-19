@@ -1,60 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Djass logo</title>
-  <desc id="desc">A rounded emerald app icon with a white D monogram and code prompt marks.</desc>
+  <desc id="desc">A generated SaaS project package assembled from modular blocks.</desc>
   <defs>
-    <linearGradient id="badge" x1="190" y1="126" x2="850" y2="904" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#022c22"/>
+    <linearGradient id="background" x1="176" y1="104" x2="850" y2="902" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#052e2b"/>
       <stop offset="0.48" stop-color="#047857"/>
       <stop offset="1" stop-color="#0891b2"/>
     </linearGradient>
-    <linearGradient id="badgeHighlight" x1="246" y1="120" x2="784" y2="856" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#34d399" stop-opacity="0.72"/>
-      <stop offset="0.52" stop-color="#14b8a6" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#0e7490" stop-opacity="0.38"/>
+    <linearGradient id="glow" x1="236" y1="106" x2="760" y2="850" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6ee7b7" stop-opacity="0.62"/>
+      <stop offset="0.58" stop-color="#2dd4bf" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.35"/>
     </linearGradient>
-    <linearGradient id="monogram" x1="310" y1="210" x2="764" y2="794" gradientUnits="userSpaceOnUse">
+    <linearGradient id="topFace" x1="318" y1="180" x2="710" y2="434" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.72" stop-color="#ecfeff"/>
-      <stop offset="1" stop-color="#ccfbf1"/>
+      <stop offset="1" stop-color="#ecfeff"/>
+    </linearGradient>
+    <linearGradient id="leftFace" x1="284" y1="344" x2="520" y2="776" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dcfce7"/>
+      <stop offset="1" stop-color="#a7f3d0"/>
+    </linearGradient>
+    <linearGradient id="rightFace" x1="512" y1="398" x2="766" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ccfbf1"/>
+      <stop offset="1" stop-color="#67e8f9"/>
     </linearGradient>
   </defs>
 
-  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#badge)"/>
-  <rect x="84" y="84" width="856" height="856" rx="204" fill="url(#badgeHighlight)" opacity="0.58"/>
+  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#background)"/>
+  <rect x="86" y="86" width="852" height="852" rx="202" fill="url(#glow)" opacity="0.72"/>
 
-  <path
-    fill="url(#monogram)"
-    fill-rule="evenodd"
-    d="M274 196h264c84 0 157 15 219 45 62 30 110 72 144 124 34 52 51 111 51 177s-17 125-51 177c-34 52-82 94-144 124-62 30-135 45-219 45H274V196Zm134 134v364h128c83 0 150-25 200-75 51-50 76-119 76-207s-25-157-76-207c-50-50-117-75-200-75H408Z"
-  />
+  <path d="M176 716c118-82 206-128 334-128 139 0 227 43 338 126v100H176V716Z" fill="#022c22" opacity="0.18"/>
 
-  <path
-    d="M458 444 392 512l66 68"
-    fill="none"
-    stroke="#5eead4"
-    stroke-width="44"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M580 444 646 512l-66 68"
-    fill="none"
-    stroke="#22d3ee"
-    stroke-width="44"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="m541 418-52 188"
-    fill="none"
-    stroke="#ecfeff"
-    stroke-width="38"
-    stroke-linecap="round"
-    opacity="0.92"
-  />
+  <g>
+    <path d="M512 158 760 300 512 444 264 300 512 158Z" fill="url(#topFace)"/>
+    <path d="M264 300 512 444v356L264 656V300Z" fill="url(#leftFace)"/>
+    <path d="M760 300 512 444v356l248-144V300Z" fill="url(#rightFace)"/>
 
-  <rect x="408" y="640" width="210" height="38" rx="19" fill="#a7f3d0" opacity="0.88"/>
-  <rect x="408" y="690" width="126" height="34" rx="17" fill="#67e8f9" opacity="0.82"/>
-  <circle cx="744" cy="302" r="26" fill="#67e8f9"/>
-  <circle cx="806" cy="348" r="14" fill="#a7f3d0"/>
+    <path d="M512 444 264 300 512 158l248 142-248 144Z" fill="none" stroke="#022c22" stroke-opacity="0.1" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M512 444v356" fill="none" stroke="#022c22" stroke-opacity="0.1" stroke-width="22" stroke-linecap="round"/>
+
+    <path d="m394 286 82-48 78 45-82 48-78-45Z" fill="#047857"/>
+    <path d="m504 350 82-48 82 48-82 48-82-48Z" fill="#0891b2"/>
+    <path d="m334 348 78-45 54 31-78 45-54-31Z" fill="#14b8a6"/>
+
+    <path d="m330 462 116 68v44l-116-68v-44Z" fill="#065f46" opacity="0.52"/>
+    <path d="m330 554 116 68v44l-116-68v-44Z" fill="#047857" opacity="0.42"/>
+    <path d="m578 530 116-68v44l-116 68v-44Z" fill="#0e7490" opacity="0.54"/>
+    <path d="m578 622 88-52v44l-88 52v-44Z" fill="#0891b2" opacity="0.44"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M770 188v62" stroke="#a7f3d0" stroke-width="30"/>
+    <path d="M739 219h62" stroke="#a7f3d0" stroke-width="30"/>
+    <path d="M254 754v42" stroke="#67e8f9" stroke-width="24" opacity="0.82"/>
+    <path d="M233 775h42" stroke="#67e8f9" stroke-width="24" opacity="0.82"/>
+  </g>
 </svg>
