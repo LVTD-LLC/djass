@@ -1,232 +1,32 @@
-from types import SimpleNamespace
-
 import pytest
-import stripe
-from django.test import override_settings
 from django.urls import reverse
 
-from apps.core.choices import ProfileStates
 
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
 @pytest.mark.django_db
-def test_create_checkout_session_one_time_uses_payment_mode(auth_client, monkeypatch):
-    captured = {}
-    async_calls = []
-
-    def fake_customer_create(**_kwargs):
-        return SimpleNamespace(id="cus_one_time")
-
-    def fake_session_create(**kwargs):
-        captured.update(kwargs)
-        return SimpleNamespace(id="cs_test_checkout", url="https://example.com/checkout")
-
-    def fake_async_task(*args, **kwargs):
-        async_calls.append((args, kwargs))
-        return "task-id"
-
-    monkeypatch.setattr("apps.core.views.stripe.Customer.create", fake_customer_create)
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Price.retrieve",
-        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
-    )
-    monkeypatch.setattr("apps.core.views.stripe.checkout.Session.create", fake_session_create)
-    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
-
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
-
-    assert response.status_code == 302
-    assert captured["mode"] == "payment"
-    assert captured["metadata"]["plan"] == "one-time"
-    assert captured["success_url"].endswith(f"{reverse('project_new')}?checkout=success")
-    assert captured["cancel_url"].endswith(f"{reverse('pricing')}?checkout=canceled")
-    assert "subscription_data" not in captured
-    tracking_call = next(
-        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
-    )
-    assert tracking_call[1]["event_name"] == "checkout_started"
-    assert tracking_call[1]["properties"]["checkout_id"] == "cs_test_checkout"
-    assert tracking_call[1]["properties"]["plan"] == "one-time"
-    assert tracking_call[1]["properties"]["entrypoint"] == "ui"
-
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
-@pytest.mark.django_db
-def test_create_checkout_session_rejects_non_one_time_plan(auth_client, monkeypatch):
-    called = {}
-
-    def fake_customer_create(**_kwargs):
-        called["customer"] = True
-        return SimpleNamespace(id="cus_monthly")
-
-    def fake_session_create(**kwargs):
-        called["session"] = kwargs
-        return SimpleNamespace(url="https://example.com/checkout")
-
-    monkeypatch.setattr("apps.core.views.stripe.Customer.create", fake_customer_create)
-    monkeypatch.setattr("apps.core.views.stripe.checkout.Session.create", fake_session_create)
-
-    url = reverse("user_upgrade_checkout_session", args=[1, "monthly"])
-    response = auth_client.post(url)
-
-    assert response.status_code == 302
-    assert response.url == reverse("pricing")
-    assert called == {}
-
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
-@pytest.mark.django_db
-def test_create_checkout_session_prevents_duplicate_active_subscription(
-    auth_client,
-    user,
-    monkeypatch,
-):
-    user.profile.state = ProfileStates.SUBSCRIBED
-    user.profile.save(update_fields=["state"])
-
+def test_legacy_checkout_route_redirects_to_project_creation(auth_client, monkeypatch):
     monkeypatch.setattr(
         "apps.core.views.stripe.checkout.Session.create",
         lambda **_kwargs: (_ for _ in ()).throw(
-            AssertionError("Checkout session should not be created")
+            AssertionError("Checkout should not be started while generation is free")
         ),
     )
 
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
+    response = auth_client.post(reverse("user_upgrade_checkout_session", args=[1, "one-time"]))
 
     assert response.status_code == 302
     assert response.url == reverse("project_new")
 
 
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
 @pytest.mark.django_db
-def test_create_checkout_session_tracks_failure_when_customer_setup_fails(auth_client, monkeypatch):
-    async_calls = []
-
-    def fake_async_task(*args, **kwargs):
-        async_calls.append((args, kwargs))
-        return "task-id"
-
+def test_legacy_customer_portal_route_redirects_to_settings(auth_client, monkeypatch):
     monkeypatch.setattr(
-        "apps.core.views.stripe.Price.retrieve",
-        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
-    )
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Customer.create",
-        lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("boom")),
-    )
-    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
-
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
-
-    assert response.status_code == 302
-    assert response.url == reverse("pricing")
-    tracking_call = next(
-        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
-    )
-    assert tracking_call[1]["event_name"] == "checkout_failed"
-    assert tracking_call[1]["properties"]["reason"] == "customer_setup_failed"
-    assert tracking_call[1]["properties"]["funnel_step"] == "checkout_failed"
-
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
-@pytest.mark.django_db
-def test_create_checkout_session_tracks_failure_when_session_creation_fails(
-    auth_client,
-    monkeypatch,
-):
-    async_calls = []
-
-    def fake_async_task(*args, **kwargs):
-        async_calls.append((args, kwargs))
-        return "task-id"
-
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Price.retrieve",
-        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=99900),
-    )
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Customer.create",
-        lambda **_kwargs: SimpleNamespace(id="cus_one_time"),
-    )
-    monkeypatch.setattr(
-        "apps.core.views.stripe.checkout.Session.create",
-        lambda **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("boom")),
-    )
-    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
-
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
-
-    assert response.status_code == 302
-    assert response.url == reverse("pricing")
-    tracking_call = next(
-        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
-    )
-    assert tracking_call[1]["event_name"] == "checkout_failed"
-    assert tracking_call[1]["properties"]["reason"] == "session_creation_failed"
-    assert tracking_call[1]["properties"]["funnel_step"] == "checkout_failed"
-
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
-@pytest.mark.django_db
-def test_create_checkout_session_tracks_failure_when_price_validation_fails(auth_client, monkeypatch):
-    async_calls = []
-
-    def fake_async_task(*args, **kwargs):
-        async_calls.append((args, kwargs))
-        return "task-id"
-
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Price.retrieve",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(stripe.error.StripeError("bad price")),
-    )
-    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
-
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
-
-    assert response.status_code == 302
-    assert response.url == reverse("pricing")
-    tracking_call = next(
-        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
-    )
-    assert tracking_call[1]["event_name"] == "checkout_failed"
-    assert tracking_call[1]["properties"]["reason"] == "price_validation_failed"
-
-
-@override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})
-@pytest.mark.django_db
-def test_create_checkout_session_rejects_price_amount_mismatch(auth_client, monkeypatch):
-    async_calls = []
-
-    def fake_async_task(*args, **kwargs):
-        async_calls.append((args, kwargs))
-        return "task-id"
-
-    monkeypatch.setattr(
-        "apps.core.views.stripe.Price.retrieve",
-        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=120000),
-    )
-    monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
-    monkeypatch.setattr(
-        "apps.core.views.stripe.checkout.Session.create",
+        "apps.core.views.stripe.billing_portal.Session.create",
         lambda **_kwargs: (_ for _ in ()).throw(
-            AssertionError("Checkout session should not be created on amount mismatch")
+            AssertionError("Portal should not be opened while account access is free")
         ),
     )
 
-    url = reverse("user_upgrade_checkout_session", args=[1, "one-time"])
-    response = auth_client.post(url)
+    response = auth_client.get(reverse("create_customer_portal_session"))
 
     assert response.status_code == 302
-    assert response.url == reverse("pricing")
-    tracking_call = next(
-        call for call in async_calls if call[0][0] == "apps.core.tasks.track_event"
-    )
-    assert tracking_call[1]["event_name"] == "checkout_failed"
-    assert tracking_call[1]["properties"]["reason"] == "price_amount_mismatch"
-    assert tracking_call[1]["properties"]["expected_amount_cents"] == 99900
-    assert tracking_call[1]["properties"]["actual_amount_cents"] == 120000
+    assert response.url == reverse("settings")

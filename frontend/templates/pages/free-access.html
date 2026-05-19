@@ -1,73 +1,61 @@
 {% extends "base_landing.html" %}
 {% load webpack_loader static %}
 {% block meta %}
-    <title>Djass - Pricing</title>
+    <title>Djass - Free Access</title>
     <meta name="description"
-          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
+          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
     <meta name="keywords" content="" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical"
-          href="https://{{ request.get_host }}{% url 'pricing' %}" />
+          href="https://{{ request.get_host }}{% url 'free_access' %}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Djass - Pricing" />
+    <meta property="og:title" content="Djass - Free Access" />
     <meta property="og:url"
-          content="https://{{ request.get_host }}{% url 'pricing' %}" />
+          content="https://{{ request.get_host }}{% url 'free_access' %}" />
     <meta property="og:description"
-          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
+          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
     <meta property="og:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:creator" content="@rasulkireev" />
     <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Djass - Pricing" />
+    <meta name="twitter:title" content="Djass - Free Access" />
     <meta name="twitter:description"
-          content="One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point." />
+          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
     <meta name="twitter:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 {% block content %}
     <div class="py-24 bg-white dark:bg-gray-950 sm:py-32">
         <div class="px-6 mx-auto max-w-5xl lg:px-8">
             <div class="mx-auto max-w-3xl text-center">
-                <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">One plan for serious Django SaaS work</h2>
+                <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">Free access while Djass improves</h2>
                 <p class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
-                    $999 one-time for founders and teams shipping Django SaaS repeatedly
+                    Generate Django SaaS starters for free.
                 </p>
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-                    Djass is for builders who want <strong>speed, reliability, and repeatability</strong> without redoing the same setup on every new product. You get one premium plan for generating a strong baseline, then focusing on the work that makes your SaaS unique.
+                    Djass is open for more builders right now so people can try the workflow, generate real starter projects, and share the feedback that makes the product better faster.
                 </p>
                 <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    If you only want a cheap template download to poke around once, this is not the right fit.
+                    Create an account, configure a starter, and send notes from the in-app feedback button whenever something feels unclear or missing.
                 </p>
             </div>
             <div class="mx-auto mt-14 grid gap-6 lg:grid-cols-5">
                 <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900 lg:col-span-3">
-                    <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">Djass Premium Plan</h3>
-                    <p class="flex items-baseline gap-x-1 mt-6">
-                        <span class="text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">$999</span>
-                        <span class="text-sm font-semibold leading-6 text-gray-600 dark:text-gray-300">one-time</span>
+                    <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">Djass Free Access</h3>
+                    <p class="mt-6 text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Free for now</p>
+                    <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Project generation is available to every signed-in user while this early feedback window is open.
                     </p>
                     {% if user.is_authenticated %}
-                        {% if has_pro_subscription %}
-                            <a href="#"
-                               aria-describedby="tier-lifetime"
-                               class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Premium access unlocked</a>
-                        {% else %}
-                            <form method="post"
-                                  action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}"
-                                  class="mt-10">
-                                {% csrf_token %}
-                                <button type="submit"
-                                        class="block w-full px-3 py-2 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
-                                    Unlock premium plan
-                                </button>
-                            </form>
-                        {% endif %}
+                        <a href="{% url 'project_new' %}"
+                           aria-describedby="tier-free-access"
+                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create a project</a>
                     {% else %}
                         <a href="{% url 'account_signup' %}"
-                           aria-describedby="tier-lifetime"
-                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to unlock premium access</a>
+                           aria-describedby="tier-free-access"
+                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to start</a>
                     {% endif %}
                     <ul role="list"
                         class="mt-8 space-y-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
@@ -79,7 +67,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Unlimited starter generations for new SaaS products, experiments, and internal tools
+                            Generate starter projects for new SaaS products, experiments, and internal tools
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -89,7 +77,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Lifetime updates to the starter so every new build starts from a current, maintained baseline
+                            Use the web app or Projects API from your own scripts and coding agents
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -99,7 +87,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Faster project kickoff with a repeatable baseline your team and coding agents can use the same way every time
+                            Keep a dashboard history of generated projects and download ZIPs when builds finish
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -109,7 +97,7 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            Lower setup risk with standardized scaffolding instead of rebuilding the same foundation from scratch
+                            Share feedback directly from the product so rough edges can be fixed quickly
                         </li>
                         <li class="flex gap-x-3">
                             <svg class="flex-none w-5 h-6 text-green-600"
@@ -119,30 +107,30 @@
                                  data-slot="icon">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
                             </svg>
-                            No recurring billing
+                            Start from the maintained django-saas-starter baseline instead of rebuilding setup from scratch
                         </li>
                     </ul>
                 </div>
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-800 dark:bg-gray-900/50 lg:col-span-2">
                     <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">Who this is for</h4>
                     <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        <li>Solo founders and small teams building more than one Django product</li>
+                        <li>Solo founders and small teams testing a Django SaaS idea</li>
                         <li>Product teams that want a predictable starting point for new apps and experiments</li>
-                        <li>Builders who care about shipping faster without inheriting a messy baseline</li>
+                        <li>Builders willing to leave practical feedback after generating real projects</li>
                     </ul>
                     <h4 class="mt-8 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">
-                        Who this is not for
+                        What helps most
                     </h4>
                     <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        <li>Template collectors looking for the cheapest one-off download</li>
-                        <li>Teams that prefer rebuilding infrastructure from scratch every project</li>
-                        <li>Buyers without an active Django SaaS roadmap</li>
+                        <li>Try the full flow from setup to ZIP download</li>
+                        <li>Report confusing fields, missing defaults, and failed generations</li>
+                        <li>Share what you expected the generated starter to include</li>
                     </ul>
                     <p class="mt-8 text-sm leading-6 text-gray-600 dark:text-gray-300">
                         Want to inspect the foundation first?
                         <a href="https://github.com/rasulkireev/osig"
                            class="font-semibold text-green-700 hover:underline dark:text-green-400">Review the open-source baseline</a>
-                        and self-host path before buying. Premium is for builders who want the hosted workflow and a faster way to start.
+                        before generating your own starter in Djass.
                     </p>
                 </div>
             </div>
@@ -150,27 +138,27 @@
                 <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">FAQ</h3>
                 <dl class="mt-6 space-y-6 text-sm leading-6">
                     <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Why is this priced at $999?</dt>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Why is Djass free right now?</dt>
                         <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            Because it is built for people who repeatedly launch Django products. The value is in fewer setup cycles, fewer avoidable mistakes, and a more repeatable process every time you start something new.
+                            More usage means better feedback. The goal is to get more people through the complete generation flow, learn what breaks or feels unclear, and improve the product quickly.
                         </dd>
                     </div>
                     <div>
                         <dt class="font-semibold text-gray-900 dark:text-gray-100">What exactly is included?</dt>
                         <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            One premium plan: unlimited starter generations, lifetime updates, and access to the same structured baseline used to kick off Django SaaS products quickly.
+                            You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API.
                         </dd>
                     </div>
                     <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">How do I know this is not just another template?</dt>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">What kind of feedback is useful?</dt>
                         <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            You can review the open-source baseline and self-host path before buying. Premium is for people who want the hosted workflow and a more repeatable way to start new products.
+                            Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.
                         </dd>
                     </div>
                     <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Is this right for solo builders?</dt>
+                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Could access change later?</dt>
                         <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            If you are shipping products regularly, yes. If you are only browsing for a cheap one-time template, no.
+                            Possibly. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
                         </dd>
                     </div>
                 </dl>
@@ -183,10 +171,10 @@
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Djass - Pricing",
-    "description": "One premium Djass plan for founders, builders, and teams who want a faster, cleaner Django SaaS starting point.",
-    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}{% url 'pricing' %}",
+    "name": "Djass - Free Access",
+    "description": "Djass project generation is free while more builders try it, share feedback, and help improve the workflow.",
+    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+    "url": "https://{{ request.get_host }}{% url 'free_access' %}",
     "author": {
       "@type": "Person",
       "name": "Rasul"
