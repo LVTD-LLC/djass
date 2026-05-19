@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="#" width="230" alt="Djass Logo">
+  <img src="frontend/vendors/images/logo.svg" width="160" alt="Djass Logo">
 </p>
 
 <div align="center">
