@@ -5,10 +5,12 @@ import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
+from apps.api.schemas import ProjectCreateIn
+from apps.core.forms import ProjectCreateForm
 from apps.core.generator_options import (
     COOKIECUTTER_FIELD_DEFAULTS,
+    get_generator_option_catalog,
     get_generator_option_groups,
-    serialize_cookiecutter_defaults,
 )
 
 
@@ -32,10 +34,30 @@ def test_generator_options_are_grouped_by_category():
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
 
 
-def test_sync_cookiecutter_options_check_passes_when_snapshot_matches(tmp_path):
+def test_api_and_mcp_catalog_payloads_match():
+    catalog = get_generator_option_catalog()
+
+    assert catalog.as_api_payload() == catalog.as_mcp_payload()
+    assert catalog.as_api_payload()["groups"] == get_generator_option_groups()
+
+
+def test_catalog_feature_flags_feed_ui_api_and_mcp():
+    catalog = get_generator_option_catalog()
+    feature_flag_keys = {field.key for field in catalog.feature_flags}
+
+    assert feature_flag_keys.issubset(ProjectCreateForm().fields)
+    assert feature_flag_keys.issubset(ProjectCreateIn.model_fields)
+    assert {
+        option["key"]
+        for group in catalog.as_mcp_payload()["groups"]
+        for option in group["options"]
+    } == feature_flag_keys
+
+
+def test_sync_cookiecutter_options_check_passes_when_catalog_matches(tmp_path):
     source_path = tmp_path / "cookiecutter.json"
     source_path.write_text(
-        serialize_cookiecutter_defaults(COOKIECUTTER_FIELD_DEFAULTS),
+        json.dumps(COOKIECUTTER_FIELD_DEFAULTS, indent=2) + "\n",
         encoding="utf-8",
     )
 

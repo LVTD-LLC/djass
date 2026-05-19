@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Any, Literal
 
 from ninja import Schema
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, create_model
 
 from apps.blog.choices import BlogPostStatus
-from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, get_generator_option_catalog
 
 
 class SubmitFeedbackIn(Schema):
@@ -57,31 +57,31 @@ class ApiError(Schema):
 YNFlag = Literal["y", "n"]
 
 
-class ProjectCreateIn(Schema):
+class ProjectCreateBase(Schema):
     model_config = ConfigDict(extra="allow")
 
-    project_name: str
-    project_slug: str
-    project_description: str = ""
-    repo_url: str = ""
-    author_name: str = ""
-    author_email: str = ""
-    author_url: str = ""
-    project_main_color: str = "green"
-    use_posthog: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_posthog"]
-    use_chatwoot: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_chatwoot"]
-    use_buttondown: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_buttondown"]
-    use_s3: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_s3"]
-    use_stripe: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_stripe"]
-    use_sentry: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_sentry"]
-    generate_blog: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["generate_blog"]
-    generate_docs: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["generate_docs"]
-    use_mjml: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_mjml"]
-    use_ai: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_ai"]
-    use_logfire: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_logfire"]
-    use_healthchecks: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_healthchecks"]
-    use_mcp: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_mcp"]
-    use_ci: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_ci"]
+
+def _project_create_fields() -> dict[str, tuple[Any, Any]]:
+    fields = {
+        "project_name": (str, ...),
+        "project_slug": (str, ...),
+        "project_description": (str, COOKIECUTTER_FIELD_DEFAULTS["project_description"]),
+        "repo_url": (str, COOKIECUTTER_FIELD_DEFAULTS["repo_url"]),
+        "author_name": (str, COOKIECUTTER_FIELD_DEFAULTS["author_name"]),
+        "author_email": (str, ""),
+        "author_url": (str, COOKIECUTTER_FIELD_DEFAULTS["author_url"]),
+        "project_main_color": (str, COOKIECUTTER_FIELD_DEFAULTS["project_main_color"]),
+    }
+    for option in get_generator_option_catalog().feature_flags:
+        fields[option.key] = (YNFlag, option.default)
+    return fields
+
+
+ProjectCreateIn = create_model(
+    "ProjectCreateIn",
+    __base__=ProjectCreateBase,
+    **_project_create_fields(),
+)
 
 
 class ProjectGeneratorOptionOut(Schema):

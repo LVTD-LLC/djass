@@ -73,7 +73,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
 ### 4.1 Project options
 
 **Method/Path:** `GET /project-options`
-**Purpose:** return the current cookiecutter option defaults grouped for UI/API clients.
+**Purpose:** return the current generator option catalog grouped for UI/API clients.
 
 #### Success response (`200`)
 
@@ -105,7 +105,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
 ```
 
 Notes:
-- `defaults` mirrors the checked-in `cookiecutter.json` snapshot used by Djass.
+- `defaults` mirrors the typed generator option catalog used by Djass.
 - `groups` contains feature flags only; identity/metadata fields stay in the create payload.
 - create requests use the same flat option keys shown in `groups[].options[]`.
 

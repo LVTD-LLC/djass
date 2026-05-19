@@ -37,7 +37,7 @@ from apps.core.choices import ProfileStates
 from apps.core.generator_options import (
     COOKIECUTTER_FIELD_DEFAULTS,
     MODULE_FLAG_KEYS,
-    get_generator_option_groups,
+    get_generator_option_catalog,
 )
 from apps.core.models import Feedback, Project, ProjectStatus
 from djass.utils import get_djass_logger
@@ -380,10 +380,7 @@ def user_settings(request: HttpRequest):
     tags=["v1"],
 )
 def get_project_options_v1(request: HttpRequest):
-    return {
-        "defaults": COOKIECUTTER_FIELD_DEFAULTS,
-        "groups": get_generator_option_groups(),
-    }
+    return get_generator_option_catalog().as_api_payload()
 
 
 @api.post(

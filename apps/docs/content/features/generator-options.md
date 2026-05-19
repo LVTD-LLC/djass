@@ -7,20 +7,19 @@ author: Rasul
 
 When creating a project in Djass, each option toggles concrete code/config in the generated repository.
 
-Djass keeps a checked-in snapshot of the starter template's `cookiecutter.json` at
-`apps/core/data/cookiecutter-options.json`. Run:
+Djass keeps the supported starter template fields in the typed catalog at
+`apps/core/generator_options.py`. That catalog feeds the UI, API, and MCP payload shape so
+all entrypoints expose the same options and category metadata.
+
+Run:
 
 ```bash
 python manage.py sync_cookiecutter_options --check
 ```
 
-to detect upstream drift, or:
-
-```bash
-python manage.py sync_cookiecutter_options --write
-```
-
-to refresh the snapshot after `django-saas-starter` changes.
+to detect upstream drift after `django-saas-starter` changes. If the command fails, update
+the catalog defaults, labels, and categories intentionally instead of copying raw
+`cookiecutter.json` values into the UI.
 
 ## Core fields
 

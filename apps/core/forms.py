@@ -74,20 +74,34 @@ class ProjectCreateForm(forms.ModelForm):
         model = Project
         fields = []
 
-    project_name = forms.CharField(max_length=255, initial="My Awesome Project", required=True)
+    project_name = forms.CharField(
+        max_length=255,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_name"],
+        required=True,
+    )
     project_slug = forms.CharField(max_length=255, required=True)
     project_description = forms.CharField(
         max_length=255,
-        initial="This project will help you be the best in the world",
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_description"],
         required=False,
     )
-    author_name = forms.CharField(max_length=255, initial="Jane Doe", required=False)
+    author_name = forms.CharField(
+        max_length=255,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["author_name"],
+        required=False,
+    )
     author_email = forms.EmailField(required=False)
-    project_main_color = forms.CharField(max_length=32, initial="green", required=False)
+    project_main_color = forms.CharField(
+        max_length=32,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_main_color"],
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.fields["repo_url"].initial = COOKIECUTTER_FIELD_DEFAULTS["repo_url"]
+        self.fields["author_url"].initial = COOKIECUTTER_FIELD_DEFAULTS["author_url"]
         for field_name in MODULE_FLAG_KEYS:
             self.fields[field_name] = forms.ChoiceField(
                 choices=self.BOOL_CHOICES,
