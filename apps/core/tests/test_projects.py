@@ -32,6 +32,7 @@ class TestProjectFlow:
                 "author_url": "",
                 "project_main_color": "green",
                 "use_posthog": "y",
+                "use_chatwoot": "n",
                 "use_buttondown": "y",
                 "use_s3": "y",
                 "use_stripe": "y",
@@ -42,6 +43,7 @@ class TestProjectFlow:
                 "use_ai": "y",
                 "use_logfire": "y",
                 "use_healthchecks": "y",
+                "use_mcp": "n",
                 "use_ci": "y",
             },
             follow=True,
@@ -50,6 +52,8 @@ class TestProjectFlow:
         assert response.status_code == 200
         project = Project.objects.get(user=response.wsgi_request.user)
         assert project.status == ProjectStatus.QUEUED
+        assert project.input_payload["use_chatwoot"] == "n"
+        assert project.input_payload["use_mcp"] == "n"
         generation_call = next(
             call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
         )
@@ -84,6 +88,7 @@ class TestProjectFlow:
                 "author_url": "",
                 "project_main_color": "green",
                 "use_posthog": "y",
+                "use_chatwoot": "n",
                 "use_buttondown": "y",
                 "use_s3": "y",
                 "use_stripe": "y",
@@ -94,6 +99,7 @@ class TestProjectFlow:
                 "use_ai": "y",
                 "use_logfire": "y",
                 "use_healthchecks": "y",
+                "use_mcp": "n",
                 "use_ci": "y",
             },
         )
@@ -137,6 +143,7 @@ class TestProjectFlow:
                 "author_url": "",
                 "project_main_color": "green",
                 "use_posthog": "y",
+                "use_chatwoot": "n",
                 "use_buttondown": "y",
                 "use_s3": "y",
                 "use_stripe": "y",
@@ -147,6 +154,7 @@ class TestProjectFlow:
                 "use_ai": "y",
                 "use_logfire": "y",
                 "use_healthchecks": "y",
+                "use_mcp": "n",
                 "use_ci": "y",
             },
         )

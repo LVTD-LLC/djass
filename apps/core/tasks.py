@@ -9,59 +9,19 @@ from importlib import metadata as importlib_metadata
 from pathlib import Path
 from urllib.parse import unquote
 
-from cookiecutter.main import cookiecutter
-
 import posthog
 import requests
+from cookiecutter.main import cookiecutter
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
 
-
-COOKIECUTTER_FIELD_DEFAULTS = OrderedDict(
-    [
-        ("project_name", "My Awesome Project"),
-        ("project_slug", "my_awesome_project"),
-        ("repo_url", "https://github.com/cookiecutter/cookiecutter"),
-        ("project_description", "This project will help you be the best in the world"),
-        ("author_name", "Jane Doe"),
-        ("author_email", "janedoe@example.com"),
-        ("author_url", ""),
-        ("project_main_color", "green"),
-        ("use_posthog", "y"),
-        ("use_buttondown", "y"),
-        ("use_s3", "y"),
-        ("use_stripe", "y"),
-        ("use_sentry", "y"),
-        ("generate_blog", "y"),
-        ("generate_docs", "y"),
-        ("use_mjml", "y"),
-        ("use_ai", "y"),
-        ("use_logfire", "y"),
-        ("use_healthchecks", "y"),
-        ("use_ci", "y"),
-    ]
-)
-
-MODULE_FLAG_KEYS = [
-    "use_posthog",
-    "use_buttondown",
-    "use_s3",
-    "use_stripe",
-    "use_sentry",
-    "generate_blog",
-    "generate_docs",
-    "use_mjml",
-    "use_ai",
-    "use_logfire",
-    "use_healthchecks",
-    "use_ci",
-]
 
 METADATA_FILE_NAME = "project-metadata.json"
 MANIFEST_FILE_NAME = "djass-manifest.json"
@@ -258,7 +218,12 @@ def _write_generation_metadata(project: Project, generated_dir: Path, payload: O
                     ]
                 ),
             ),
-            ("project", OrderedDict([("id", project.id), ("name", project.name), ("slug", project.slug)])),
+            (
+                "project",
+                OrderedDict(
+                    [("id", project.id), ("name", project.name), ("slug", project.slug)]
+                ),
+            ),
             ("metadata_file", METADATA_FILE_NAME),
             ("input_payload", payload),
             ("module_flags", module_flags),
@@ -360,11 +325,13 @@ def generate_project_artifact(project_id: int) -> str:
                     raise RuntimeError(
                         "Cookiecutter CLI generation failed. "
                         f"Exit code: {process.returncode}. stderr: {process.stderr.strip()[:500]}"
-                    )
+                    ) from python_api_exc
 
                 generated_items = sorted(path for path in output_root.iterdir() if path.is_dir())
                 if not generated_items:
-                    raise RuntimeError("No generated project directory found after cookiecutter run.")
+                    raise RuntimeError(
+                        "No generated project directory found after cookiecutter run."
+                    ) from python_api_exc
                 generated_dir_path = generated_items[0]
 
             generated_dir = generated_dir_path
@@ -401,5 +368,10 @@ def generate_project_artifact(project_id: int) -> str:
             f"{exc.__class__.__name__}: {str(exc)[:900]}"
         )
         project.save(update_fields=["status", "finished_at", "error_message", "updated_at"])
-        logger.error("Project generation failed", project_id=project.id, error=str(exc), exc_info=True)
+        logger.error(
+            "Project generation failed",
+            project_id=project.id,
+            error=str(exc),
+            exc_info=True,
+        )
         raise

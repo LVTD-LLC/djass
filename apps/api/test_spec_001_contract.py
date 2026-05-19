@@ -4,7 +4,9 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 
 from apps.api.models import ProjectAPIAuditLog, ProjectAPIKey
+from apps.api.schemas import ProjectCreateIn
 from apps.core.choices import ProfileStates
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
 
 User = get_user_model()
@@ -26,6 +28,7 @@ CREATE_PAYLOAD = {
     "author_url": "https://example.com",
     "project_main_color": "green",
     "use_posthog": "y",
+    "use_chatwoot": "n",
     "use_buttondown": "y",
     "use_s3": "y",
     "use_stripe": "y",
@@ -36,6 +39,7 @@ CREATE_PAYLOAD = {
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
+    "use_mcp": "n",
     "use_ci": "y",
 }
 
@@ -55,6 +59,38 @@ def _create_user(username: str, email: str, subscribed: bool):
 
 def _auth_headers(api_key: str):
     return {"HTTP_X_API_KEY": api_key}
+
+
+def test_create_project_schema_exposes_current_generator_flags():
+    schema_fields = ProjectCreateIn.model_fields
+
+    assert ProjectCreateIn.model_config["extra"] == "allow"
+    assert set(MODULE_FLAG_KEYS).issubset(schema_fields.keys())
+    for field_name in MODULE_FLAG_KEYS:
+        assert schema_fields[field_name].default == COOKIECUTTER_FIELD_DEFAULTS[field_name]
+
+
+def test_project_options_endpoint_contract(client):
+    response = client.get("/api/v1/project-options")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["defaults"]["use_chatwoot"] == "n"
+    assert body["defaults"]["use_mcp"] == "n"
+
+    groups = {group["key"]: group for group in body["groups"]}
+    assert {option["key"] for option in groups["monitoring"]["options"]} >= {
+        "use_posthog",
+        "use_sentry",
+        "use_logfire",
+        "use_healthchecks",
+    }
+    assert {option["key"] for option in groups["cx"]["options"]} >= {
+        "use_chatwoot",
+        "use_buttondown",
+        "use_mjml",
+    }
+    assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
 
 
 @pytest.mark.django_db
@@ -100,6 +136,8 @@ class TestSpec001Contract:
         assert project["artifact_ready"] is False
         assert isinstance(project["input_payload"], dict)
         assert project["input_payload"]["project_name"] == CREATE_PAYLOAD["project_name"]
+        assert project["input_payload"]["use_chatwoot"] == "n"
+        assert project["input_payload"]["use_mcp"] == "n"
 
         created = Project.objects.get(id=project["id"])
         assert created.user_id == profile.user_id
@@ -149,6 +187,22 @@ class TestSpec001Contract:
         assert tracking_call[1]["event_name"] == "project_create_failed"
         assert tracking_call[1]["properties"]["reason"] == "invalid_project_slug"
         assert tracking_call[1]["properties"]["entrypoint"] == "api"
+
+    def test_create_project_rejects_unknown_generator_options(self, client):
+        _, profile = _create_user("unknown", "unknown@example.com", subscribed=True)
+
+        response = client.post(
+            "/api/v1/projects",
+            data={**CREATE_PAYLOAD, "use_future_feature": "y"},
+            content_type="application/json",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 400
+        body = response.json()
+        assert body["error"]["code"] == "invalid_generator_option"
+        assert body["error"]["category"] == "validation"
+        assert body["error"]["details"]["unknown"] == ["use_future_feature"]
 
     def test_list_get_and_status_contract(self, client):
         user, profile = _create_user("owner", "owner@example.com", subscribed=True)

@@ -2,7 +2,13 @@ from allauth.account.forms import LoginForm, SignupForm
 from django import forms
 from django.utils.text import slugify
 
-from apps.core.models import Project, Profile
+from apps.core.generator_options import (
+    COOKIECUTTER_FIELD_DEFAULTS,
+    MODULE_FLAG_KEYS,
+    get_generator_option_groups,
+    get_option_label,
+)
+from apps.core.models import Profile, Project
 from apps.core.utils import DivErrorList
 
 
@@ -49,49 +55,61 @@ class ProfileUpdateForm(forms.ModelForm):
 class ProjectCreateForm(forms.ModelForm):
     BOOL_CHOICES = (("y", "Yes"), ("n", "No"))
     TEXT_INPUT_CLASS = (
-        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 "
-        "placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
+        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm "
+        "text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 "
+        "focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
         "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
     )
     SELECT_CLASS = (
-        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 "
+        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm "
+        "text-gray-900 "
         "focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
         "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
     )
 
     repo_url = forms.URLField(required=False)
     author_url = forms.URLField(required=False)
-    use_posthog = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_buttondown = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_s3 = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_stripe = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_sentry = forms.ChoiceField(choices=BOOL_CHOICES)
-    generate_blog = forms.ChoiceField(choices=BOOL_CHOICES)
-    generate_docs = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_mjml = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_ai = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_logfire = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_healthchecks = forms.ChoiceField(choices=BOOL_CHOICES)
-    use_ci = forms.ChoiceField(choices=BOOL_CHOICES)
 
     class Meta:
         model = Project
         fields = []
 
-    project_name = forms.CharField(max_length=255, initial="My Awesome Project", required=True)
+    project_name = forms.CharField(
+        max_length=255,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_name"],
+        required=True,
+    )
     project_slug = forms.CharField(max_length=255, required=True)
     project_description = forms.CharField(
         max_length=255,
-        initial="This project will help you be the best in the world",
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_description"],
         required=False,
     )
-    author_name = forms.CharField(max_length=255, initial="Jane Doe", required=False)
+    author_name = forms.CharField(
+        max_length=255,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["author_name"],
+        required=False,
+    )
     author_email = forms.EmailField(required=False)
-    project_main_color = forms.CharField(max_length=32, initial="green", required=False)
+    project_main_color = forms.CharField(
+        max_length=32,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["project_main_color"],
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.fields["repo_url"].initial = COOKIECUTTER_FIELD_DEFAULTS["repo_url"]
+        self.fields["author_url"].initial = COOKIECUTTER_FIELD_DEFAULTS["author_url"]
+        for field_name in MODULE_FLAG_KEYS:
+            self.fields[field_name] = forms.ChoiceField(
+                choices=self.BOOL_CHOICES,
+                initial=COOKIECUTTER_FIELD_DEFAULTS[field_name],
+                label=get_option_label(field_name),
+                required=False,
+            )
+
         if self.user and self.user.email:
             self.fields["author_email"].initial = self.user.email
 
@@ -101,6 +119,21 @@ class ProjectCreateForm(forms.ModelForm):
                 widget.attrs["class"] = self.SELECT_CLASS
             else:
                 widget.attrs["class"] = self.TEXT_INPUT_CLASS
+
+    @property
+    def generator_option_fields(self):
+        return [self[field_name] for field_name in MODULE_FLAG_KEYS]
+
+    @property
+    def generator_option_groups(self):
+        return [
+            {
+                "key": group["key"],
+                "label": group["label"],
+                "fields": [self[option["key"]] for option in group["options"]],
+            }
+            for group in get_generator_option_groups()
+        ]
 
     def clean_project_slug(self):
         value = self.cleaned_data.get("project_slug", "").strip()
@@ -125,26 +158,11 @@ class ProjectCreateForm(forms.ModelForm):
         return value or "green"
 
     def get_cookiecutter_payload(self):
-        keys = [
-            "project_name",
-            "project_slug",
-            "repo_url",
-            "project_description",
-            "author_name",
-            "author_email",
-            "author_url",
-            "project_main_color",
-            "use_posthog",
-            "use_buttondown",
-            "use_s3",
-            "use_stripe",
-            "use_sentry",
-            "generate_blog",
-            "generate_docs",
-            "use_mjml",
-            "use_ai",
-            "use_logfire",
-            "use_healthchecks",
-            "use_ci",
-        ]
-        return {key: self.cleaned_data[key] for key in keys}
+        payload = {}
+        for key, default_value in COOKIECUTTER_FIELD_DEFAULTS.items():
+            value = self.cleaned_data.get(key)
+            if key in MODULE_FLAG_KEYS and value in (None, ""):
+                payload[key] = default_value
+            else:
+                payload[key] = value if value is not None else default_value
+        return payload

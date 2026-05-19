@@ -8,10 +8,11 @@
 ## 1) What this API does
 
 This API lets an agent:
-1. create a new Djass project generation job,
-2. list the caller's projects,
-3. fetch one project by id,
-4. poll status until generation is complete.
+1. inspect the current generator option catalog,
+2. create a new Djass project generation job,
+3. list the caller's projects,
+4. fetch one project by id,
+5. poll status until generation is complete.
 
 All data access is **owner-scoped**: keys can only see projects for their own profile.
 
@@ -19,7 +20,7 @@ All data access is **owner-scoped**: keys can only see projects for their own pr
 
 ## 2) Authentication and key scoping
 
-All endpoints require an API key.
+Project mutation and project history endpoints require an API key. The generator option catalog is public.
 
 ### Accepted auth formats (in lookup order)
 1. `X-API-Key: <key>`
@@ -33,6 +34,7 @@ All endpoints require an API key.
 ### Required scopes
 - `POST /projects` requires `projects:create`
 - `GET /projects`, `GET /projects/{id}`, `GET /projects/{id}/status` require `projects:read`
+- `GET /project-options` does not require authentication
 
 If scope is missing: `403` with `error.code = "insufficient_scope"`.
 
@@ -68,7 +70,46 @@ Retry guidance may appear in `error.details.retry_guidance`.
 
 ## 4) Endpoint reference
 
-### 4.1 Create project
+### 4.1 Project options
+
+**Method/Path:** `GET /project-options`
+**Purpose:** return the current generator option catalog grouped for UI/API clients.
+
+#### Success response (`200`)
+
+```json
+{
+  "defaults": {
+    "project_name": "My Awesome Project",
+    "project_slug": "{{ cookiecutter.project_name.lower()|replace(' ', '_')|replace('-', '_')|replace('.', '_')|trim() }}",
+    "repo_url": "https://github.com/cookiecutter/cookiecutter",
+    "use_posthog": "y",
+    "use_chatwoot": "n",
+    "use_mcp": "n"
+  },
+  "groups": [
+    {
+      "key": "monitoring",
+      "label": "Monitoring",
+      "options": [
+        {
+          "key": "use_posthog",
+          "label": "Use PostHog",
+          "default": "y",
+          "category": "monitoring"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Notes:
+- `defaults` mirrors the typed generator option catalog used by Djass.
+- `groups` contains feature flags only; identity/metadata fields stay in the create payload.
+- create requests use the same flat option keys shown in `groups[].options[]`.
+
+### 4.2 Create project
 
 **Method/Path:** `POST /projects`  
 **Purpose:** queue project generation from template settings.
@@ -86,6 +127,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
   "author_url": "https://acme.test",
   "project_main_color": "green",
   "use_posthog": "y",
+  "use_chatwoot": "n",
   "use_buttondown": "y",
   "use_s3": "y",
   "use_stripe": "y",
@@ -96,12 +138,14 @@ Retry guidance may appear in `error.details.retry_guidance`.
   "use_ai": "y",
   "use_logfire": "y",
   "use_healthchecks": "y",
+  "use_mcp": "n",
   "use_ci": "y"
 }
 ```
 
 Notes:
 - all feature flags are `"y"|"n"`
+- use `GET /project-options` to discover the current supported generator flags
 - `project_slug` is normalized (`slugify`, then `-` -> `_`)
 - if `author_email` is empty, backend fills it from profile email
 
@@ -130,6 +174,7 @@ Notes:
       "author_url": "https://acme.test",
       "project_main_color": "green",
       "use_posthog": "y",
+      "use_chatwoot": "n",
       "use_buttondown": "y",
       "use_s3": "y",
       "use_stripe": "y",
@@ -140,6 +185,7 @@ Notes:
       "use_ai": "y",
       "use_logfire": "y",
       "use_healthchecks": "y",
+      "use_mcp": "n",
       "use_ci": "y"
     }
   }
@@ -156,7 +202,7 @@ Notes:
 
 ---
 
-### 4.2 List projects
+### 4.3 List projects
 
 **Method/Path:** `GET /projects`  
 **Purpose:** list caller-owned projects with pagination and optional status filter.
@@ -206,7 +252,7 @@ Notes:
 
 ---
 
-### 4.3 Get project
+### 4.4 Get project
 
 **Method/Path:** `GET /projects/{project_id}`  
 **Purpose:** fetch one full project object.
@@ -222,7 +268,7 @@ Returns full `Project` object (same shape as `project` in create response).
 
 ---
 
-### 4.4 Get project status
+### 4.5 Get project status
 
 **Method/Path:** `GET /projects/{project_id}/status`  
 **Purpose:** lightweight polling endpoint.
@@ -270,6 +316,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "author_url": "https://acme.test",
     "project_main_color": "green",
     "use_posthog": "y",
+    "use_chatwoot": "n",
     "use_buttondown": "y",
     "use_s3": "y",
     "use_stripe": "y",
@@ -280,6 +327,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
+    "use_mcp": "n",
     "use_ci": "y"
   }'
 
