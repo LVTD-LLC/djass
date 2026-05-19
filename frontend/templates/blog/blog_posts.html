@@ -1,90 +1,79 @@
 {% extends "base_landing.html" %}
 {% load webpack_loader static %}
 {% block meta %}
-    <title>Djass Blog</title>
-    <meta name="description"
-          content="Web app wrapper around django-saas-starter cookiecutter." />
-    <meta name="keywords" content="" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical"
-          href="https://{{ request.get_host }}{% url 'blog_posts' %}" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Djass Blog" />
-    <meta property="og:url"
-          content="https://{{ request.get_host }}{% url 'blog_posts' %}" />
-    <meta property="og:description"
-          content="Web app wrapper around django-saas-starter cookiecutter." />
-    <meta property="og:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Djass Blog" />
-    <meta name="twitter:description"
-          content="Web app wrapper around django-saas-starter cookiecutter." />
-    <meta name="twitter:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <title>Djass Blog</title>
+  <meta name="description" content="Web app wrapper around django-saas-starter cookiecutter." />
+  <meta name="keywords" content="" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://{{ request.get_host }}{% url 'blog_posts' %}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Djass Blog" />
+  <meta property="og:url" content="https://{{ request.get_host }}{% url 'blog_posts' %}" />
+  <meta property="og:description" content="Web app wrapper around django-saas-starter cookiecutter." />
+  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:creator" content="@rasulkireev" />
+  <meta name="twitter:site" content="@rasulkireev" />
+  <meta name="twitter:title" content="Djass Blog" />
+  <meta name="twitter:description" content="Web app wrapper around django-saas-starter cookiecutter." />
+  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
+
 {% block content %}
-    <section class="relative px-4 pb-8 pt-4 md:pt-8">
-        <div class="mx-auto max-w-4xl">
-            <div class="rounded-3xl border border-gray-200/80 bg-white/80 p-8 shadow-lg shadow-emerald-100/60 backdrop-blur dark:border-gray-800 dark:bg-gray-900/70 dark:shadow-none md:p-10">
-                <p class="inline-flex items-center rounded-full border border-emerald-300/80 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
-                    Djass Journal
-                </p>
-                <h1 class="mt-5 text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                    Build logs, product notes, and implementation details
-                </h1>
-                <p class="mt-4 text-base leading-7 text-gray-600 dark:text-gray-300">
-                    Practical writeups for teams shipping with django-saas-starter: architecture decisions, release notes, and lessons from production workflows.
-                </p>
-            </div>
-            {% if blog_posts %}
-                <div class="mt-8 space-y-4">
-                    {% for post in blog_posts %}
-                        <a href="{{ post.get_absolute_url }}"
-                           class="group block rounded-2xl border border-gray-200/80 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/70 dark:hover:border-emerald-500/40">
-                            <article class="flex items-start gap-4 sm:gap-5">
-                                {% if post.icon %}
-                                    <img src="{{ post.icon.url }}"
-                                         alt="{{ post.title }}"
-                                         class="h-16 w-16 flex-shrink-0 rounded-xl border border-gray-200 object-cover dark:border-gray-700 sm:h-20 sm:w-20">
-                                {% endif %}
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500 dark:text-gray-400">
-                                        {% if post.created_at %}<span>{{ post.created_at|date:"M j, Y" }}</span>{% endif %}
-                                    </div>
-                                    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-gray-900 transition-colors group-hover:text-emerald-700 dark:text-gray-100 dark:group-hover:text-emerald-300">
-                                        {{ post.title }}
-                                    </h2>
-                                    <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{{ post.description }}</p>
-                                </div>
-                            </article>
-                        </a>
-                    {% endfor %}
+  <section class="py-12 sm:py-16">
+    <div class="dj-container-narrow">
+      <header class="dj-panel p-6 sm:p-8">
+        <p class="dj-pill dj-pill-accent">Djass Journal</p>
+        <h1 class="mt-5 text-4xl font-semibold text-[var(--dj-heading)]">Build logs, product notes, and implementation details</h1>
+        <p class="mt-4 text-base leading-7 text-[var(--dj-muted)]">
+          Practical writeups for teams shipping with django-saas-starter: architecture decisions, release notes, and lessons from production workflows.
+        </p>
+      </header>
+
+      {% if blog_posts %}
+        <div class="mt-4 space-y-3">
+          {% for post in blog_posts %}
+            <a href="{{ post.get_absolute_url }}" class="dj-panel group block p-5 transition hover:border-[var(--dj-border-strong)]">
+              <article class="flex items-start gap-4 sm:gap-5">
+                {% if post.icon %}
+                  <img src="{{ post.icon.url }}" alt="{{ post.title }}" class="h-16 w-16 flex-shrink-0 rounded-lg border border-[var(--dj-border)] object-cover sm:h-20 sm:w-20">
+                {% endif %}
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--dj-soft)]">
+                    {% if post.created_at %}<span>{{ post.created_at|date:"M j, Y" }}</span>{% endif %}
+                  </div>
+                  <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)] transition-colors group-hover:text-[var(--dj-accent-strong)]">
+                    {{ post.title }}
+                  </h2>
+                  <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">{{ post.description }}</p>
                 </div>
-            {% else %}
-                <div class="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white/70 p-10 text-center dark:border-gray-700 dark:bg-gray-900/60">
-                    <p class="text-gray-600 dark:text-gray-300">No blog posts available yet.</p>
-                </div>
-            {% endif %}
+              </article>
+            </a>
+          {% endfor %}
         </div>
-    </section>
+      {% else %}
+        <div class="dj-panel mt-4 border-dashed p-10 text-center">
+          <p class="text-[var(--dj-muted)]">No blog posts available yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock content %}
+
 {% block schema %}
-    <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Djass Blog",
-    "description": "Web app wrapper around django-saas-starter cookiecutter.",
-    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}{% url 'blog_posts' %}",
-    "author": {
-      "@type": "Person",
-      "name": "Rasul"
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Djass Blog",
+      "description": "Web app wrapper around django-saas-starter cookiecutter.",
+      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+      "url": "https://{{ request.get_host }}{% url 'blog_posts' %}",
+      "author": {
+        "@type": "Person",
+        "name": "Rasul"
+      }
     }
-  }
-    </script>
+  </script>
 {% endblock schema %}

@@ -23,17 +23,18 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="px-4 py-16 mx-auto max-w-4xl sm:py-24 sm:px-6 lg:px-8">
+<div class="dj-container-narrow py-16 sm:py-24">
   <div class="text-center">
-    <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+    <p class="dj-kicker">Legal</p>
+    <h1 class="dj-section-title mt-3">
       Privacy Policy
     </h1>
-    <p class="mt-4 text-lg text-gray-600">
+    <p class="mt-4 text-lg text-[var(--dj-muted)]">
       Last updated: {{ now|date:"F Y" }}
     </p>
   </div>
 
-  <div class="mt-16 max-w-none prose prose-lg">
+  <article class="dj-legal-article dj-prose prose prose-lg mt-12 max-w-none">
     <h2>1. Information We Collect</h2>
     <p>
       We collect information you provide directly to us, such as when you create an account,
@@ -223,6 +224,6 @@
       notify you and relevant authorities as required by applicable law, typically
       within 72 hours of discovering the breach.
     </p>
-  </div>
+  </article>
 </div>
 {% endblock content %}
