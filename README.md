@@ -70,10 +70,25 @@ make test
 make shell
 ```
 
+## MCP server
+
+Djass includes a local MCP server so agents can create and export generated
+`django-saas-starter` projects without using the web UI.
+
+```bash
+uv run python -m apps.mcp.server
+```
+
+The server exposes tools for generator options, queued project creation,
+synchronous project generation, project lookup/listing, and artifact export.
+By default it uses `DJASS_MCP_USER_EMAIL` or creates an automation user at
+`djass-agent@example.local`.
+
 ## Project structure
 
 - `apps/core` — shared business logic and core models
 - `apps/api` — API routers/schemas
+- `apps/mcp` — MCP tools/resources for agent-driven project generation
 - `apps/pages` — app and marketing pages
 - `apps/blog` — blog features (when enabled)
 - `apps/docs` — markdown-driven docs app (when enabled)
