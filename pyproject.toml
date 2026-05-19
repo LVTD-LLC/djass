@@ -46,8 +46,12 @@ dependencies = [
     "python-frontmatter>=1.1.0",
     "pyyaml>=6.0.3",
     "pygments>=2.19.2",
+    "mcp[cli]>=1.27.1",
     
 ]
+
+[project.scripts]
+djass-mcp = "apps.mcp.server:main"
 
 [dependency-groups]
 dev = [

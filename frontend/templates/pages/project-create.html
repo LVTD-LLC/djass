@@ -17,12 +17,15 @@
 
         {% if can_generate %}
           <div class="dj-alert dj-alert-success mt-6 text-sm">
-            Generation is unlocked for your account.
+            Generation is available for your account.
+          </div>
+        {% elif project_limit_reached %}
+          <div class="dj-alert dj-alert-warning mt-6 text-sm">
+            This account has reached the current project limit. Please contact support if you need more room.
           </div>
         {% else %}
           <div class="dj-alert dj-alert-warning mt-6 text-sm">
-            Generation is locked.
-            <a href="{% url 'pricing' %}" class="font-semibold text-[var(--dj-warning)] underline">Pay once ($999) to unlock</a>.
+            Generation is unavailable for this account right now.
           </div>
         {% endif %}
 

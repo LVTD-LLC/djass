@@ -15,11 +15,12 @@
             </div>
             <div class="flex flex-wrap items-center gap-3">
               {% if can_generate %}
-                <span class="dj-pill dj-pill-success">Generation unlocked</span>
+                <span class="dj-pill dj-pill-success">Generation available</span>
                 <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create Project</a>
+              {% elif project_limit_reached %}
+                <span class="dj-pill dj-pill-warning">Project limit reached</span>
               {% else %}
-                <span class="dj-pill dj-pill-warning">Generation locked</span>
-                <a href="{% url 'pricing' %}" class="dj-button dj-button-warning">Unlock for $999</a>
+                <span class="dj-pill dj-pill-warning">Generation unavailable</span>
               {% endif %}
             </div>
           </div>

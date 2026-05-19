@@ -2,6 +2,7 @@ from allauth.socialaccount.models import SocialApp
 from django.conf import settings
 
 from apps.core.choices import ProfileStates
+from apps.core.models import Profile
 
 from djass.utils import get_djass_logger
 
@@ -10,18 +11,11 @@ logger = get_djass_logger(__name__)
 
 def current_state(request):
     if request.user.is_authenticated:
-        return {"current_state": request.user.profile.current_state}
+        try:
+            return {"current_state": request.user.profile.current_state}
+        except Profile.DoesNotExist:
+            logger.warning("Authenticated user is missing a profile", user_id=request.user.id)
     return {"current_state": ProfileStates.STRANGER}
-
-
-def pro_subscription_status(request):
-    """
-    Adds a 'has_pro_subscription' variable to the context.
-    This variable is True if the user has an active pro subscription, False otherwise.
-    """
-    if request.user.is_authenticated and hasattr(request.user, "profile"):
-        return {"has_pro_subscription": request.user.profile.has_active_subscription}
-    return {"has_pro_subscription": False}
 
 
 def posthog_api_key(request):

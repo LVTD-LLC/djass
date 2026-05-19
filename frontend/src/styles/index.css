@@ -75,7 +75,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-*[class*="tracking-"] {
+.tracking-tight,
+.tracking-normal,
+.tracking-wide,
+.tracking-wider,
+.tracking-widest {
   letter-spacing: 0 !important;
 }
 
@@ -157,6 +161,7 @@ body {
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--dj-border);
   border-radius: 8px;
+  background: var(--dj-panel-elevated);
   background: color-mix(in srgb, var(--dj-panel-elevated) 88%, transparent);
   box-shadow: var(--dj-shadow-soft);
   backdrop-filter: blur(18px);
@@ -252,6 +257,7 @@ body {
 }
 
 .dj-button:focus-visible {
+  outline: 2px solid rgba(94, 106, 210, 0.55);
   outline: 2px solid color-mix(in srgb, var(--dj-accent) 55%, transparent);
   outline-offset: 2px;
 }
@@ -322,6 +328,7 @@ body {
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--dj-border);
   border-radius: 999px;
+  background: var(--dj-panel-solid);
   background: color-mix(in srgb, var(--dj-panel-solid) 74%, transparent);
   color: var(--dj-muted);
   font-size: 0.75rem;
@@ -329,6 +336,7 @@ body {
 }
 
 .dj-pill-accent {
+  border-color: rgba(94, 106, 210, 0.36);
   border-color: color-mix(in srgb, var(--dj-accent) 36%, transparent);
   background: var(--dj-accent-soft);
   color: var(--dj-accent-strong);
@@ -339,19 +347,25 @@ body {
 }
 
 .dj-pill-success {
+  border-color: rgba(15, 159, 110, 0.42);
   border-color: color-mix(in srgb, var(--dj-success) 42%, transparent);
+  background: rgba(15, 159, 110, 0.13);
   background: color-mix(in srgb, var(--dj-success) 13%, transparent);
   color: var(--dj-success);
 }
 
 .dj-pill-warning {
+  border-color: rgba(180, 83, 9, 0.42);
   border-color: color-mix(in srgb, var(--dj-warning) 42%, transparent);
+  background: rgba(180, 83, 9, 0.13);
   background: color-mix(in srgb, var(--dj-warning) 13%, transparent);
   color: var(--dj-warning);
 }
 
 .dj-pill-danger {
+  border-color: rgba(220, 38, 38, 0.42);
   border-color: color-mix(in srgb, var(--dj-danger) 42%, transparent);
+  background: rgba(220, 38, 38, 0.13);
   background: color-mix(in srgb, var(--dj-danger) 13%, transparent);
   color: var(--dj-danger);
 }
@@ -442,6 +456,9 @@ body {
   border: 1px solid var(--dj-border);
   border-radius: 8px;
   background:
+    linear-gradient(180deg, var(--dj-panel-elevated), var(--dj-panel)),
+    linear-gradient(90deg, var(--dj-accent-soft), transparent);
+  background:
     linear-gradient(180deg, color-mix(in srgb, var(--dj-panel-elevated) 94%, transparent), var(--dj-panel)),
     linear-gradient(90deg, color-mix(in srgb, var(--dj-accent) 10%, transparent), transparent);
   box-shadow: var(--dj-shadow);
@@ -519,6 +536,7 @@ body {
 }
 
 .dj-table tbody tr:hover td {
+  background: var(--dj-accent-soft);
   background: color-mix(in srgb, var(--dj-accent-soft) 50%, transparent);
 }
 
@@ -591,6 +609,7 @@ body {
 .dj-page-shell select:focus,
 .dj-page-shell textarea:focus,
 .dj-input:focus {
+  border-color: rgba(94, 106, 210, 0.64) !important;
   border-color: color-mix(in srgb, var(--dj-accent) 64%, transparent) !important;
   box-shadow: 0 0 0 3px var(--dj-accent-soft) !important;
   outline: none !important;
@@ -630,17 +649,23 @@ body {
 }
 
 .dj-alert-success {
+  border-color: rgba(15, 159, 110, 0.34);
   border-color: color-mix(in srgb, var(--dj-success) 34%, transparent);
+  background: var(--dj-panel-solid);
   background: color-mix(in srgb, var(--dj-success) 10%, var(--dj-panel-solid));
 }
 
 .dj-alert-warning {
+  border-color: rgba(180, 83, 9, 0.34);
   border-color: color-mix(in srgb, var(--dj-warning) 34%, transparent);
+  background: var(--dj-panel-solid);
   background: color-mix(in srgb, var(--dj-warning) 10%, var(--dj-panel-solid));
 }
 
 .dj-alert-danger {
+  border-color: rgba(220, 38, 38, 0.34);
   border-color: color-mix(in srgb, var(--dj-danger) 34%, transparent);
+  background: var(--dj-panel-solid);
   background: color-mix(in srgb, var(--dj-danger) 10%, var(--dj-panel-solid));
 }
 

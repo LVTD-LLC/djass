@@ -35,7 +35,7 @@ class BlogPostOut(Schema):
 
 
 class ProfileSettingsOut(Schema):
-    has_pro_subscription: bool
+    can_generate_projects: bool
 
 
 class UserSettingsOut(Schema):

@@ -35,7 +35,7 @@ Avoid starting with broad refactors.
 
 ## 4) Keep operations safe
 
-If the feature changes background processing or billing-like flows:
+If the feature changes background processing or account-access flows:
 
 - add explicit logs for traceability,
 - persist failure reasons users can understand,

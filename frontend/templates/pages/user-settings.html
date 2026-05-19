@@ -19,18 +19,10 @@
             Manage profile details, your agent API key, and account-level controls from one place.
           </p>
 
-          {% if not has_subscription %}
-            <div class="dj-alert dj-alert-warning mt-6">
-              <h2 class="font-semibold text-[var(--dj-heading)]">Upgrade Your Account</h2>
-              <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">One-time upgrades include unlimited generations and forever updates.</p>
-              <form method="post" action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}" class="mt-4">
-                {% csrf_token %}
-                <button type="submit" class="dj-button dj-button-primary w-full">
-                  Unlock premium access - $999 one-time
-                </button>
-              </form>
-            </div>
-          {% endif %}
+          <div class="dj-alert dj-alert-success mt-6">
+            <h2 class="font-semibold text-[var(--dj-heading)]">Free access is active</h2>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation is available while Djass collects more feedback from real starter builds.</p>
+          </div>
         </aside>
 
         <div class="space-y-4">
