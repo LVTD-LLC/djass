@@ -76,11 +76,13 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["can_generate"] = _user_can_create_projects(self.request.user)
         projects_api_base_url = self.request.build_absolute_uri("/api/v1")
         context["projects_api_base_url"] = projects_api_base_url
+        skill_md = build_djass_agent_skill_md()
         context["djass_agent_prompt"] = build_djass_agent_prompt(
             projects_api_base_url,
             self.request.user.profile.key,
+            skill_md=skill_md,
         )
-        context["djass_agent_skill_md"] = build_djass_agent_skill_md()
+        context["djass_agent_skill_md"] = skill_md
 
         return context
 

@@ -173,8 +173,8 @@ def build_djass_agent_skill_md() -> str:
     ).strip()
 
 
-def build_djass_agent_prompt(base_url: str, api_key: str) -> str:
-    skill_md = build_djass_agent_skill_md()
+def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_md: str | None = None) -> str:
+    skill_md = skill_md or build_djass_agent_skill_md()
     prompt = dedent(
         """\
         You are my AI coding agent. Use Djass to generate a new django-saas-starter
@@ -215,11 +215,11 @@ def build_djass_agent_prompt(base_url: str, api_key: str) -> str:
         repo to include MCP server/tooling support for agent workflows; otherwise use
         `"n"`.
 
-        SKILL.md:
+        SKILL.md content starts below. Preserve it exactly if creating a skill file.
 
-        ```markdown
+        ---BEGIN SKILL.md---
         __DJASS_SKILL_MD__
-        ```
+        ---END SKILL.md---
         """
     ).strip()
     return (
