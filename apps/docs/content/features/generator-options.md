@@ -21,6 +21,9 @@ to detect upstream drift after `django-saas-starter` changes. If the command fai
 the catalog defaults, labels, and categories intentionally instead of copying raw
 `cookiecutter.json` values into the UI.
 
+CI runs this check with `--skip-on-network-error` so a temporary upstream fetch failure does
+not block unrelated PRs.
+
 ## Core fields
 
 - **Project Name / Slug**: naming used in generated files and package metadata.

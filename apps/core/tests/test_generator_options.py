@@ -2,6 +2,7 @@ import json
 from collections import OrderedDict
 
 import pytest
+import requests
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
@@ -72,3 +73,52 @@ def test_sync_cookiecutter_options_check_detects_drift(tmp_path):
 
     with pytest.raises(CommandError, match="Added upstream: use_future_feature"):
         call_command("sync_cookiecutter_options", "--source", str(source_path), "--check")
+
+
+def test_sync_cookiecutter_options_can_skip_remote_network_errors(monkeypatch):
+    def raise_timeout(*args, **kwargs):
+        raise requests.Timeout("timed out")
+
+    monkeypatch.setattr(requests, "get", raise_timeout)
+
+    call_command(
+        "sync_cookiecutter_options",
+        "--source",
+        "https://example.com/cookiecutter.json",
+        "--check",
+        "--skip-on-network-error",
+    )
+
+
+def test_sync_cookiecutter_options_reports_remote_network_errors(monkeypatch):
+    def raise_timeout(*args, **kwargs):
+        raise requests.Timeout("timed out")
+
+    monkeypatch.setattr(requests, "get", raise_timeout)
+
+    with pytest.raises(CommandError, match="network or source availability failure"):
+        call_command(
+            "sync_cookiecutter_options",
+            "--source",
+            "https://example.com/cookiecutter.json",
+            "--check",
+        )
+
+
+def test_sync_cookiecutter_options_does_not_skip_missing_remote_source(monkeypatch):
+    class NotFoundResponse:
+        status_code = 404
+
+        def raise_for_status(self):
+            raise requests.HTTPError("not found", response=self)
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: NotFoundResponse())
+
+    with pytest.raises(CommandError, match="Could not fetch remote cookiecutter options"):
+        call_command(
+            "sync_cookiecutter_options",
+            "--source",
+            "https://example.com/missing-cookiecutter.json",
+            "--check",
+            "--skip-on-network-error",
+        )

@@ -89,7 +89,7 @@ jobs:
         run: uv run python manage.py check
 
       - name: Check starter option coverage
-        run: uv run python manage.py sync_cookiecutter_options --check
+        run: uv run python manage.py sync_cookiecutter_options --check --skip-on-network-error
 
       - name: Pytest
         run: uv run pytest -q
