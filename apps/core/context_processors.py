@@ -2,6 +2,7 @@ from allauth.socialaccount.models import SocialApp
 from django.conf import settings
 
 from apps.core.choices import ProfileStates
+from apps.core.models import Profile
 
 from djass.utils import get_djass_logger
 
@@ -10,7 +11,10 @@ logger = get_djass_logger(__name__)
 
 def current_state(request):
     if request.user.is_authenticated:
-        return {"current_state": request.user.profile.current_state}
+        try:
+            return {"current_state": request.user.profile.current_state}
+        except Profile.DoesNotExist:
+            logger.warning("Authenticated user is missing a profile", user_id=request.user.id)
     return {"current_state": ProfileStates.STRANGER}
 
 

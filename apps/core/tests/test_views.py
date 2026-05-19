@@ -3,6 +3,7 @@ from allauth.account.models import EmailAddress
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.core.models import Project, ProjectStatus
 from apps.core.views import get_price_id_for_plan
 
 
@@ -47,6 +48,24 @@ class TestProjectCreateView:
         assert 'name="use_chatwoot"' in content
         assert "Use MCP" in content
         assert 'name="use_mcp"' in content
+
+    def test_project_create_view_shows_project_limit_state(self, auth_client, settings, user):
+        settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
+        Project.objects.create(
+            user=user,
+            name="Existing Project",
+            slug="existing_project",
+            input_payload={"project_name": "Existing Project"},
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_new"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "This account has reached the current project limit." in content
+        assert "Generation is available" not in content
+        assert "disabled" in content
 
 
 @pytest.mark.django_db

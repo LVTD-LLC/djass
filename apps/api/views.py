@@ -1,6 +1,4 @@
 import json
-
-from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import FileResponse, HttpRequest
@@ -39,6 +37,7 @@ from apps.core.generator_options import (
     get_generator_option_catalog,
 )
 from apps.core.models import Feedback, Project, ProjectStatus
+from apps.core.project_limits import project_create_quota
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -220,10 +219,6 @@ def _require_scope(principal: APIAuthPrincipal, scope: str):
         f"API key is missing required scope: {scope}",
         details={"required_scope": scope},
     )
-
-
-def _project_create_quota() -> int:
-    return int(getattr(settings, "PROJECT_API_MAX_PROJECTS_PER_USER", 200))
 
 
 def _queue_profile_event(profile, event_name: str, properties: dict, source_function: str) -> None:
@@ -450,7 +445,7 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
         )
 
     user_project_count = Project.objects.filter(user=profile.user).count()
-    project_quota = _project_create_quota()
+    project_quota = project_create_quota()
     if user_project_count >= project_quota:
         _queue_profile_event(
             profile=profile,

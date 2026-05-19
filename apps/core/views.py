@@ -20,6 +20,7 @@ from django_q.tasks import async_task
 
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
+from apps.core.project_limits import project_create_quota
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 from djass.utils import get_djass_logger
 
@@ -33,8 +34,22 @@ def _user_can_create_projects(user):
     return user.is_authenticated and hasattr(user, "profile")
 
 
+def _user_project_count(user):
+    return Project.objects.filter(user=user).count()
+
+
+def _project_limit_reached(user):
+    return _user_project_count(user) >= project_create_quota()
+
+
 def _deny_project_access(request):
-    messages.error(request, "Project generation is available for signed-in accounts.")
+    messages.error(
+        request,
+        (
+            "We couldn't find an account profile for your signed-in user. "
+            "Please contact support before creating projects."
+        ),
+    )
     return redirect("home")
 
 
@@ -57,7 +72,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["projects"] = Project.objects.filter(user=self.request.user)
-        context["can_generate"] = _user_can_create_projects(self.request.user)
+        context["project_limit_reached"] = (
+            _user_can_create_projects(self.request.user)
+            and _project_limit_reached(self.request.user)
+        )
+        context["can_generate"] = (
+            _user_can_create_projects(self.request.user)
+            and not context["project_limit_reached"]
+        )
 
         return context
 
@@ -70,7 +92,14 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["project_form"] = ProjectCreateForm(user=self.request.user)
-        context["can_generate"] = _user_can_create_projects(self.request.user)
+        context["project_limit_reached"] = (
+            _user_can_create_projects(self.request.user)
+            and _project_limit_reached(self.request.user)
+        )
+        context["can_generate"] = (
+            _user_can_create_projects(self.request.user)
+            and not context["project_limit_reached"]
+        )
         return context
 
 
@@ -92,6 +121,28 @@ def create_project(request):
         except Profile.DoesNotExist:
             logger.warning("Project creation denied because user profile is missing")
         return _deny_project_access(request)
+
+    project_quota = project_create_quota()
+    if _user_project_count(request.user) >= project_quota:
+        _queue_profile_event(
+            profile=request.user.profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "quota_exceeded",
+                "quota": project_quota,
+                "funnel_step": "project_create_failed",
+                "entrypoint": "ui",
+            },
+            source_function="create_project",
+        )
+        messages.error(
+            request,
+            (
+                f"You've reached the current limit of {project_quota} projects. "
+                "Please contact support if you need more room."
+            ),
+        )
+        return redirect("project_new")
 
     form = ProjectCreateForm(request.POST, user=request.user)
     if not form.is_valid():

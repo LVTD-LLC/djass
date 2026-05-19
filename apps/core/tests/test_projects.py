@@ -1,7 +1,38 @@
 import pytest
+from django.contrib.messages import get_messages
 from django.urls import reverse
 
-from apps.core.models import Project, ProjectArtifact, ProjectStatus
+from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
+
+
+def _valid_project_post_data(**overrides):
+    data = {
+        "name": "My project card",
+        "project_name": "My SaaS",
+        "project_slug": "my_saas",
+        "repo_url": "https://github.com/gregagi/my-saas",
+        "project_description": "test",
+        "author_name": "Rasul",
+        "author_email": "rasul@example.com",
+        "author_url": "",
+        "project_main_color": "green",
+        "use_posthog": "y",
+        "use_chatwoot": "n",
+        "use_buttondown": "y",
+        "use_s3": "y",
+        "use_stripe": "y",
+        "use_sentry": "y",
+        "generate_blog": "y",
+        "generate_docs": "y",
+        "use_mjml": "y",
+        "use_ai": "y",
+        "use_logfire": "y",
+        "use_healthchecks": "y",
+        "use_mcp": "n",
+        "use_ci": "y",
+    }
+    data.update(overrides)
+    return data
 
 
 @pytest.mark.django_db
@@ -112,6 +143,72 @@ class TestProjectFlow:
         assert generation_call[1]["project_id"] == project.id
         assert tracking_call[1]["event_name"] == "project_created"
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
+
+    def test_create_project_enforces_project_quota(
+        self,
+        auth_client,
+        monkeypatch,
+        settings,
+        user,
+    ):
+        calls = []
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
+        monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+        Project.objects.create(
+            user=user,
+            name="Existing Project",
+            slug="existing_project",
+            input_payload={"project_name": "Existing Project"},
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.post(reverse("project_create"), _valid_project_post_data())
+
+        assert response.status_code == 302
+        assert response.url == reverse("project_new")
+        assert Project.objects.filter(user=user).count() == 1
+        assert all(
+            call[0][0] != "apps.core.tasks.generate_project_artifact" for call in calls
+        )
+        assert len(calls) == 1
+        tracking_call = calls[0]
+        assert tracking_call[0][0] == "apps.core.tasks.track_event"
+        assert tracking_call[1]["event_name"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["reason"] == "quota_exceeded"
+        assert tracking_call[1]["properties"]["quota"] == 1
+        assert tracking_call[1]["properties"]["entrypoint"] == "ui"
+
+    def test_create_project_denies_missing_profile_with_clear_message(
+        self,
+        auth_client,
+        user,
+    ):
+        Profile.objects.filter(user=user).delete()
+        user._state.fields_cache.pop("profile", None)
+
+        response = auth_client.post(
+            reverse("project_create"),
+            _valid_project_post_data(),
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        assert Project.objects.filter(user=user).count() == 0
+        messages = [message.message for message in get_messages(response.wsgi_request)]
+        expected_message = (
+            "We couldn't find an account profile for your signed-in user. "
+            "Please contact support before creating projects."
+        )
+        assert expected_message in messages
+        assert (
+            "Project generation is available for signed-in accounts."
+            not in messages
+        )
 
     def test_create_project_validation_failure_queues_tracking_event(
         self,
