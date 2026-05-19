@@ -14,16 +14,6 @@ def current_state(request):
     return {"current_state": ProfileStates.STRANGER}
 
 
-def pro_subscription_status(request):
-    """
-    Adds a 'has_pro_subscription' variable to the context.
-    This variable is True if the user has an active pro subscription, False otherwise.
-    """
-    if request.user.is_authenticated and hasattr(request.user, "profile"):
-        return {"has_pro_subscription": request.user.profile.has_active_subscription}
-    return {"has_pro_subscription": False}
-
-
 def posthog_api_key(request):
     return {
         "posthog_api_key": settings.POSTHOG_API_KEY,

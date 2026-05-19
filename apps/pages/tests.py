@@ -24,19 +24,30 @@ def auth_client(client, user):
     return client
 
 
-def test_pricing_page_shows_product_led_one_time_copy(client):
-    response = client.get(reverse("pricing"))
+@pytest.fixture(autouse=True)
+def disable_async_task_side_effects(monkeypatch, settings):
+    settings.STORAGES["staticfiles"]["BACKEND"] = (
+        "django.contrib.staticfiles.storage.StaticFilesStorage"
+    )
+    monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: None)
+    monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: None)
+    monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: None)
+
+
+def test_free_access_page_shows_feedback_led_copy(client):
+    response = client.get(reverse("free_access"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "$999" in content
-    assert "founders and teams shipping Django SaaS repeatedly" in content
-    assert "Unlimited starter generations for new SaaS products, experiments, and internal tools" in content
-    assert "Djass Premium Agency Plan" not in content
-    assert "client SaaS repeatedly" not in content
+    assert "Generate Django SaaS starters for free." in content
+    assert "Free access while Djass improves" in content
+    assert "share the feedback that makes the product better faster" in content
+    assert "$999" not in content
+    assert "payment" not in content.lower()
+    assert "premium" not in content.lower()
 
 
-def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch, user):
+def test_free_access_page_ignores_legacy_checkout_params(auth_client, monkeypatch):
     calls = []
 
     def fake_async_task(*args, **kwargs):
@@ -45,14 +56,10 @@ def test_pricing_checkout_failed_queues_tracking_event(auth_client, monkeypatch,
 
     monkeypatch.setattr("apps.pages.views.async_task", fake_async_task)
 
-    response = auth_client.get(f"{reverse('pricing')}?checkout=failed")
+    response = auth_client.get(f"{reverse('free_access')}?checkout=failed")
     assert response.status_code == 200
 
-    tracking_call = next(call for call in calls if call[0][0] == "apps.core.tasks.track_event")
-    assert tracking_call[1]["profile_id"] == user.profile.id
-    assert tracking_call[1]["event_name"] == "checkout_failed"
-    assert tracking_call[1]["properties"]["reason"] == "failed"
-    assert tracking_call[1]["properties"]["entrypoint"] == "ui"
+    assert calls == []
 
 
 def test_login_page_hides_passkey_option(client):
@@ -231,9 +238,9 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "See pricing and what’s included" in content
+    assert "Create a project" in content
     assert reverse("home") in content
-    assert reverse("pricing") in content
+    assert reverse("project_new") in content
 
 
 def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
@@ -245,12 +252,12 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "See pricing and what’s included" in content
+    assert "Create a project" in content
     assert reverse("home") in content
-    assert reverse("pricing") in content
+    assert reverse("project_new") in content
 
 
-def test_landing_and_pricing_copy_is_product_led(client):
+def test_landing_and_free_access_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
@@ -262,15 +269,17 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "Djass generates in the background" in landing_content
     assert "agency" not in landing_content.lower()
 
-    pricing_response = client.get(reverse("pricing"))
-    assert pricing_response.status_code == 200
-    pricing_content = pricing_response.content.decode()
-    assert "One plan for serious Django SaaS work" in pricing_content
-    assert "founders and teams shipping Django SaaS repeatedly" in pricing_content
-    assert "Review the open-source baseline" in pricing_content
-    assert "Need full control?" not in pricing_content
-    assert "self-host for free" not in pricing_content
-    assert "agency" not in pricing_content.lower()
+    free_access_response = client.get(reverse("free_access"))
+    assert free_access_response.status_code == 200
+    free_access_content = free_access_response.content.decode()
+    assert "Free access while Djass improves" in free_access_content
+    assert "Generate Django SaaS starters for free." in free_access_content
+    assert "Review the open-source baseline" in free_access_content
+    assert "Need full control?" not in free_access_content
+    assert "$999" not in free_access_content
+    assert "payment" not in free_access_content.lower()
+    assert "premium" not in free_access_content.lower()
+    assert "agency" not in free_access_content.lower()
 
 
 def test_landing_guest_ctas_explain_destination(client):
@@ -284,15 +293,15 @@ def test_landing_guest_ctas_explain_destination(client):
     assert "Go to your existing Djass account and continue from your project dashboard." in content
 
 
-def test_signup_cta_copy_does_not_use_free_trial_language(client):
+def test_signup_cta_copy_uses_free_access_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
     assert "Create your Djass account" in landing_content
-    assert "Start for Free" not in landing_content
+    assert "Create your free account" in landing_content
 
-    pricing_response = client.get(reverse("pricing"))
-    assert pricing_response.status_code == 200
-    pricing_content = pricing_response.content.decode()
-    assert "Create account to unlock premium access" in pricing_content
-    assert "Start for Free" not in pricing_content
+    free_access_response = client.get(reverse("free_access"))
+    assert free_access_response.status_code == 200
+    free_access_content = free_access_response.content.decode()
+    assert "Create account to start" in free_access_content
+    assert "$999" not in free_access_content

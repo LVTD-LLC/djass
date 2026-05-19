@@ -45,9 +45,9 @@ not block unrelated PRs.
 - **Use Buttondown**: newsletter integration scaffolding.
 - **Use MJML**: email templating/rendering support.
 
-### Payments
+### Commerce
 
-- **Use Stripe**: subscription billing/webhook-related scaffold pieces.
+- **Use Stripe**: Stripe integration scaffold pieces.
 
 ### Storage
 

@@ -33,7 +33,6 @@ from apps.api.schemas import (
     UserSettingsOut,
 )
 from apps.blog.models import BlogPost
-from apps.core.choices import ProfileStates
 from apps.core.generator_options import (
     COOKIECUTTER_FIELD_DEFAULTS,
     MODULE_FLAG_KEYS,
@@ -50,7 +49,6 @@ api = NinjaAPI()
 ERROR_TAXONOMY = {
     "auth_required": {"category": "auth", "retryable": False},
     "insufficient_scope": {"category": "auth", "retryable": False},
-    "subscription_required": {"category": "quota", "retryable": False},
     "quota_exceeded": {"category": "quota", "retryable": False},
     "invalid_project_slug": {"category": "validation", "retryable": False},
     "invalid_generator_option": {"category": "validation", "retryable": False},
@@ -358,7 +356,7 @@ def user_settings(request: HttpRequest):
     profile = request.auth
     try:
         profile_data = {
-            "has_pro_subscription": profile.has_active_subscription,
+            "can_generate_projects": True,
         }
         data = {"profile": profile_data}
 
@@ -424,35 +422,6 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             metadata={"error": "insufficient_scope", "required_scope": "projects:create"},
         )
         return scope_error
-
-    allowed_states = {
-        ProfileStates.TRIAL_STARTED,
-        ProfileStates.SUBSCRIBED,
-        ProfileStates.CANCELLED,
-    }
-    if profile.state not in allowed_states and not profile.user.is_superuser:
-        _queue_profile_event(
-            profile=profile,
-            event_name="project_create_failed",
-            properties={
-                "reason": "subscription_required",
-                "funnel_step": "project_create_failed",
-                "entrypoint": "api",
-            },
-            source_function="create_project_v1",
-        )
-        log_project_api_action(
-            request,
-            action="project.create",
-            status_code=403,
-            principal=principal,
-            metadata={"error": "subscription_required"},
-        )
-        return _error(
-            403,
-            "subscription_required",
-            "Project generation requires an active subscription.",
-        )
 
     normalized_slug = slugify(data.project_slug).replace("-", "_")
     if not normalized_slug:

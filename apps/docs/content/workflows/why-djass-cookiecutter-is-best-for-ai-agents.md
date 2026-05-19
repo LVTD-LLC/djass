@@ -17,9 +17,9 @@ For small agencies and dev shops, that means faster delivery without trading awa
 
 Ad-hoc prompting feels productive at first:
 
-- “Create a Django app with auth, billing, docs, and API.”
+- “Create a Django app with auth, docs, and API.”
 - “Set up background jobs and a dashboard.”
-- “Add Stripe and webhooks.”
+- “Add integrations and webhooks.”
 
 You can get something working. But two weeks later, each repo looks different:
 

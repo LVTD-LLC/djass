@@ -1,7 +1,6 @@
 import pytest
 from django.urls import reverse
 
-from apps.core.choices import ProfileStates
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
 
 
@@ -9,9 +8,6 @@ from apps.core.models import Project, ProjectArtifact, ProjectStatus
 class TestProjectFlow:
     def test_create_project_queues_job(self, auth_client, monkeypatch, user):
         calls = []
-        profile = user.profile
-        profile.state = ProfileStates.SUBSCRIBED
-        profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))
@@ -66,7 +62,7 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["project_id"] == project.id
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
-    def test_create_project_requires_subscription(self, auth_client, monkeypatch):
+    def test_create_project_is_available_to_signed_in_users(self, auth_client, monkeypatch):
         calls = []
 
         def fake_async_task(*args, **kwargs):
@@ -105,14 +101,16 @@ class TestProjectFlow:
         )
 
         assert response.status_code == 302
-        assert response.url == reverse("pricing")
-        assert Project.objects.filter(user=response.wsgi_request.user).count() == 0
-        assert len(calls) == 1
-        tracking_call = calls[0]
-        assert tracking_call[0][0] == "apps.core.tasks.track_event"
-        assert tracking_call[1]["event_name"] == "project_create_failed"
-        assert tracking_call[1]["properties"]["reason"] == "subscription_required"
-        assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
+        assert response.url == reverse("home")
+        project = Project.objects.get(user=response.wsgi_request.user)
+        generation_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
+        )
+        tracking_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.track_event"
+        )
+        assert generation_call[1]["project_id"] == project.id
+        assert tracking_call[1]["event_name"] == "project_created"
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
     def test_create_project_validation_failure_queues_tracking_event(
@@ -122,8 +120,6 @@ class TestProjectFlow:
         user,
     ):
         calls = []
-        user.profile.state = ProfileStates.SUBSCRIBED
-        user.profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))
@@ -171,7 +167,14 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
-    def test_retry_project_requires_subscription(self, auth_client, user):
+    def test_retry_project_is_available_to_signed_in_users(self, auth_client, user, monkeypatch):
+        calls = []
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
         project = Project.objects.create(
             user=user,
             name="Retry Project",
@@ -184,9 +187,13 @@ class TestProjectFlow:
         response = auth_client.post(reverse("project_retry", args=[project.id]))
 
         assert response.status_code == 302
-        assert response.url == reverse("pricing")
+        assert response.url == reverse("home")
         project.refresh_from_db()
-        assert project.status == ProjectStatus.FAILED
+        assert project.status == ProjectStatus.QUEUED
+        generation_call = next(
+            call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
+        )
+        assert generation_call[1]["project_id"] == project.id
 
     def test_download_denies_other_user(self, auth_client, django_user_model):
         other_user = django_user_model.objects.create_user(

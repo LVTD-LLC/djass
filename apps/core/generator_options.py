@@ -159,7 +159,7 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("use_chatwoot", "n", "Use Chatwoot", "cx", True),
         GeneratorField("use_buttondown", "y", "Use Buttondown", "cx", True),
         GeneratorField("use_s3", "y", "Use S3", "storage", True),
-        GeneratorField("use_stripe", "y", "Use Stripe", "payments", True),
+        GeneratorField("use_stripe", "y", "Use Stripe", "commerce", True),
         GeneratorField("use_sentry", "y", "Use Sentry", "monitoring", True),
         GeneratorField("generate_blog", "y", "Generate Blog", "content", True),
         GeneratorField("generate_docs", "y", "Generate Docs", "content", True),
@@ -173,7 +173,7 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
     categories=(
         GeneratorOptionCategory("monitoring", "Monitoring"),
         GeneratorOptionCategory("cx", "CX"),
-        GeneratorOptionCategory("payments", "Payments"),
+        GeneratorOptionCategory("commerce", "Commerce"),
         GeneratorOptionCategory("storage", "Storage"),
         GeneratorOptionCategory("content", "Content"),
         GeneratorOptionCategory("ai", "AI"),

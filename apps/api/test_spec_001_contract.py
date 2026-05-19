@@ -110,7 +110,7 @@ class TestSpec001Contract:
         assert client.get("/api/v1/projects/1/download").status_code == 401
 
     def test_create_project_contract_happy_path(self, client, monkeypatch):
-        _, profile = _create_user("specuser", "specuser@example.com", subscribed=True)
+        _, profile = _create_user("specuser", "specuser@example.com", subscribed=False)
         calls = []
 
         def fake_async_task(*args, **kwargs):

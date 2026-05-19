@@ -1,10 +1,8 @@
 from allauth.account.views import SignupView
 from django.conf import settings
-from django.contrib import messages
 from django.views.generic import TemplateView
 from django_q.tasks import async_task
 
-from apps.core.models import Profile
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -28,15 +26,6 @@ class LandingPageView(TemplateView):
                 group="Create Posthog Alias",
             )
         
-
-        if self.request.user.is_authenticated:
-            try:
-                profile = self.request.user.profile
-                context["has_pro_subscription"] = profile.has_active_subscription
-            except Profile.DoesNotExist:
-                context["has_pro_subscription"] = False
-        else:
-            context["has_pro_subscription"] = False
 
         return context
 
@@ -87,46 +76,8 @@ class AccountSignupView(SignupTrackingMixin, SignupView):
 
 
 
-class PricingView(TemplateView):
-    template_name = "pages/pricing.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        checkout_status = self.request.GET.get("checkout")
-        if checkout_status == "canceled":
-            messages.info(
-                self.request,
-                "Checkout was canceled. You can resume whenever you're ready.",
-            )
-        elif checkout_status == "failed":
-            messages.error(self.request, "Payment did not complete. Please try checkout again.")
-
-        if checkout_status in {"canceled", "failed"} and self.request.user.is_authenticated:
-            profile = self.request.user.profile
-            async_task(
-                "apps.core.tasks.track_event",
-                profile_id=profile.id,
-                event_name="checkout_failed",
-                properties={
-                    "reason": checkout_status,
-                    "funnel_step": "checkout_failed",
-                    "entrypoint": "ui",
-                },
-                source_function="PricingView - get_context_data",
-                group="Track Event",
-            )
-
-        if self.request.user.is_authenticated:
-            try:
-                profile = self.request.user.profile
-                context["has_pro_subscription"] = profile.has_active_subscription
-            except Profile.DoesNotExist:
-                context["has_pro_subscription"] = False
-        else:
-            context["has_pro_subscription"] = False
-
-        return context
+class FreeAccessView(TemplateView):
+    template_name = "pages/free-access.html"
 
 
 

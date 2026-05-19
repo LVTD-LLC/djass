@@ -7,8 +7,8 @@ class ProfileStates(models.TextChoices):
     TRIAL_STARTED = "trial_started" # This can be used in apps with Trials
     TRIAL_ENDED = "trial_ended"
     SUBSCRIBED = "subscribed"
-    CANCELLED = "cancelled" # when user cancels their subscription, but still have access
-    CHURNED = "churned"  # when user lost access to paid features
+    CANCELLED = "cancelled"
+    CHURNED = "churned"
     ACCOUNT_DELETED = "account_deleted"
 
 
