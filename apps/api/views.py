@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
@@ -22,6 +24,7 @@ from apps.api.schemas import (
     BlogPostOut,
     ProjectCreateIn,
     ProjectCreateOut,
+    ProjectGeneratorOptionsOut,
     ProjectListOut,
     ProjectOut,
     ProjectStatusOut,
@@ -31,6 +34,11 @@ from apps.api.schemas import (
 )
 from apps.blog.models import BlogPost
 from apps.core.choices import ProfileStates
+from apps.core.generator_options import (
+    COOKIECUTTER_FIELD_DEFAULTS,
+    MODULE_FLAG_KEYS,
+    get_generator_option_groups,
+)
 from apps.core.models import Feedback, Project, ProjectStatus
 from djass.utils import get_djass_logger
 
@@ -45,6 +53,7 @@ ERROR_TAXONOMY = {
     "subscription_required": {"category": "quota", "retryable": False},
     "quota_exceeded": {"category": "quota", "retryable": False},
     "invalid_project_slug": {"category": "validation", "retryable": False},
+    "invalid_generator_option": {"category": "validation", "retryable": False},
     "validation_error": {"category": "validation", "retryable": False},
     "project_not_found": {"category": "validation", "retryable": False},
     "artifact_not_ready": {"category": "retryable", "retryable": True},
@@ -131,6 +140,77 @@ def _serialize_project(project: Project) -> dict:
         "artifact_ready": hasattr(project, "artifact"),
         "input_payload": project.input_payload,
     }
+
+
+def _project_create_payload(request: HttpRequest, data: ProjectCreateIn) -> dict:
+    payload = data.model_dump()
+    extra_payload = getattr(data, "__pydantic_extra__", None) or {}
+    payload.update(extra_payload)
+
+    try:
+        raw_payload = json.loads(request.body.decode("utf-8") or "{}")
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raw_payload = {}
+
+    if isinstance(raw_payload, dict):
+        for key, value in raw_payload.items():
+            payload.setdefault(key, value)
+    return payload
+
+
+def _invalid_cookiecutter_options(payload: dict) -> dict[str, list[str]]:
+    unknown_keys = sorted(set(payload) - set(COOKIECUTTER_FIELD_DEFAULTS))
+    invalid_flags = sorted(
+        key for key in MODULE_FLAG_KEYS if key in payload and payload[key] not in {"y", "n"}
+    )
+    return {
+        "unknown": unknown_keys,
+        "invalid_flags": invalid_flags,
+    }
+
+
+def _validate_project_create_payload(
+    request: HttpRequest,
+    principal: APIAuthPrincipal,
+    profile,
+    data: ProjectCreateIn,
+):
+    payload = _project_create_payload(request, data)
+    if not payload.get("author_email"):
+        payload["author_email"] = profile.user.email or ""
+
+    option_errors = _invalid_cookiecutter_options(payload)
+    if option_errors["unknown"] or option_errors["invalid_flags"]:
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "invalid_generator_option",
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=400,
+            principal=principal,
+            metadata={
+                "error": "invalid_generator_option",
+                **option_errors,
+            },
+        )
+        return None, _error(
+            400,
+            "invalid_generator_option",
+            "Request includes unknown or invalid generator options.",
+            details=option_errors,
+        )
+
+    for key, default_value in COOKIECUTTER_FIELD_DEFAULTS.items():
+        payload.setdefault(key, default_value)
+    return payload, None
 
 
 def _require_scope(principal: APIAuthPrincipal, scope: str):
@@ -293,6 +373,19 @@ def user_settings(request: HttpRequest):
         raise HttpError(500, "An unexpected error occurred.") from e
 
 
+@api.get(
+    "/v1/project-options",
+    response={200: ProjectGeneratorOptionsOut},
+    auth=None,
+    tags=["v1"],
+)
+def get_project_options_v1(request: HttpRequest):
+    return {
+        "defaults": COOKIECUTTER_FIELD_DEFAULTS,
+        "groups": get_generator_option_groups(),
+    }
+
+
 @api.post(
     "/v1/projects",
     response={
@@ -421,9 +514,9 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             },
         )
 
-    payload = data.dict()
-    if not payload.get("author_email"):
-        payload["author_email"] = profile.user.email or ""
+    payload, payload_error = _validate_project_create_payload(request, principal, profile, data)
+    if payload_error:
+        return payload_error
 
     try:
         project = Project.objects.create(

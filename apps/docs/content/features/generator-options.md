@@ -7,6 +7,21 @@ author: Rasul
 
 When creating a project in Djass, each option toggles concrete code/config in the generated repository.
 
+Djass keeps a checked-in snapshot of the starter template's `cookiecutter.json` at
+`apps/core/data/cookiecutter-options.json`. Run:
+
+```bash
+python manage.py sync_cookiecutter_options --check
+```
+
+to detect upstream drift, or:
+
+```bash
+python manage.py sync_cookiecutter_options --write
+```
+
+to refresh the snapshot after `django-saas-starter` changes.
+
 ## Core fields
 
 - **Project Name / Slug**: naming used in generated files and package metadata.
@@ -15,22 +30,39 @@ When creating a project in Djass, each option toggles concrete code/config in th
 
 ## Integration toggles
 
+### Monitoring
+
 - **Use PostHog**: analytics wiring and related config.
-- **Use Chatwoot**: customer support/chat integration scaffolding.
-- **Use Buttondown**: newsletter integration scaffolding.
-- **Use S3**: storage configuration paths for media assets.
-- **Use Stripe**: subscription billing/webhook-related scaffold pieces.
 - **Use Sentry**: error monitoring setup.
-- **Use MJML**: email templating/rendering support.
-- **Use AI**: AI-related service/config scaffolding.
 - **Use Logfire**: observability configuration for Logfire.
 - **Use Healthchecks**: health-check related setup when enabled.
+
+### CX
+
+- **Use Chatwoot**: customer support/chat integration scaffolding.
+- **Use Buttondown**: newsletter integration scaffolding.
+- **Use MJML**: email templating/rendering support.
+
+### Payments
+
+- **Use Stripe**: subscription billing/webhook-related scaffold pieces.
+
+### Storage
+
+- **Use S3**: storage configuration paths for media assets.
+
+### AI
+
+- **Use AI**: AI-related service/config scaffolding.
 - **Use MCP**: Model Context Protocol server/tooling support for agent workflows.
 
 ## Content toggles
 
 - **Generate Blog**: includes `apps/blog` and related routes/templates.
 - **Generate Docs**: includes `apps/docs` and markdown-driven docs pages.
+
+## Delivery toggles
+
 - **Use CI**: includes GitHub Actions CI workflow.
 
 ## Recommendation

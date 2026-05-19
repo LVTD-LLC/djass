@@ -5,7 +5,8 @@ from django.utils.text import slugify
 from apps.core.generator_options import (
     COOKIECUTTER_FIELD_DEFAULTS,
     MODULE_FLAG_KEYS,
-    MODULE_FLAG_LABELS,
+    get_generator_option_groups,
+    get_option_label,
 )
 from apps.core.models import Profile, Project
 from apps.core.utils import DivErrorList
@@ -91,7 +92,7 @@ class ProjectCreateForm(forms.ModelForm):
             self.fields[field_name] = forms.ChoiceField(
                 choices=self.BOOL_CHOICES,
                 initial=COOKIECUTTER_FIELD_DEFAULTS[field_name],
-                label=MODULE_FLAG_LABELS[field_name],
+                label=get_option_label(field_name),
                 required=False,
             )
 
@@ -108,6 +109,17 @@ class ProjectCreateForm(forms.ModelForm):
     @property
     def generator_option_fields(self):
         return [self[field_name] for field_name in MODULE_FLAG_KEYS]
+
+    @property
+    def generator_option_groups(self):
+        return [
+            {
+                "key": group["key"],
+                "label": group["label"],
+                "fields": [self[option["key"]] for option in group["options"]],
+            }
+            for group in get_generator_option_groups()
+        ]
 
     def clean_project_slug(self):
         value = self.cleaned_data.get("project_slug", "").strip()

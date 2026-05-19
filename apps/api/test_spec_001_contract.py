@@ -64,9 +64,33 @@ def _auth_headers(api_key: str):
 def test_create_project_schema_exposes_current_generator_flags():
     schema_fields = ProjectCreateIn.model_fields
 
+    assert ProjectCreateIn.model_config["extra"] == "allow"
     assert set(MODULE_FLAG_KEYS).issubset(schema_fields.keys())
     for field_name in MODULE_FLAG_KEYS:
         assert schema_fields[field_name].default == COOKIECUTTER_FIELD_DEFAULTS[field_name]
+
+
+def test_project_options_endpoint_contract(client):
+    response = client.get("/api/v1/project-options")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["defaults"]["use_chatwoot"] == "n"
+    assert body["defaults"]["use_mcp"] == "n"
+
+    groups = {group["key"]: group for group in body["groups"]}
+    assert {option["key"] for option in groups["monitoring"]["options"]} >= {
+        "use_posthog",
+        "use_sentry",
+        "use_logfire",
+        "use_healthchecks",
+    }
+    assert {option["key"] for option in groups["cx"]["options"]} >= {
+        "use_chatwoot",
+        "use_buttondown",
+        "use_mjml",
+    }
+    assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
 
 
 @pytest.mark.django_db
@@ -163,6 +187,22 @@ class TestSpec001Contract:
         assert tracking_call[1]["event_name"] == "project_create_failed"
         assert tracking_call[1]["properties"]["reason"] == "invalid_project_slug"
         assert tracking_call[1]["properties"]["entrypoint"] == "api"
+
+    def test_create_project_rejects_unknown_generator_options(self, client):
+        _, profile = _create_user("unknown", "unknown@example.com", subscribed=True)
+
+        response = client.post(
+            "/api/v1/projects",
+            data={**CREATE_PAYLOAD, "use_future_feature": "y"},
+            content_type="application/json",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 400
+        body = response.json()
+        assert body["error"]["code"] == "invalid_generator_option"
+        assert body["error"]["category"] == "validation"
+        assert body["error"]["details"]["unknown"] == ["use_future_feature"]
 
     def test_list_get_and_status_contract(self, client):
         user, profile = _create_user("owner", "owner@example.com", subscribed=True)

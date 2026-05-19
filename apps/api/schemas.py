@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from ninja import Schema
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from apps.blog.choices import BlogPostStatus
 from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS
@@ -58,6 +58,8 @@ YNFlag = Literal["y", "n"]
 
 
 class ProjectCreateIn(Schema):
+    model_config = ConfigDict(extra="allow")
+
     project_name: str
     project_slug: str
     project_description: str = ""
@@ -80,6 +82,24 @@ class ProjectCreateIn(Schema):
     use_healthchecks: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_healthchecks"]
     use_mcp: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_mcp"]
     use_ci: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_ci"]
+
+
+class ProjectGeneratorOptionOut(Schema):
+    key: str
+    label: str
+    default: str
+    category: str
+
+
+class ProjectGeneratorOptionGroupOut(Schema):
+    key: str
+    label: str
+    options: list[ProjectGeneratorOptionOut]
+
+
+class ProjectGeneratorOptionsOut(Schema):
+    defaults: dict[str, Any]
+    groups: list[ProjectGeneratorOptionGroupOut]
 
 
 class ProjectOut(Schema):

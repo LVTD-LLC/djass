@@ -72,11 +72,18 @@
           {{ project_form.project_main_color }}
         </div>
 
-        {% for field in project_form.generator_option_fields %}
-          <div>
-            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-          </div>
+        {% for group in project_form.generator_option_groups %}
+          <fieldset class="md:col-span-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+            <legend class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ group.label }}</legend>
+            <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {% for field in group.fields %}
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
         {% endfor %}
 
         <div class="md:col-span-2">

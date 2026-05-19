@@ -55,6 +55,9 @@ class TestProjectCreateView:
 
         assert response.status_code == 200
         content = response.content.decode()
+        assert "Monitoring" in content
+        assert "CX" in content
+        assert "AI" in content
         assert "Use Chatwoot" in content
         assert 'name="use_chatwoot"' in content
         assert "Use MCP" in content
