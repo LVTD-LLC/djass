@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 from django.core.files.storage import FileSystemStorage
+from django.utils import timezone
+from mcp.server.fastmcp.exceptions import ToolError
 
 from apps.core.choices import ProfileStates
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
@@ -147,6 +149,37 @@ def test_list_projects_can_scope_by_user_and_status(django_user_model):
 
 
 @pytest.mark.django_db
+def test_list_projects_orders_stably_for_pagination(django_user_model):
+    user = django_user_model.objects.create_user(
+        username="pager",
+        email="pager@example.local",
+        password="password123",
+    )
+    first = Project.objects.create(
+        user=user,
+        name="First",
+        slug="first",
+        input_payload={"project_name": "First"},
+        status=ProjectStatus.READY,
+    )
+    second = Project.objects.create(
+        user=user,
+        name="Second",
+        slug="second",
+        input_payload={"project_name": "Second"},
+        status=ProjectStatus.READY,
+    )
+    same_timestamp = timezone.now()
+    Project.objects.filter(id__in=[first.id, second.id]).update(created_at=same_timestamp)
+
+    first_page = list_projects(user_email="pager@example.local", limit=1, offset=0)
+    second_page = list_projects(user_email="pager@example.local", limit=1, offset=1)
+
+    assert first_page["projects"][0]["id"] == first.id
+    assert second_page["projects"][0]["id"] == second.id
+
+
+@pytest.mark.django_db
 def test_export_project_artifact_extracts_safely(tmp_path, django_user_model):
     user = django_user_model.objects.create_user(
         username="export",
@@ -171,6 +204,51 @@ def test_export_project_artifact_extracts_safely(tmp_path, django_user_model):
 
     assert Path(result["zip_path"]).exists()
     assert Path(result["extract_path"], "README.md").read_text() == "# Export\n"
+
+
+@pytest.mark.django_db
+def test_project_resources_scope_to_default_mcp_user(monkeypatch, django_user_model):
+    monkeypatch.setenv("DJASS_MCP_USER_EMAIL", "owner@example.local")
+    owner = django_user_model.objects.create_user(
+        username="resource-owner",
+        email="owner@example.local",
+        password="password123",
+    )
+    other = django_user_model.objects.create_user(
+        username="resource-other",
+        email="other@example.local",
+        password="password123",
+    )
+    owner_project = Project.objects.create(
+        user=owner,
+        name="Owner Resource",
+        slug="owner_resource",
+        input_payload={"project_name": "Owner Resource"},
+        status=ProjectStatus.READY,
+    )
+    other_project = Project.objects.create(
+        user=other,
+        name="Other Resource",
+        slug="other_resource",
+        input_payload={"project_name": "Other Resource"},
+        status=ProjectStatus.READY,
+    )
+
+    raw_zip = io.BytesIO()
+    with zipfile.ZipFile(raw_zip, "w") as zip_file:
+        zip_file.writestr("README.md", "# Owner Resource\n")
+    artifact = ProjectArtifact.objects.create(
+        project=owner_project,
+        size_bytes=len(raw_zip.getvalue()),
+    )
+    artifact.zip_file.save("owner_resource.zip", io.BytesIO(raw_zip.getvalue()), save=True)
+
+    from apps.mcp.server import project_artifact_resource, project_resource
+
+    assert json.loads(project_resource(str(owner_project.id)))["id"] == owner_project.id
+    assert project_artifact_resource(str(owner_project.id)).startswith(b"PK")
+    with pytest.raises(ToolError):
+        project_resource(str(other_project.id))
 
 
 @pytest.mark.django_db

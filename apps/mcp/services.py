@@ -56,6 +56,10 @@ def _default_user_email() -> str:
     return _clean_optional(os.environ.get("DJASS_MCP_USER_EMAIL")) or DEFAULT_MCP_USER_EMAIL
 
 
+def default_mcp_user_email() -> str:
+    return _default_user_email()
+
+
 def _default_username(email: str) -> str:
     configured = _clean_optional(os.environ.get("DJASS_MCP_USERNAME"))
     if configured:
@@ -290,7 +294,7 @@ def generate_project_now(
 
 
 def _project_queryset(user_email: str | None = None):
-    queryset = Project.objects.select_related("user", "artifact")
+    queryset = Project.objects.select_related("user", "artifact").order_by("id")
     if user_email:
         queryset = queryset.filter(user__email__iexact=user_email)
     return queryset
@@ -354,11 +358,8 @@ def read_project_artifact_bytes(project_id: int, *, user_email: str | None = Non
             {"project_id": project_id, "status": project.status},
         )
 
-    project.artifact.zip_file.open("rb")
-    try:
-        return project.artifact.zip_file.read()
-    finally:
-        project.artifact.zip_file.close()
+    with project.artifact.zip_file.open("rb") as file_obj:
+        return file_obj.read()
 
 
 def _resolve_output_dir(output_dir: str) -> Path:

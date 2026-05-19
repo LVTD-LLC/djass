@@ -285,7 +285,14 @@ def project_resource(project_id: str) -> str:
     """JSON representation of one Djass project."""
 
     try:
-        return json.dumps(services.get_project(int(project_id)), indent=2, sort_keys=True)
+        return json.dumps(
+            services.get_project(
+                int(project_id),
+                user_email=services.default_mcp_user_email(),
+            ),
+            indent=2,
+            sort_keys=True,
+        )
     except MCPServiceError as exc:
         raise _tool_error(exc) from exc
 
@@ -295,7 +302,10 @@ def project_artifact_resource(project_id: str) -> bytes:
     """Binary zip artifact for a ready Djass project."""
 
     try:
-        return services.read_project_artifact_bytes(int(project_id))
+        return services.read_project_artifact_bytes(
+            int(project_id),
+            user_email=services.default_mcp_user_email(),
+        )
     except MCPServiceError as exc:
         raise _tool_error(exc) from exc
 
