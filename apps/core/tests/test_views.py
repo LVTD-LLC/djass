@@ -33,6 +33,19 @@ class TestHomeView:
         assert response.status_code == 200
         assert "Generation unlocked" in response.content.decode()
 
+    def test_home_shows_copyable_agent_prompt_and_skill(self, auth_client, user):
+        response = auth_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Agent project generator prompt" in content
+        assert "Copy prompt" in content
+        assert "Copy SKILL.md" in content
+        assert "http://testserver/api/v1" in content
+        assert user.profile.key in content
+        assert "GET $DJASS_BASE_URL/projects/{project_id}/download" in content
+        assert "If Djass MCP tools are available" in content
+
 
 @pytest.mark.django_db
 class TestProjectCreateView:

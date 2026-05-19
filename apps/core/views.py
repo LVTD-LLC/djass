@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
 
+from apps.core.agent_prompts import build_djass_agent_prompt, build_djass_agent_skill_md
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
 from apps.core.stripe_webhooks import EVENT_HANDLERS
@@ -73,6 +74,13 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context["projects"] = Project.objects.filter(user=self.request.user)
         context["can_generate"] = _user_can_create_projects(self.request.user)
+        projects_api_base_url = self.request.build_absolute_uri("/api/v1")
+        context["projects_api_base_url"] = projects_api_base_url
+        context["djass_agent_prompt"] = build_djass_agent_prompt(
+            projects_api_base_url,
+            self.request.user.profile.key,
+        )
+        context["djass_agent_skill_md"] = build_djass_agent_skill_md()
 
         return context
 
