@@ -1,58 +1,134 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Djass logo</title>
-  <desc id="desc">A generated SaaS project package assembled from modular blocks.</desc>
+  <desc id="desc">A green snake wrapped around a brass jazz saxophone.</desc>
   <defs>
-    <linearGradient id="background" x1="176" y1="104" x2="850" y2="902" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#052e2b"/>
-      <stop offset="0.48" stop-color="#047857"/>
-      <stop offset="1" stop-color="#0891b2"/>
+    <linearGradient id="stage" x1="166" y1="116" x2="866" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#061b1a"/>
+      <stop offset="0.46" stop-color="#064e3b"/>
+      <stop offset="1" stop-color="#0e7490"/>
     </linearGradient>
-    <linearGradient id="glow" x1="236" y1="106" x2="760" y2="850" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6ee7b7" stop-opacity="0.62"/>
-      <stop offset="0.58" stop-color="#2dd4bf" stop-opacity="0.14"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.35"/>
+    <radialGradient id="spotlight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(694 680) rotate(132) scale(660 520)">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.34"/>
+      <stop offset="0.42" stop-color="#14b8a6" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="snakeBody" x1="260" y1="216" x2="646" y2="814" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#86efac"/>
+      <stop offset="0.38" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#047857"/>
     </linearGradient>
-    <linearGradient id="topFace" x1="318" y1="180" x2="710" y2="434" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#ecfeff"/>
-    </linearGradient>
-    <linearGradient id="leftFace" x1="284" y1="344" x2="520" y2="776" gradientUnits="userSpaceOnUse">
+    <linearGradient id="snakeBelly" x1="316" y1="224" x2="602" y2="790" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#dcfce7"/>
       <stop offset="1" stop-color="#a7f3d0"/>
     </linearGradient>
-    <linearGradient id="rightFace" x1="512" y1="398" x2="766" y2="744" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ccfbf1"/>
-      <stop offset="1" stop-color="#67e8f9"/>
+    <linearGradient id="brass" x1="494" y1="244" x2="814" y2="808" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.4" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="brassLight" x1="550" y1="306" x2="790" y2="752" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#fcd34d"/>
     </linearGradient>
   </defs>
 
-  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#background)"/>
-  <rect x="86" y="86" width="852" height="852" rx="202" fill="url(#glow)" opacity="0.72"/>
+  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#stage)"/>
+  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#spotlight)"/>
+  <path d="M186 772c96-70 209-108 330-108 125 0 236 39 332 108v72H186v-72Z" fill="#020617" opacity="0.24"/>
 
-  <path d="M176 716c118-82 206-128 334-128 139 0 227 43 338 126v100H176V716Z" fill="#022c22" opacity="0.18"/>
+  <path
+    d="M342 302c116-108 278-54 288 86 9 119-132 142-200 204-67 61-35 151 81 173 56 11 109 1 158-25"
+    fill="none"
+    stroke="#052e2b"
+    stroke-width="114"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.38"
+  />
+  <path
+    d="M342 302c116-108 278-54 288 86 9 119-132 142-200 204-67 61-35 151 81 173 56 11 109 1 158-25"
+    fill="none"
+    stroke="url(#snakeBody)"
+    stroke-width="92"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M382 312c82-58 174-22 181 74 8 94-110 118-165 171"
+    fill="none"
+    stroke="url(#snakeBelly)"
+    stroke-width="24"
+    stroke-linecap="round"
+    opacity="0.72"
+  />
+
+  <path
+    d="M288 284c-4-55 52-97 108-75 43 17 63 64 45 105-17 41-72 57-113 35-23-12-38-34-40-65Z"
+    fill="url(#snakeBody)"
+  />
+  <path d="M349 244c35-8 65 11 76 38" fill="none" stroke="#dcfce7" stroke-width="18" stroke-linecap="round" opacity="0.72"/>
+  <circle cx="374" cy="267" r="13" fill="#021f1b"/>
+  <circle cx="380" cy="263" r="4" fill="#ecfeff"/>
+  <path d="m435 292 50-9m0 0 22-22m-22 22 28 15" fill="none" stroke="#fb7185" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
 
   <g>
-    <path d="M512 158 760 300 512 444 264 300 512 158Z" fill="url(#topFace)"/>
-    <path d="M264 300 512 444v356L264 656V300Z" fill="url(#leftFace)"/>
-    <path d="M760 300 512 444v356l248-144V300Z" fill="url(#rightFace)"/>
+    <path
+      d="M648 398c76-74 127-112 190-129"
+      fill="none"
+      stroke="#7c2d12"
+      stroke-width="72"
+      stroke-linecap="round"
+      opacity="0.3"
+    />
+    <path
+      d="M648 398c76-74 127-112 190-129"
+      fill="none"
+      stroke="url(#brass)"
+      stroke-width="54"
+      stroke-linecap="round"
+    />
+    <path d="M818 270 878 244" fill="none" stroke="#111827" stroke-width="34" stroke-linecap="round"/>
+    <path d="M806 274 856 252" fill="none" stroke="#fef3c7" stroke-width="16" stroke-linecap="round"/>
 
-    <path d="M512 444 264 300 512 158l248 142-248 144Z" fill="none" stroke="#022c22" stroke-opacity="0.1" stroke-width="22" stroke-linejoin="round"/>
-    <path d="M512 444v356" fill="none" stroke="#022c22" stroke-opacity="0.1" stroke-width="22" stroke-linecap="round"/>
+    <path
+      d="M650 402c-84 104-82 226 15 296"
+      fill="none"
+      stroke="#7c2d12"
+      stroke-width="104"
+      stroke-linecap="round"
+      opacity="0.26"
+    />
+    <path
+      d="M650 402c-84 104-82 226 15 296"
+      fill="none"
+      stroke="url(#brass)"
+      stroke-width="78"
+      stroke-linecap="round"
+    />
+    <path
+      d="M641 432c-48 76-48 160 14 226"
+      fill="none"
+      stroke="url(#brassLight)"
+      stroke-width="18"
+      stroke-linecap="round"
+      opacity="0.76"
+    />
 
-    <path d="m394 286 82-48 78 45-82 48-78-45Z" fill="#047857"/>
-    <path d="m504 350 82-48 82 48-82 48-82-48Z" fill="#0891b2"/>
-    <path d="m334 348 78-45 54 31-78 45-54-31Z" fill="#14b8a6"/>
+    <circle cx="717" cy="698" r="136" fill="#7c2d12" opacity="0.28"/>
+    <circle cx="700" cy="680" r="138" fill="url(#brass)"/>
+    <circle cx="700" cy="680" r="86" fill="#111827" opacity="0.86"/>
+    <circle cx="684" cy="657" r="50" fill="#fde68a" opacity="0.22"/>
+    <path d="M592 737c38 57 108 86 181 62" fill="none" stroke="#fef3c7" stroke-width="18" stroke-linecap="round" opacity="0.64"/>
 
-    <path d="m330 462 116 68v44l-116-68v-44Z" fill="#065f46" opacity="0.52"/>
-    <path d="m330 554 116 68v44l-116-68v-44Z" fill="#047857" opacity="0.42"/>
-    <path d="m578 530 116-68v44l-116 68v-44Z" fill="#0e7490" opacity="0.54"/>
-    <path d="m578 622 88-52v44l-88 52v-44Z" fill="#0891b2" opacity="0.44"/>
+    <circle cx="632" cy="482" r="18" fill="#111827" opacity="0.62"/>
+    <circle cx="608" cy="542" r="16" fill="#111827" opacity="0.6"/>
+    <circle cx="612" cy="608" r="15" fill="#111827" opacity="0.58"/>
   </g>
 
-  <g fill="none" stroke-linecap="round">
-    <path d="M770 188v62" stroke="#a7f3d0" stroke-width="30"/>
-    <path d="M739 219h62" stroke="#a7f3d0" stroke-width="30"/>
-    <path d="M254 754v42" stroke="#67e8f9" stroke-width="24" opacity="0.82"/>
-    <path d="M233 775h42" stroke="#67e8f9" stroke-width="24" opacity="0.82"/>
+  <g fill="#fef3c7">
+    <circle cx="802" cy="180" r="15"/>
+    <path d="M806 180v82c0 20-18 37-42 37-22 0-39-13-39-31 0-19 19-33 42-31 8 1 15 3 21 7v-64h18Z"/>
+    <circle cx="236" cy="744" r="12" opacity="0.82"/>
+    <path d="M240 744v68c0 18-16 31-37 31-19 0-34-11-34-27 0-17 17-29 37-27 6 1 12 2 17 5v-50h17Z" opacity="0.82"/>
   </g>
 </svg>
