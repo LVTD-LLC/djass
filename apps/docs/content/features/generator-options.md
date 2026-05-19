@@ -16,6 +16,7 @@ When creating a project in Djass, each option toggles concrete code/config in th
 ## Integration toggles
 
 - **Use PostHog**: analytics wiring and related config.
+- **Use Chatwoot**: customer support/chat integration scaffolding.
 - **Use Buttondown**: newsletter integration scaffolding.
 - **Use S3**: storage configuration paths for media assets.
 - **Use Stripe**: subscription billing/webhook-related scaffold pieces.
@@ -24,6 +25,7 @@ When creating a project in Djass, each option toggles concrete code/config in th
 - **Use AI**: AI-related service/config scaffolding.
 - **Use Logfire**: observability configuration for Logfire.
 - **Use Healthchecks**: health-check related setup when enabled.
+- **Use MCP**: Model Context Protocol server/tooling support for agent workflows.
 
 ## Content toggles
 

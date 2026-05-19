@@ -50,6 +50,16 @@ class TestProjectCreateView:
         assert response.status_code == 200
         assert "Generation is unlocked" in response.content.decode()
 
+    def test_project_create_view_renders_current_generator_options(self, auth_client):
+        response = auth_client.get(reverse("project_new"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Use Chatwoot" in content
+        assert 'name="use_chatwoot"' in content
+        assert "Use MCP" in content
+        assert 'name="use_mcp"' in content
+
 
 @pytest.mark.django_db
 def test_settings_upgrade_copy(auth_client, user):

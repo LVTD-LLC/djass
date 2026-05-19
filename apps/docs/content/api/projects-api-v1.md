@@ -86,6 +86,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
   "author_url": "https://acme.test",
   "project_main_color": "green",
   "use_posthog": "y",
+  "use_chatwoot": "n",
   "use_buttondown": "y",
   "use_s3": "y",
   "use_stripe": "y",
@@ -96,6 +97,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
   "use_ai": "y",
   "use_logfire": "y",
   "use_healthchecks": "y",
+  "use_mcp": "n",
   "use_ci": "y"
 }
 ```
@@ -130,6 +132,7 @@ Notes:
       "author_url": "https://acme.test",
       "project_main_color": "green",
       "use_posthog": "y",
+      "use_chatwoot": "n",
       "use_buttondown": "y",
       "use_s3": "y",
       "use_stripe": "y",
@@ -140,6 +143,7 @@ Notes:
       "use_ai": "y",
       "use_logfire": "y",
       "use_healthchecks": "y",
+      "use_mcp": "n",
       "use_ci": "y"
     }
   }
@@ -270,6 +274,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "author_url": "https://acme.test",
     "project_main_color": "green",
     "use_posthog": "y",
+    "use_chatwoot": "n",
     "use_buttondown": "y",
     "use_s3": "y",
     "use_stripe": "y",
@@ -280,6 +285,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
+    "use_mcp": "n",
     "use_ci": "y"
   }'
 

@@ -10,6 +10,7 @@ from apps.core.tasks import (
     COOKIECUTTER_FIELD_DEFAULTS,
     MANIFEST_FILE_NAME,
     METADATA_FILE_NAME,
+    MODULE_FLAG_KEYS,
     generate_project_artifact,
 )
 
@@ -93,6 +94,7 @@ def _read_artifact_zip(project):
             project_name="Lean Build",
             project_slug="lean_build",
             use_posthog="n",
+            use_chatwoot="n",
             use_buttondown="n",
             use_s3="n",
             use_stripe="n",
@@ -103,6 +105,7 @@ def _read_artifact_zip(project):
             use_ai="n",
             use_logfire="n",
             use_healthchecks="n",
+            use_mcp="n",
             use_ci="n",
         ),
         _build_payload(
@@ -138,20 +141,7 @@ def test_generation_writes_standardized_metadata_and_manifest(user, fake_cookiec
     assert metadata["metadata_version"] == "1.0"
     assert metadata["project_id"] == project.id
     assert metadata["project_slug"] == project.slug
-    assert set(metadata["module_flags"].keys()) == {
-        "use_posthog",
-        "use_buttondown",
-        "use_s3",
-        "use_stripe",
-        "use_sentry",
-        "generate_blog",
-        "generate_docs",
-        "use_mjml",
-        "use_ai",
-        "use_logfire",
-        "use_healthchecks",
-        "use_ci",
-    }
+    assert set(metadata["module_flags"].keys()) == set(MODULE_FLAG_KEYS)
 
 
 @pytest.mark.django_db

@@ -5,6 +5,7 @@ from ninja import Schema
 from pydantic import Field
 
 from apps.blog.choices import BlogPostStatus
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS
 
 
 class SubmitFeedbackIn(Schema):
@@ -65,18 +66,20 @@ class ProjectCreateIn(Schema):
     author_email: str = ""
     author_url: str = ""
     project_main_color: str = "green"
-    use_posthog: YNFlag = "y"
-    use_buttondown: YNFlag = "y"
-    use_s3: YNFlag = "y"
-    use_stripe: YNFlag = "y"
-    use_sentry: YNFlag = "y"
-    generate_blog: YNFlag = "y"
-    generate_docs: YNFlag = "y"
-    use_mjml: YNFlag = "y"
-    use_ai: YNFlag = "y"
-    use_logfire: YNFlag = "y"
-    use_healthchecks: YNFlag = "y"
-    use_ci: YNFlag = "y"
+    use_posthog: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_posthog"]
+    use_chatwoot: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_chatwoot"]
+    use_buttondown: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_buttondown"]
+    use_s3: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_s3"]
+    use_stripe: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_stripe"]
+    use_sentry: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_sentry"]
+    generate_blog: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["generate_blog"]
+    generate_docs: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["generate_docs"]
+    use_mjml: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_mjml"]
+    use_ai: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_ai"]
+    use_logfire: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_logfire"]
+    use_healthchecks: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_healthchecks"]
+    use_mcp: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_mcp"]
+    use_ci: YNFlag = COOKIECUTTER_FIELD_DEFAULTS["use_ci"]
 
 
 class ProjectOut(Schema):
