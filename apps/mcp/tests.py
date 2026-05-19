@@ -108,6 +108,26 @@ def test_queue_project_generation_uses_django_q(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_explicit_user_email_does_not_fall_back_to_derived_username(django_user_model):
+    existing = django_user_model.objects.create_user(
+        username="alice",
+        email="existing-alice@example.local",
+        password="password123",
+    )
+
+    result = queue_project_generation(
+        _payload(project_slug="identity_check"),
+        user_email="alice@example.local",
+    )
+
+    project = Project.objects.get(id=result["project"]["id"])
+    existing.refresh_from_db()
+    assert project.user.email == "alice@example.local"
+    assert project.user_id != existing.id
+    assert existing.profile.state != ProfileStates.SUBSCRIBED
+
+
+@pytest.mark.django_db
 def test_list_projects_can_scope_by_user_and_status(django_user_model):
     first_user = django_user_model.objects.create_user(
         username="first",

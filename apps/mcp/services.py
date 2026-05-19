@@ -89,11 +89,12 @@ def ensure_mcp_user(
     grant_project_access: bool = True,
 ):
     email = _clean_optional(user_email) or _default_user_email()
-    resolved_username = _clean_optional(username) or _default_username(email)
+    explicit_username = _clean_optional(username)
+    resolved_username = explicit_username or _default_username(email)
     UserModel = get_user_model()
 
     user = UserModel.objects.filter(email__iexact=email).order_by("id").first()
-    if user is None and resolved_username:
+    if user is None and explicit_username:
         user = UserModel.objects.filter(username=resolved_username).order_by("id").first()
 
     if user is None:
