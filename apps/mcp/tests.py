@@ -85,6 +85,32 @@ def test_generate_project_now_creates_artifact_and_exports(fake_cookiecutter, tm
 
 
 @pytest.mark.django_db
+def test_generate_project_now_wraps_generation_failure(monkeypatch):
+    def _explode(*args, **kwargs):
+        raise RuntimeError("missing required key: project_slug")
+
+    class _FailedProcess:
+        returncode = 2
+        stderr = "missing required key: project_slug"
+
+    monkeypatch.setattr("apps.core.tasks.cookiecutter", _explode)
+    monkeypatch.setattr("apps.core.tasks.subprocess.run", lambda *args, **kwargs: _FailedProcess())
+
+    with pytest.raises(MCPServiceError) as exc_info:
+        generate_project_now(
+            _payload(project_slug="broken_generation"),
+            user_email="failure@example.local",
+        )
+
+    error = exc_info.value
+    assert error.code == "generation_failed"
+    assert "Project generation failed" in error.message
+    assert error.details["project_id"]
+    assert error.details["status"] == ProjectStatus.FAILED
+    assert "missing required key: project_slug" in error.details["error_message"]
+
+
+@pytest.mark.django_db
 def test_queue_project_generation_uses_django_q(monkeypatch):
     calls = []
 

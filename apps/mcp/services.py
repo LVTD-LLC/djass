@@ -275,7 +275,19 @@ def generate_project_now(
     payload = build_project_payload(raw_payload, user=user, extra_context=extra_context)
     project = _create_project(user, payload)
 
-    generate_project_artifact(project.id)
+    try:
+        generate_project_artifact(project.id)
+    except Exception as exc:
+        project.refresh_from_db()
+        raise MCPServiceError(
+            "generation_failed",
+            f"Project generation failed: {exc}",
+            {
+                "project_id": project.id,
+                "status": project.status,
+                "error_message": project.error_message,
+            },
+        ) from exc
     project = Project.objects.select_related("user", "artifact").get(id=project.id)
 
     result = {
