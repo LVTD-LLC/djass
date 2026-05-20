@@ -93,7 +93,9 @@
         {% endblock default_messages %}
         <!-- Include the feedback component -->
         {% if user.is_authenticated %}
-            {% include 'components/feedback.html' %}
+            {% if not chatwoot_base_url or not chatwoot_website_token %}
+                {% include 'components/feedback.html' %}
+            {% endif %}
         {% endif %}
         <div class="min-h-screen text-gray-900 dark:text-gray-100 {% if request.resolver_match.url_name == 'landing' or request.resolver_match.url_name == 'blog_posts' or request.resolver_match.url_name == 'blog_post' %}bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.22),_rgba(255,255,255,0.96)_40%,_rgba(255,255,255,1)_70%)] dark:bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.2),_rgba(3,7,18,0.98)_38%,_rgba(2,6,23,1)_70%)]{% else %}bg-white dark:bg-gray-950{% endif %}">
             <header class="fixed left-0 top-3 z-50 w-full">
@@ -286,5 +288,6 @@
     }
             </script>
         {% endblock schema %}
+        {% include "components/chatwoot.html" %}
     </body>
 </html>

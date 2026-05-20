@@ -314,3 +314,38 @@ def test_generator_options_exposes_defaults_and_flags(settings):
     assert options["template_path"] == "https://example.test/template.git"
     assert options["defaults"]["project_name"] == "My Awesome Project"
     assert "use_stripe" in options["module_flags"]
+
+
+def test_mcp_tools_accept_chatwoot_flag():
+    from inspect import signature
+
+    from apps.mcp.server import _payload_from_args, create_project, generate_project
+
+    assert "use_chatwoot" in signature(create_project).parameters
+    assert "use_chatwoot" in signature(generate_project).parameters
+
+    payload = _payload_from_args(
+        project_name="Support CRM",
+        project_slug="support_crm",
+        project_description="",
+        repo_url="",
+        author_name="",
+        author_email="",
+        author_url="",
+        project_main_color="green",
+        use_posthog="y",
+        use_chatwoot="y",
+        use_buttondown="y",
+        use_s3="y",
+        use_stripe="y",
+        use_sentry="y",
+        generate_blog="y",
+        generate_docs="y",
+        use_mjml="y",
+        use_ai="y",
+        use_logfire="y",
+        use_healthchecks="y",
+        use_ci="y",
+        extra_context=None,
+    )
+    assert payload["use_chatwoot"] == "y"

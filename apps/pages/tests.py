@@ -47,6 +47,19 @@ def test_free_access_page_shows_feedback_led_copy(client):
     assert "premium" not in content.lower()
 
 
+@override_settings(
+    CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
+    CHATWOOT_WEBSITE_TOKEN="testtoken",
+)
+def test_landing_base_renders_chatwoot_widget_when_configured(client):
+    response = client.get(reverse("landing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'var BASE_URL = "https://chatwoot.cap.gregagi.com";' in content
+    assert 'websiteToken: "testtoken"' in content
+
+
 def test_free_access_page_ignores_legacy_checkout_params(auth_client, monkeypatch):
     calls = []
 
