@@ -34,7 +34,8 @@ class TestHomeView:
         assert "Agent project generator prompt" in content
         assert "Copy prompt" in content
         assert "Copy SKILL.md" in content
-        assert "http://testserver/api/v1" in content
+        assert "https://djass.dev/api/v1" in content
+        assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
         assert "GET $DJASS_BASE_URL/projects/{project_id}/download" in content
         assert "If Djass MCP tools are available" in content

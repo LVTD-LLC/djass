@@ -18,7 +18,11 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
 from django_q.tasks import async_task
 
-from apps.core.agent_prompts import build_djass_agent_prompt, build_djass_agent_skill_md
+from apps.core.agent_prompts import (
+    DJASS_API_BASE_URL,
+    build_djass_agent_prompt,
+    build_djass_agent_skill_md,
+)
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
 from apps.core.project_limits import project_create_quota
@@ -82,11 +86,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
         )
         context["agent_prompt_available"] = False
         if can_create_projects:
-            projects_api_base_url = self.request.build_absolute_uri("/api/v1")
-            context["projects_api_base_url"] = projects_api_base_url
+            context["projects_api_base_url"] = DJASS_API_BASE_URL
             skill_md = build_djass_agent_skill_md()
             context["djass_agent_prompt"] = build_djass_agent_prompt(
-                projects_api_base_url,
+                DJASS_API_BASE_URL,
                 self.request.user.profile.key,
                 skill_md=skill_md,
             )

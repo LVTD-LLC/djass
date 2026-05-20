@@ -1,5 +1,7 @@
 from textwrap import dedent
 
+DJASS_API_BASE_URL = "https://djass.dev/api/v1"
+
 
 def build_djass_agent_skill_md() -> str:
     return dedent(
