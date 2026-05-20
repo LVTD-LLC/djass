@@ -1,21 +1,20 @@
-name: Deploy Prod Server
+name: Deploy Prod
 
 on:
   push:
     branches:
-        - main
-
-env:
-  PROJECT_NAME: djass
-  IMAGE_NAME: ghcr.io/lvtd-llc/djass
+      - main
 
 permissions:
   contents: read
   packages: write
 
+env:
+  IMAGE_NAME: ghcr.io/lvtd-llc/djass
+
 jobs:
   build-and-deploy:
-    name: Deploy
+    name: Build and deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,13 +35,22 @@ jobs:
         with:
           context: .
           push: true
-          file: deployment/Dockerfile.server
+          file: deployment/Dockerfile
           tags: ${{ env.IMAGE_NAME }}
 
-      - name: Deploy to CapRover
+      - name: Deploy server to CapRover
         uses: caprover/deploy-from-github@main
         with:
-            server: ${{ secrets.CAPROVER_SERVER }}
-            app: ${{ env.PROJECT_NAME }}
-            token: ${{ secrets.APP_TOKEN }}
-            image: ${{ env.IMAGE_NAME }}
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: djass
+          token: ${{ secrets.APP_TOKEN }}
+          image: ${{ env.IMAGE_NAME }}
+
+      # The workers app uses the same image and must set DJASS_PROCESS_TYPE=worker in CapRover.
+      - name: Deploy workers to CapRover
+        uses: caprover/deploy-from-github@main
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: djass-workers
+          token: ${{ secrets.WORKERS_APP_TOKEN }}
+          image: ${{ env.IMAGE_NAME }}

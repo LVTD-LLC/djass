@@ -25,4 +25,4 @@ COPY --from=build /app/frontend/build/ ./frontend/build/
 
 EXPOSE 80
 
-CMD ["deployment/entrypoint.sh", "-s"]
+CMD ["deployment/entrypoint.sh"]
