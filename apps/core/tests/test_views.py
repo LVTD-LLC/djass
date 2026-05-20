@@ -3,7 +3,7 @@ from allauth.account.models import EmailAddress
 from django.test import override_settings
 from django.urls import reverse
 
-from apps.core.choices import ProfileStates
+from apps.core.models import Project, ProjectStatus
 from apps.core.views import get_price_id_for_plan
 
 
@@ -19,19 +19,12 @@ class TestHomeView:
         response = auth_client.get(url)
         assert "pages/home.html" in [t.name for t in response.templates]
 
-    def test_home_shows_generation_locked_state(self, auth_client):
+    def test_home_shows_generation_unlocked_by_default(self, auth_client):
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
-        assert "Generation locked" in response.content.decode()
-
-    def test_home_shows_generation_unlocked_state(self, auth_client, user):
-        profile = user.profile
-        profile.state = ProfileStates.SUBSCRIBED
-        profile.save(update_fields=["state"])
-
-        response = auth_client.get(reverse("home"))
-        assert response.status_code == 200
-        assert "Generation unlocked" in response.content.decode()
+        content = response.content.decode()
+        assert "Generation available" in content
+        assert "Generation locked" not in content
 
     def test_home_shows_copyable_agent_prompt_and_skill(self, auth_client, user):
         response = auth_client.get(reverse("home"))
@@ -49,19 +42,12 @@ class TestHomeView:
 
 @pytest.mark.django_db
 class TestProjectCreateView:
-    def test_project_create_view_shows_locked_state(self, auth_client):
+    def test_project_create_view_shows_unlocked_state_by_default(self, auth_client):
         response = auth_client.get(reverse("project_new"))
         assert response.status_code == 200
-        assert "Generation is locked" in response.content.decode()
-
-    def test_project_create_view_shows_unlocked_state(self, auth_client, user):
-        profile = user.profile
-        profile.state = ProfileStates.SUBSCRIBED
-        profile.save(update_fields=["state"])
-
-        response = auth_client.get(reverse("project_new"))
-        assert response.status_code == 200
-        assert "Generation is unlocked" in response.content.decode()
+        content = response.content.decode()
+        assert "Generation is available" in content
+        assert "Generation is locked" not in content
 
     def test_project_create_view_renders_current_generator_options(self, auth_client):
         response = auth_client.get(reverse("project_new"))
@@ -76,17 +62,35 @@ class TestProjectCreateView:
         assert "Use MCP" in content
         assert 'name="use_mcp"' in content
 
+    def test_project_create_view_shows_project_limit_state(self, auth_client, settings, user):
+        settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
+        Project.objects.create(
+            user=user,
+            name="Existing Project",
+            slug="existing_project",
+            input_payload={"project_name": "Existing Project"},
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_new"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "This account has reached the current project limit." in content
+        assert "Generation is available" not in content
+        assert "disabled" in content
+
 
 @pytest.mark.django_db
-def test_settings_upgrade_copy(auth_client, user):
+def test_settings_omits_upgrade_copy(auth_client, user):
     EmailAddress.objects.create(user=user, email=user.email, verified=False, primary=True)
     response = auth_client.get(reverse("settings"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "$999 one-time" in content
-    assert "unlimited generations" in content.lower()
-    assert "forever updates" in content.lower()
+    assert "Upgrade Your Account" not in content
+    assert "$999" not in content
+    assert "premium" not in content.lower()
 
 
 @pytest.mark.django_db

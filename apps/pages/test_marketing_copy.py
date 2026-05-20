@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 LANDING_TEMPLATE = Path("frontend/templates/pages/landing-page.html")
-PRICING_TEMPLATE = Path("frontend/templates/pages/pricing.html")
+FREE_ACCESS_TEMPLATE = Path("frontend/templates/pages/free-access.html")
 
 
 def test_landing_template_uses_product_led_copy():
@@ -13,19 +13,21 @@ def test_landing_template_uses_product_led_copy():
     assert "Founders, product teams, and solo builders" in content
     assert "Create your Djass account" in content
     assert "Sign in to your dashboard" in content
-    assert "See the premium agency plan" not in content
+    assert "Create your free account" in content
+    assert "premium" not in content.lower()
     assert "API-first delivery for modern Django agencies" not in content
 
 
-def test_pricing_template_uses_product_led_copy():
-    content = PRICING_TEMPLATE.read_text()
+def test_free_access_template_uses_feedback_led_copy():
+    content = FREE_ACCESS_TEMPLATE.read_text()
 
-    assert "One plan for serious Django SaaS work" in content
-    assert "$999 one-time for founders and teams shipping Django SaaS repeatedly" in content
-    assert "Unlimited starter generations for new SaaS products, experiments, and internal tools" in content
-    assert "Djass Premium Plan" in content
+    assert "Free access while Djass improves" in content
+    assert "Generate Django SaaS starters for free." in content
+    assert "Djass Free Access" in content
+    assert "feedback" in content.lower()
     assert "Review the open-source baseline" in content
     assert "Need full control?" not in content
-    assert "self-host for free" not in content
-    assert "Premium Agency Plan" not in content
+    assert "$999" not in content
+    assert "payment" not in content.lower()
+    assert "premium" not in content.lower()
     assert "agencies that ship client SaaS repeatedly" not in content

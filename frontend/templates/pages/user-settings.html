@@ -14,24 +14,6 @@
         <h1 class="flex-1 pt-2 text-xl font-medium">Settings</h1>
       </div>
     </div>
-    {% if not has_subscription %}
-    <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
-      <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Upgrade Your Account</h3>
-      <p class="mb-4 text-sm text-gray-600 dark:text-gray-300">One-time upgrades include unlimited generations and forever updates.</p>
-      <div class="rounded-md shadow max-w-sm">
-        <form method="post" action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}">
-          {% csrf_token %}
-          <button
-            type="submit"
-            class="flex justify-center items-center px-4 py-3 w-full h-full text-sm font-medium text-white bg-green-600 rounded-md border border-transparent transition duration-150 ease-in-out md:text-base hover:bg-green-700"
-          >
-            Unlock premium access — $999 one-time
-          </button>
-        </form>
-      </div>
-    </div>
-    {% endif %}
-
     <section class="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/30" data-controller="clipboard">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>

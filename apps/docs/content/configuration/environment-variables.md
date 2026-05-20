@@ -71,27 +71,6 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `SERVER_EMAIL` (optional error sender override)
 - `BUTTONDOWN_API_KEY`
 
-### Billing
-
-- `STRIPE_PUBLISHABLE_KEY`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_ID_ONE_TIME`
-
-Create or fetch the premium Stripe product + one-time `$999` price id with:
-
-```bash
-python manage.py setup_stripe_lifetime_price
-```
-
-If you use an Organization API key, pass the target account:
-
-```bash
-python manage.py setup_stripe_lifetime_price --stripe-context acct_...
-```
-
-The command prints `STRIPE_PRICE_ID_ONE_TIME=...` so you can copy it to your environment.
-
 ### Observability
 
 - `SENTRY_DSN`

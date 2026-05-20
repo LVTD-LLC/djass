@@ -58,7 +58,6 @@ If scope is missing: `403` with `error.code = "insufficient_scope"`.
 ### Common codes used by this API
 - `auth_required`
 - `insufficient_scope`
-- `subscription_required`
 - `invalid_project_slug`
 - `quota_exceeded`
 - `project_not_found`
@@ -197,7 +196,7 @@ Notes:
 #### Error statuses
 - `400` invalid payload / invalid slug
 - `401` missing or invalid key
-- `403` subscription required or insufficient scope
+- `403` insufficient scope
 - `429` project quota exceeded
 - `503` temporary queueing failure (retryable)
 - `500` internal error

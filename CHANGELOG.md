@@ -43,7 +43,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Added a branded `account/verification_sent.html` so fallback verification-sent UX matches Djass styling instead of the default allauth page.
 
 ### Changed
-- Pricing page copy now frames Djass as a product-led Django SaaS plan for founders, builders, and teams instead of agency/service work, while keeping pricing unchanged.
+- Free access page copy now frames Djass as a feedback-led Django SaaS starter workflow for founders, builders, and teams.
 - Blog list/detail pages no longer render top tag chips in the page header/card metadata, reducing visual clutter while keeping layout spacing intact.
 - API key authentication for v1 project endpoints now accepts `X-API-Key` and `Authorization` header formats in addition to `?api_key=` query fallback.
 - Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
@@ -54,14 +54,14 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
 - Landing page “How it works” section now spells out the UI flow and API flow separately, then explains the background generation and handoff steps in scan-friendly cards.
-- Pricing page and premium-offer workflow copy now remove the legacy “Need full control?” bridge in favor of product-first messaging that points buyers to the open-source baseline without agency framing.
+- Free access page and workflow copy now remove the legacy “Need full control?” bridge in favor of product-first messaging that points builders to the open-source baseline without agency framing.
 
 ### Fixed
 - Signup no longer fails account creation when welcome/confirmation email delivery errors during registration; the failure is logged, the user gets a retry warning, and explicit resend failures still surface normally.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
-- Landing and pricing copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
+- Landing and free access copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
 - Landing page CTA copy now uses clearer action labels and helper text that explains exactly where each homepage CTA goes.
 - Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.
 - Generation now uses Cookiecutter Python API first with CLI fallback for resilience.

@@ -27,3 +27,4 @@ navigation:
 
   api:
     - projects-api-v1
+    - mcp-server

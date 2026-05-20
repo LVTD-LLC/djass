@@ -1,5 +1,3 @@
-from urllib.parse import urlencode
-
 import stripe
 from allauth.account.models import EmailAddress, EmailConfirmation
 from django.conf import settings
@@ -23,6 +21,7 @@ from django_q.tasks import async_task
 from apps.core.agent_prompts import build_djass_agent_prompt, build_djass_agent_skill_md
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
+from apps.core.project_limits import project_create_quota
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 from djass.utils import get_djass_logger
 
@@ -33,15 +32,26 @@ logger = get_djass_logger(__name__)
 
 
 def _user_can_create_projects(user):
-    try:
-        return user.profile.has_active_subscription
-    except Profile.DoesNotExist:
-        return False
+    return user.is_authenticated and hasattr(user, "profile")
+
+
+def _user_project_count(user):
+    return Project.objects.filter(user=user).count()
+
+
+def _project_limit_reached(user):
+    return _user_project_count(user) >= project_create_quota()
 
 
 def _deny_project_access(request):
-    messages.error(request, "Project generation unlocks after the one-time $999 payment.")
-    return redirect("pricing")
+    messages.error(
+        request,
+        (
+            "We couldn't find an account profile for your signed-in user. "
+            "Please contact support before creating projects."
+        ),
+    )
+    return redirect("home")
 
 
 def _queue_profile_event(profile, event_name, properties, source_function):
@@ -62,18 +72,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        payment_status = self.request.GET.get("payment")
-        if payment_status == "success":
-            messages.success(
-                self.request,
-                "Payment successful — unlimited generation is now unlocked.",
-            )
-            context["show_confetti"] = True
-        elif payment_status == "failed":
-            messages.error(self.request, "Something went wrong with the payment.")
-
+        can_create_projects = _user_can_create_projects(self.request.user)
         context["projects"] = Project.objects.filter(user=self.request.user)
-        context["can_generate"] = _user_can_create_projects(self.request.user)
+        context["project_limit_reached"] = (
+            can_create_projects and _project_limit_reached(self.request.user)
+        )
+        context["can_generate"] = (
+            can_create_projects and not context["project_limit_reached"]
+        )
         projects_api_base_url = self.request.build_absolute_uri("/api/v1")
         context["projects_api_base_url"] = projects_api_base_url
         skill_md = build_djass_agent_skill_md()
@@ -94,15 +100,15 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        checkout_status = self.request.GET.get("checkout")
-        if checkout_status == "success":
-            messages.success(
-                self.request,
-                "Payment successful — onboarding is unlocked. Start generating your first project.",
-            )
-
         context["project_form"] = ProjectCreateForm(user=self.request.user)
-        context["can_generate"] = _user_can_create_projects(self.request.user)
+        context["project_limit_reached"] = (
+            _user_can_create_projects(self.request.user)
+            and _project_limit_reached(self.request.user)
+        )
+        context["can_generate"] = (
+            _user_can_create_projects(self.request.user)
+            and not context["project_limit_reached"]
+        )
         return context
 
 
@@ -110,17 +116,42 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
 @require_POST
 def create_project(request):
     if not _user_can_create_projects(request.user):
+        try:
+            _queue_profile_event(
+                profile=request.user.profile,
+                event_name="project_create_failed",
+                properties={
+                    "reason": "account_unavailable",
+                    "funnel_step": "project_create_failed",
+                    "entrypoint": "ui",
+                },
+                source_function="create_project",
+            )
+        except Profile.DoesNotExist:
+            logger.warning("Project creation denied because user profile is missing")
+        return _deny_project_access(request)
+
+    project_quota = project_create_quota()
+    if _user_project_count(request.user) >= project_quota:
         _queue_profile_event(
             profile=request.user.profile,
             event_name="project_create_failed",
             properties={
-                "reason": "subscription_required",
+                "reason": "quota_exceeded",
+                "quota": project_quota,
                 "funnel_step": "project_create_failed",
                 "entrypoint": "ui",
             },
             source_function="create_project",
         )
-        return _deny_project_access(request)
+        messages.error(
+            request,
+            (
+                f"You've reached the current limit of {project_quota} projects. "
+                "Please contact support if you need more room."
+            ),
+        )
+        return redirect("project_new")
 
     form = ProjectCreateForm(request.POST, user=request.user)
     if not form.is_valid():
@@ -234,8 +265,6 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         email_address = EmailAddress.objects.get_for_user(user, user.email)
         context["email_verified"] = email_address.verified
         context["resend_confirmation_url"] = reverse("resend_confirmation")
-        context["has_subscription"] = user.profile.has_active_subscription
-        
         context["api_key"] = user.profile.key
 
 
@@ -318,207 +347,14 @@ def delete_account(request):
 @login_required
 @require_POST
 def create_checkout_session(request, pk, plan):
-    user = request.user
-    profile = user.profile
-    plan_key = (plan or "").lower()
-
-    if plan_key != "one-time":
-        logger.warning(
-            "Attempted checkout for unsupported plan",
-            plan=plan,
-            user_id=user.id,
-        )
-        messages.error(request, "Only the one-time $999 premium plan is available.")
-        return redirect("pricing")
-
-    if profile.has_active_subscription:
-        messages.info(request, "Premium access is already active for this account.")
-        return redirect("project_new")
-
-    price_id = get_price_id_for_plan("one-time")
-    if not price_id:
-        logger.warning("Stripe price id not configured for one-time plan", user_id=user.id)
-        messages.error(request, "Unable to find pricing for the selected plan.")
-        return redirect("pricing")
-
-    expected_amount_cents = settings.STRIPE_ONE_TIME_AMOUNT_CENTS
-    try:
-        price = stripe.Price.retrieve(price_id)
-    except stripe.error.StripeError as exc:
-        logger.error(
-            "Stripe price validation failed",
-            profile_id=profile.id,
-            price_id=price_id,
-            error=str(exc),
-        )
-        _queue_profile_event(
-            profile=profile,
-            event_name="checkout_failed",
-            properties={
-                "reason": "price_validation_failed",
-                "error_type": exc.__class__.__name__,
-                "plan": "one-time",
-                "funnel_step": "checkout_failed",
-                "entrypoint": "ui",
-            },
-            source_function="create_checkout_session",
-        )
-        messages.error(request, "Unable to validate pricing. Please try again.")
-        return redirect("pricing")
-
-    price_amount = getattr(price, "unit_amount", None)
-    if price_amount != expected_amount_cents:
-        logger.error(
-            "Stripe one-time price amount mismatch",
-            profile_id=profile.id,
-            price_id=price_id,
-            expected_amount_cents=expected_amount_cents,
-            actual_amount_cents=price_amount,
-        )
-        _queue_profile_event(
-            profile=profile,
-            event_name="checkout_failed",
-            properties={
-                "reason": "price_amount_mismatch",
-                "plan": "one-time",
-                "funnel_step": "checkout_failed",
-                "entrypoint": "ui",
-                "expected_amount_cents": expected_amount_cents,
-                "actual_amount_cents": price_amount,
-            },
-            source_function="create_checkout_session",
-        )
-        messages.error(request, "Pricing is being updated. Please try again in a moment.")
-        return redirect("pricing")
-
-    try:
-        customer = get_or_create_stripe_customer(profile, user)
-    except stripe.error.StripeError as exc:
-        logger.error(
-            "Stripe customer setup failed",
-            profile_id=profile.id,
-            error=str(exc),
-        )
-        _queue_profile_event(
-            profile=profile,
-            event_name="checkout_failed",
-            properties={
-                "reason": "customer_setup_failed",
-                "error_type": exc.__class__.__name__,
-                "funnel_step": "checkout_failed",
-                "entrypoint": "ui",
-            },
-            source_function="create_checkout_session",
-        )
-        messages.error(request, "Unable to start checkout. Please try again.")
-        return redirect("pricing")
-
-    base_success_url = request.build_absolute_uri(reverse("project_new"))
-    base_cancel_url = request.build_absolute_uri(reverse("pricing"))
-
-    success_params = {"checkout": "success"}
-    success_url = f"{base_success_url}?{urlencode(success_params)}"
-
-    cancel_params = {"checkout": "canceled"}
-    cancel_url = f"{base_cancel_url}?{urlencode(cancel_params)}"
-
-    session_params = {
-        "customer": customer.id,
-        "payment_method_types": ["card"],
-        "allow_promotion_codes": True,
-        "automatic_tax": {"enabled": True},
-        "line_items": [
-            {
-                "price": price_id,
-                "quantity": 1,
-            }
-        ],
-        "mode": "payment",
-        "success_url": success_url,
-        "cancel_url": cancel_url,
-        "customer_update": {
-            "address": "auto",
-        },
-        "client_reference_id": str(user.id),
-        "metadata": {
-            "user_id": user.id,
-            "pk": pk,
-            "price_id": price_id,
-            "plan": "one-time",
-        },
-    }
-
-    try:
-        checkout_session = stripe.checkout.Session.create(**session_params)
-    except stripe.error.StripeError as exc:
-        logger.error(
-            "Stripe checkout session creation failed",
-            profile_id=profile.id,
-            plan="one-time",
-            error=str(exc),
-        )
-        _queue_profile_event(
-            profile=profile,
-            event_name="checkout_failed",
-            properties={
-                "reason": "session_creation_failed",
-                "error_type": exc.__class__.__name__,
-                "plan": "one-time",
-                "funnel_step": "checkout_failed",
-                "entrypoint": "ui",
-            },
-            source_function="create_checkout_session",
-        )
-        messages.error(request, "Unable to start checkout. Please try again.")
-        return redirect("pricing")
-
-    event_properties = {
-        "plan": "one-time",
-        "price_id": price_id,
-        "amount_cents": price_amount,
-    }
-    checkout_id = getattr(checkout_session, "id", None)
-    if checkout_id:
-        event_properties["checkout_id"] = checkout_id
-
-    _queue_profile_event(
-        profile=profile,
-        event_name="checkout_started",
-        properties={
-            **event_properties,
-            "funnel_step": "checkout_started",
-            "entrypoint": "ui",
-        },
-        source_function="create_checkout_session",
-    )
-
-    return redirect(checkout_session.url, code=303)
+    messages.info(request, "Generation is free right now. You can create projects immediately.")
+    return redirect("project_new")
 
 
 @login_required
 def create_customer_portal_session(request):
-    user = request.user
-    profile = user.profile
-    if not profile.stripe_customer_id:
-        messages.error(request, "No Stripe customer found for this account.")
-        return redirect("pricing")
-
-    try:
-        session = stripe.billing_portal.Session.create(
-            customer=profile.stripe_customer_id,
-            return_url=request.build_absolute_uri(reverse("home")),
-        )
-    except stripe.error.StripeError as exc:
-        logger.error(
-            "Stripe portal session creation failed",
-            profile_id=profile.id,
-            stripe_customer_id=profile.stripe_customer_id,
-            error=str(exc),
-        )
-        messages.error(request, "Unable to open the billing portal. Please try again.")
-        return redirect("pricing")
-
-    return redirect(session.url, code=303)
+    messages.info(request, "Account access is free right now.")
+    return redirect("settings")
 
 
 

@@ -14,7 +14,7 @@ urlpatterns = [
     # Utils
     path("resend-confirmation/", views.resend_confirmation_email, name="resend_confirmation"),
     path("delete-account/", views.delete_account, name="delete_account"),
-    # Payments
+    # Stripe webhooks and legacy account access routes
     path("stripe-webhook/", views.stripe_webhook, name="stripe_webhook"),
     path(
         "create-checkout-session/<int:pk>/<str:plan>/",
