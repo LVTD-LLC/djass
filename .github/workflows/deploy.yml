@@ -1,13 +1,9 @@
-name: Deploy Prod Server
+name: Deploy Prod
 
 on:
   push:
     branches:
-        - main
-
-env:
-  PROJECT_NAME: djass
-  IMAGE_NAME: ghcr.io/lvtd-llc/djass
+      - main
 
 permissions:
   contents: read
@@ -15,8 +11,22 @@ permissions:
 
 jobs:
   build-and-deploy:
-    name: Deploy
+    name: Deploy ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Server
+            process_type: server
+            app_name: djass
+            image_name: ghcr.io/lvtd-llc/djass
+            token_secret: APP_TOKEN
+          - name: Workers
+            process_type: worker
+            app_name: djass-workers
+            image_name: ghcr.io/lvtd-llc/djass-workers
+            token_secret: WORKERS_APP_TOKEN
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,13 +46,15 @@ jobs:
         with:
           context: .
           push: true
-          file: deployment/Dockerfile.server
-          tags: ${{ env.IMAGE_NAME }}
+          file: deployment/Dockerfile
+          tags: ${{ matrix.image_name }}
+          build-args: |
+            DJASS_PROCESS_TYPE=${{ matrix.process_type }}
 
       - name: Deploy to CapRover
         uses: caprover/deploy-from-github@main
         with:
-            server: ${{ secrets.CAPROVER_SERVER }}
-            app: ${{ env.PROJECT_NAME }}
-            token: ${{ secrets.APP_TOKEN }}
-            image: ${{ env.IMAGE_NAME }}
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: ${{ matrix.app_name }}
+          token: ${{ secrets[matrix.token_secret] }}
+          image: ${{ matrix.image_name }}
