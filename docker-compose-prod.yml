@@ -35,8 +35,10 @@ services:
       - .env
 
   workers:
-    image: ghcr.io/rasulkireev/djass-workers:latest
+    image: ghcr.io/rasulkireev/djass:latest
     working_dir: /app
+    environment:
+      DJASS_PROCESS_TYPE: worker
     depends_on:
       db:
         condition: service_healthy

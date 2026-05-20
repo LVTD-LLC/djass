@@ -10,12 +10,9 @@ FROM python:3.14
 
 WORKDIR /app
 
-ARG DJASS_PROCESS_TYPE=server
-
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV DJASS_PROCESS_TYPE=$DJASS_PROCESS_TYPE
 
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir uv
