@@ -4,12 +4,40 @@ import frontmatter
 import markdown
 import yaml
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
+
+
+def get_docs_content_dir():
+    return Path(settings.BASE_DIR) / "apps" / "docs" / "content"
+
+
+def get_docs_markdown_file(category, page):
+    return get_docs_content_dir() / category / f"{page}.md"
+
+
+def load_docs_post(category, page):
+    markdown_file = get_docs_markdown_file(category, page)
+
+    if not markdown_file.exists():
+        raise Http404("Documentation page not found")
+
+    with open(markdown_file, encoding="utf-8") as file:
+        return frontmatter.load(file)
+
+
+def render_docs_markdown(post, default_page_title):
+    page_title = post.get("title", default_page_title)
+    content = post.content.strip()
+
+    if content.startswith("# "):
+        return f"{content}\n"
+
+    return f"# {page_title}\n\n{content}\n"
 
 
 def load_navigation_config():
@@ -36,7 +64,7 @@ def get_docs_navigation():  # noqa: C901
     Uses custom ordering from navigation.yaml if defined, otherwise uses alphabetical order.
     Returns a list of dicts with category names and their pages.
     """
-    content_dir = Path(settings.BASE_DIR) / "apps" / "docs" / "content"
+    content_dir = get_docs_content_dir()
     navigation = []
 
     if not content_dir.exists():
@@ -148,15 +176,8 @@ def docs_page_view(request, category, page):
     """
     Render a documentation page from markdown file with frontmatter support.
     """
-    content_dir = Path(settings.BASE_DIR) / "apps" / "docs" / "content"
-    markdown_file = content_dir / category / f"{page}.md"
-
-    if not markdown_file.exists():
-        raise Http404("Documentation page not found")
-
     try:
-        with open(markdown_file, encoding="utf-8") as file:
-            post = frontmatter.load(file)
+        post = load_docs_post(category, page)
 
         markdown_html = markdown.markdown(
             post.content, extensions=["fenced_code", "tables", "codehilite"]
@@ -186,4 +207,24 @@ def docs_page_view(request, category, page):
         return render(request, "docs/docs_page.html", context)
     except Exception as e:
         logger.error("Error loading documentation page", category=category, page=page, error=str(e))
+        raise Http404("Documentation page not found") from e
+
+
+def docs_markdown_view(request, category, page):
+    """
+    Render a documentation page as Markdown for .md URL variants.
+    """
+    try:
+        post = load_docs_post(category, page)
+        default_page_title = page.replace("-", " ").title()
+        markdown_content = render_docs_markdown(post, default_page_title)
+
+        return HttpResponse(markdown_content, content_type="text/markdown; charset=utf-8")
+    except Exception as e:
+        logger.error(
+            "Error loading documentation markdown page",
+            category=category,
+            page=page,
+            error=str(e),
+        )
         raise Http404("Documentation page not found") from e
