@@ -3,7 +3,7 @@ from allauth.account.models import EmailAddress
 from django.test import override_settings
 from django.urls import reverse
 
-from apps.core.models import Project, ProjectStatus
+from apps.core.models import Profile, Project, ProjectStatus
 from apps.core.views import get_price_id_for_plan
 
 
@@ -25,6 +25,31 @@ class TestHomeView:
         content = response.content.decode()
         assert "Generation available" in content
         assert "Generation locked" not in content
+
+    def test_home_shows_copyable_agent_prompt_and_skill(self, auth_client, user):
+        response = auth_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Agent project generator prompt" in content
+        assert "Copy prompt" in content
+        assert "Copy SKILL.md" in content
+        assert "http://testserver/api/v1" in content
+        assert user.profile.key in content
+        assert "GET $DJASS_BASE_URL/projects/{project_id}/download" in content
+        assert "If Djass MCP tools are available" in content
+
+    def test_home_omits_agent_prompt_when_profile_is_missing(self, auth_client, user):
+        Profile.objects.filter(user=user).delete()
+        user._state.fields_cache.pop("profile", None)
+
+        response = auth_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Agent project generator prompt" not in content
+        assert "Copy prompt" not in content
+        assert "Generation unavailable" in content
 
 
 @pytest.mark.django_db

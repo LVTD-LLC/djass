@@ -1,7 +1,7 @@
 # Djass Projects API (v1)
 
 **Base URL:** `https://<your-djass-host>/api/v1`  
-**Coverage:** `create`, `list`, `get`, `status` endpoints for project generation.
+**Coverage:** `create`, `list`, `get`, `status`, and `download` endpoints for project generation.
 
 ---
 
@@ -12,7 +12,8 @@ This API lets an agent:
 2. create a new Djass project generation job,
 3. list the caller's projects,
 4. fetch one project by id,
-5. poll status until generation is complete.
+5. poll status until generation is complete,
+6. download the generated project ZIP artifact.
 
 All data access is **owner-scoped**: keys can only see projects for their own profile.
 
@@ -33,7 +34,7 @@ Project mutation and project history endpoints require an API key. The generator
 
 ### Required scopes
 - `POST /projects` requires `projects:create`
-- `GET /projects`, `GET /projects/{id}`, `GET /projects/{id}/status` require `projects:read`
+- `GET /projects`, `GET /projects/{id}`, `GET /projects/{id}/status`, and `GET /projects/{id}/download` require `projects:read`
 - `GET /project-options` does not require authentication
 
 If scope is missing: `403` with `error.code = "insufficient_scope"`.
@@ -60,6 +61,7 @@ If scope is missing: `403` with `error.code = "insufficient_scope"`.
 - `invalid_project_slug`
 - `quota_exceeded`
 - `project_not_found`
+- `artifact_not_ready`
 - `retryable_error`
 - `internal_error`
 
@@ -294,6 +296,30 @@ Returns full `Project` object (same shape as `project` in create response).
 
 ---
 
+### 4.6 Download project artifact
+
+**Method/Path:** `GET /projects/{project_id}/download`  
+**Purpose:** download the generated repository ZIP after project generation is ready.
+
+#### Success response (`200`)
+
+Returns a binary ZIP stream with:
+
+- `Content-Type: application/zip`
+- `Content-Disposition: attachment; filename="<project_slug>-YYYYMMDD.zip"`
+
+#### Error statuses
+- `401` missing/invalid key
+- `403` insufficient scope
+- `404` project not found
+- `409` artifact is not ready yet
+- `500` internal error
+
+When the artifact is not ready, poll `GET /projects/{project_id}/status` until
+`artifact_ready` is `true`.
+
+---
+
 ## 5) Agent quickstart (copy-paste)
 
 ```bash
@@ -342,6 +368,11 @@ curl -sS "$DJASS_BASE_URL/projects/$PROJECT_ID/status" \
 # 4) Fetch full project object
 curl -sS "$DJASS_BASE_URL/projects/$PROJECT_ID" \
   -H "X-API-Key: $DJASS_API_KEY"
+
+# 5) Download generated repo ZIP when ready
+curl -L "$DJASS_BASE_URL/projects/$PROJECT_ID/download" \
+  -H "X-API-Key: $DJASS_API_KEY" \
+  -o "acme_crm.zip"
 ```
 
 Polling recommendation:
@@ -442,6 +473,23 @@ Polling recommendation:
 }
 ```
 
+### Artifact not ready (`409`, retryable)
+```json
+{
+  "error": {
+    "code": "artifact_not_ready",
+    "category": "retryable",
+    "message": "Project artifact is not ready yet.",
+    "retryable": true,
+    "details": {
+      "project_id": 123,
+      "status": "generating",
+      "retry_guidance": "Poll the status endpoint until artifact_ready is true."
+    }
+  }
+}
+```
+
 ---
 
 ## 7) Implementation references
@@ -462,6 +510,5 @@ Local execution note:
 
 1. **No idempotency key on create**: repeated `POST /projects` can create duplicates.
 2. **No callback/webhook** for completion: clients must poll `/status`.
-3. **No artifact download endpoint in this spec**: clients need another API/surface to fetch ZIP output.
-4. **Legacy query-string auth remains enabled** for compatibility; should eventually be deprecated for security hygiene.
-5. **No server-provided request ID** in response body for cross-system tracing.
+3. **Legacy query-string auth remains enabled** for compatibility; should eventually be deprecated for security hygiene.
+4. **No server-provided request ID** in response body for cross-system tracing.
