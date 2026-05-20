@@ -1,50 +1,45 @@
 {% extends 'base_landing.html' %}
 
 {% block content %}
-<div class="px-4 mx-auto max-w-[1400px] mt-16 sm:mt-24 lg:px-8" data-controller="toc">
-  <div class="flex flex-col gap-8 xl:flex-row xl:gap-12">
-    <!-- Left Sidebar Navigation -->
-    <aside class="flex-shrink-0 xl:w-72">
-      <nav class="sticky top-8 pb-8 space-y-8">
-        {% for section in navigation %}
-        <div class="space-y-3">
-          <h3 class="px-4 text-xs font-bold tracking-wider text-gray-500 uppercase">
-            {{ section.category }}
-          </h3>
-          <ul class="space-y-1">
-            {% for page in section.pages %}
-            <li>
-              <a href="{{ page.url }}"
-                 class="block px-4 py-2.5 text-[15px] leading-snug rounded-lg transition-all duration-150 {% if current_category == section.category_slug and current_page == page.slug %}bg-{{ cookiecutter.project_main_color }}-50 text-{{ cookiecutter.project_main_color }}-600 font-semibold shadow-sm{% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:pl-5{% endif %}">
-                {{ page.title }}
-              </a>
-            </li>
-{% endfor %}
-          </ul>
-        </div>
-{% endfor %}
-      </nav>
-    </aside>
+  <div class="dj-container-wide py-10 sm:py-14" data-controller="toc">
+    <div class="grid gap-8 xl:grid-cols-[18rem_minmax(0,1fr)_16rem]">
+      <aside class="xl:sticky xl:top-28 xl:self-start">
+        <nav class="dj-panel p-4" aria-label="Documentation navigation">
+          {% for section in navigation %}
+            <div class="{% if not forloop.first %}mt-6 border-t border-[var(--dj-border)] pt-5{% endif %}">
+              <h2 class="px-2 text-xs font-bold uppercase text-[var(--dj-soft)]">
+                {{ section.category }}
+              </h2>
+              <ul class="mt-2 space-y-1">
+                {% for page in section.pages %}
+                  <li>
+                    <a
+                      href="{{ page.url }}"
+                      class="dj-nav-link w-full {% if current_category == section.category_slug and current_page == page.slug %}bg-[var(--dj-accent-soft)] text-[var(--dj-heading)]{% endif %}"
+                    >
+                      {{ page.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </nav>
+      </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 min-w-0 max-w-4xl">
-      <article class="max-w-none prose prose-lg prose-gray prose-headings:font-semibold prose-headings:text-gray-900 prose-h1:text-4xl prose-h1:mb-4 prose-h2:text-3xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-2xl prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-strong:font-semibold prose-code:text-green-600 prose-code:bg-green-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-lg prose-pre:shadow-lg prose-ol:list-decimal prose-ol:pl-6 prose-ul:list-disc prose-ul:pl-6 prose-li:text-gray-700 docs-code-blocks" data-toc-target="content">
-        {% block docs_content %}
-        {% endblock docs_content %}
-      </article>
-    </main>
+      <main class="min-w-0">
+        <article class="dj-legal-article dj-prose prose prose-lg max-w-none prose-headings:font-semibold docs-code-blocks" data-toc-target="content">
+          {% block docs_content %}
+          {% endblock docs_content %}
+        </article>
+      </main>
 
-    <!-- Right Sidebar Table of Contents -->
-    <aside class="hidden flex-shrink-0 xl:block xl:w-64" data-toc-target="sidebar">
-      <nav class="sticky top-8 space-y-4">
-        <h3 class="px-3 text-xs font-bold tracking-wider text-gray-500 uppercase">
-          On This Page
-        </h3>
-        <ul class="space-y-0" data-toc-target="list">
-          <!-- TOC items will be inserted here by JavaScript -->
-        </ul>
-      </nav>
-    </aside>
+      <aside class="hidden xl:block xl:sticky xl:top-28 xl:self-start" data-toc-target="sidebar">
+        <nav class="dj-panel p-4" aria-label="On this page">
+          <h2 class="px-2 text-xs font-bold uppercase text-[var(--dj-soft)]">On This Page</h2>
+          <ul class="mt-2 space-y-1" data-toc-target="list"></ul>
+        </nav>
+      </aside>
+    </div>
   </div>
-</div>
 {% endblock content %}

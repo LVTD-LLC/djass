@@ -2,70 +2,56 @@
 {% load account %}
 
 {% block head_title %}
-    Confirm Email Address
+  Confirm Email Address
 {% endblock head_title %}
 
 {% block content %}
-    <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">
-        <div class="space-y-8 w-full max-w-xl">
-            <div class="text-center">
-                <p class="inline-flex items-center px-3 py-1 text-xs font-semibold tracking-wide text-green-700 uppercase bg-green-100 rounded-full dark:bg-green-900/40 dark:text-green-300">
-                    Djass Account Security
-                </p>
-                <h1 class="mt-5 text-3xl font-extrabold text-gray-900 dark:text-gray-100 sm:text-4xl">
-                    Confirm your email
-                </h1>
-                <p class="mt-3 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-                    One quick step and your account is ready.
-                </p>
+  <div class="dj-auth-wrap">
+    <div class="dj-auth-card">
+      <div class="text-center">
+        <p class="dj-pill dj-pill-accent mx-auto">Djass Account Security</p>
+        <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Confirm your email</h1>
+        <p class="mt-3 text-sm text-[var(--dj-muted)]">One quick step and your account is ready.</p>
+      </div>
+
+      <section class="mt-8">
+        {% if confirmation %}
+          {% user_display confirmation.email_address.user as user_display %}
+          {% if can_confirm %}
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">
+              You are confirming
+              <span class="font-semibold text-[var(--dj-heading)]">{{ confirmation.email_address.email }}</span>
+              for
+              <span class="font-semibold text-[var(--dj-heading)]">{{ user_display }}</span>.
+            </p>
+
+            {% url 'account_confirm_email' confirmation.key as action_url %}
+            <form method="post" action="{{ action_url }}" class="mt-6">
+              {% csrf_token %}
+              {{ redirect_field }}
+              <button type="submit" class="dj-button dj-button-primary w-full">
+                Confirm email address
+              </button>
+            </form>
+          {% else %}
+            <div class="dj-alert dj-alert-danger">
+              <p class="text-sm leading-6">
+                Unable to confirm
+                <span class="font-semibold">{{ confirmation.email_address.email }}</span>
+                because it is already confirmed by another account.
+              </p>
             </div>
-
-            <section class="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800 sm:p-8">
-                {% if confirmation %}
-                    {% user_display confirmation.email_address.user as user_display %}
-                    {% if can_confirm %}
-                        <p class="text-sm leading-6 text-gray-700 dark:text-gray-200 sm:text-base">
-                            You are confirming
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ confirmation.email_address.email }}</span>
-                            for
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ user_display }}</span>.
-                        </p>
-
-                        {% url 'account_confirm_email' confirmation.key as action_url %}
-                        <form method="post" action="{{ action_url }}" class="mt-6 space-y-4">
-                            {% csrf_token %}
-                            {{ redirect_field }}
-                            <button
-                                type="submit"
-                                class="inline-flex justify-center items-center px-5 py-2.5 w-full text-sm font-semibold text-white bg-green-600 rounded-md border border-transparent transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 dark:focus-visible:ring-offset-gray-900"
-                            >
-                                Confirm email address
-                            </button>
-                        </form>
-                    {% else %}
-                        <div class="p-4 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-                            <p class="text-sm leading-6 text-red-800 dark:text-red-200 sm:text-base">
-                                Unable to confirm
-                                <span class="font-semibold">{{ confirmation.email_address.email }}</span>
-                                because it is already confirmed by another account.
-                            </p>
-                        </div>
-                    {% endif %}
-                {% else %}
-                    {% url 'account_email' as email_url %}
-                    <div class="space-y-4">
-                        <p class="text-sm leading-6 text-gray-700 dark:text-gray-200 sm:text-base">
-                            This confirmation link has expired or is invalid.
-                        </p>
-                        <a
-                            href="{{ email_url }}"
-                            class="inline-flex justify-center items-center px-5 py-2.5 w-full text-sm font-semibold text-green-700 bg-green-100 rounded-md border border-green-200 transition-colors hover:bg-green-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 dark:text-green-300 dark:bg-green-900/30 dark:border-green-800 dark:hover:bg-green-900/50 dark:focus-visible:ring-offset-gray-900"
-                        >
-                            Request a new confirmation email
-                        </a>
-                    </div>
-                {% endif %}
-            </section>
-        </div>
+          {% endif %}
+        {% else %}
+          {% url 'account_email' as email_url %}
+          <div class="space-y-5">
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">This confirmation link has expired or is invalid.</p>
+            <a href="{{ email_url }}" class="dj-button dj-button-secondary w-full">
+              Request a new confirmation email
+            </a>
+          </div>
+        {% endif %}
+      </section>
     </div>
+  </div>
 {% endblock content %}

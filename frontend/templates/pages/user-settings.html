@@ -7,176 +7,155 @@
 {% endblock meta %}
 
 {% block content %}
-  <div class="container px-4 py-8 mx-auto max-w-3xl bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 lg:min-w-0 md:pt-10 lg:flex-1">
-    {% include "components/confirm-email.html" with email_verified=email_verified %}
-    <div class="p-4 border-t border-b border-gray-200 dark:border-gray-700 sm:p-6 lg:p-8 xl:border-t-0">
-      <div class="flex justify-between items-center">
-        <h1 class="flex-1 pt-2 text-xl font-medium">Settings</h1>
-      </div>
-    </div>
-    <section class="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/30" data-controller="clipboard">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 class="text-lg font-semibold text-emerald-950 dark:text-emerald-100">Agent API key</h2>
-          <p class="mt-1 text-sm text-emerald-900/80 dark:text-emerald-100/80">
-            Give this key to your coding agent so it can call the Djass Projects API on your behalf.
-            Treat it like a password.
+  <section class="pb-16 pt-8">
+    <div class="dj-container">
+      {% include "components/confirm-email.html" with email_verified=email_verified %}
+
+      <div class="grid gap-4 lg:grid-cols-[0.34fr_0.66fr]">
+        <aside class="dj-panel p-6">
+          <p class="dj-kicker">Account</p>
+          <h1 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">Settings</h1>
+          <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
+            Manage profile details, your agent API key, and account-level controls from one place.
           </p>
-        </div>
-        <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="text-sm font-semibold text-emerald-700 hover:text-emerald-600 dark:text-emerald-300 dark:hover:text-emerald-200">
-          API docs
-        </a>
-      </div>
 
-      <label for="agent-api-key" class="mt-5 block text-sm font-medium text-emerald-950 dark:text-emerald-100">API key</label>
-      <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-        <input
-          id="agent-api-key"
-          type="text"
-          readonly
-          spellcheck="false"
-          autocomplete="off"
-          value="{{ api_key }}"
-          data-clipboard-target="source"
-          class="block w-full rounded-md border-emerald-300 bg-white font-mono text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-emerald-800 dark:bg-gray-950 dark:text-gray-100"
-        />
-        <button
-          type="button"
-          data-action="clipboard#copy"
-          class="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-        >
-          Copy key
-        </button>
-      </div>
-      <p class="mt-3 text-xs text-emerald-900/75 dark:text-emerald-100/75">
-        Agents can send it as <code class="rounded bg-white/70 px-1 py-0.5 font-mono dark:bg-gray-900">X-API-Key: {{ api_key }}</code>
-        or <code class="rounded bg-white/70 px-1 py-0.5 font-mono dark:bg-gray-900">Authorization: Bearer {{ api_key }}</code>.
-      </p>
-      <p class="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-300" data-clipboard-target="status" aria-live="polite"></p>
-    </section>
+          <div class="dj-alert dj-alert-success mt-6">
+            <h2 class="font-semibold text-[var(--dj-heading)]">Free access is active</h2>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation is available while Djass collects more feedback from real starter builds.</p>
+          </div>
+        </aside>
 
+        <div class="space-y-4">
+          <section class="dj-panel p-6" data-controller="clipboard">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p class="dj-kicker">Automation</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent API key</h2>
+                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                  Give this key to your coding agent so it can call the Djass Projects API on your behalf. Treat it like a password.
+                </p>
+              </div>
+              <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary min-w-24">API docs</a>
+            </div>
 
-    <form id="settings-form" action="" method="post">
-      {% csrf_token %}
+            <label for="agent-api-key" class="mt-5 block text-sm font-semibold text-[var(--dj-heading)]">API key</label>
+            <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+              <input
+                id="agent-api-key"
+                type="text"
+                readonly
+                spellcheck="false"
+                autocomplete="off"
+                value="{{ api_key }}"
+                data-clipboard-target="source"
+                class="dj-input block w-full font-mono text-sm"
+              />
+              <button type="button" data-action="clipboard#copy" class="dj-button dj-button-primary shrink-0">
+                Copy key
+              </button>
+            </div>
+            <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">
+              Agents can send it as <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">X-API-Key: {{ api_key }}</code>
+              or <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">Authorization: Bearer {{ api_key }}</code>.
+            </p>
+            <p class="mt-2 text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
+          </section>
 
-      <div class="px-6 py-4">
-        <div class="flex flex-col">
-          <h3 class="mb-6 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Personal Information</h3>
-          <div class="mt-5 md:mt-0">
-            <div class="overflow-hidden sm:rounded-md">
-              <div class="px-2 py-5">
-                <div class="grid grid-cols-6 gap-6">
-                  {{ form.non_field_errors }}
-                  <div class="col-span-6 sm:col-span-3">
-                    {{ form.first_name.errors | safe }}
-                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First name</label>
-                    {% render_field form.first_name id="first-name" name="first-name" type="text" autocomplete="given-name" class="block mt-1 w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-{{ cookiecutter.project_main_color }}-500 focus:ring-{{ cookiecutter.project_main_color }}-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-{{ cookiecutter.project_main_color }}-400 dark:focus:ring-{{ cookiecutter.project_main_color }}-400 sm:text-sm" %}
-                  </div>
+          <section class="dj-panel p-6">
+            <div>
+              <p class="dj-kicker">Profile</p>
+              <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Personal Information</h2>
+            </div>
+            <form id="settings-form" action="" method="post" class="mt-6">
+              {% csrf_token %}
+              {{ form.non_field_errors }}
+              <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  {{ form.first_name.errors | safe }}
+                  <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-semibold text-[var(--dj-heading)]">First name</label>
+                  {% render_field form.first_name id="first-name" name="first-name" type="text" autocomplete="given-name" class="dj-input mt-2 block w-full text-sm" %}
+                </div>
 
-                  <div class="col-span-6 sm:col-span-3">
-                    {{ form.last_name.errors | safe }}
-                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last name</label>
-                    {% render_field form.last_name id="last-name" name="last-name" type="text" autocomplete="family-name" class="block mt-1 w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-{{ cookiecutter.project_main_color }}-500 focus:ring-{{ cookiecutter.project_main_color }}-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-{{ cookiecutter.project_main_color }}-400 dark:focus:ring-{{ cookiecutter.project_main_color }}-400 sm:text-sm" %}
-                  </div>
+                <div>
+                  {{ form.last_name.errors | safe }}
+                  <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-semibold text-[var(--dj-heading)]">Last name</label>
+                  {% render_field form.last_name id="last-name" name="last-name" type="text" autocomplete="family-name" class="dj-input mt-2 block w-full text-sm" %}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="block" aria-hidden="true">
-        <div class="py-5">
-          <div class="border-t border-gray-200 dark:border-gray-700"></div>
-        </div>
-      </div>
+              <div class="mt-6 border-t border-[var(--dj-border)] pt-6 text-right">
+                <button type="submit" class="dj-button dj-button-primary">Save Changes</button>
+              </div>
+            </form>
+          </section>
 
-      <div class="px-6 py-4">
-        <div class="mt-6 text-right">
-          <button type="submit" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md border border-transparent shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-green-400 dark:focus:ring-offset-gray-900">
-            Save Changes
-          </button>
-        </div>
-      </div>
-    </form>
-
-    <!-- Danger Zone -->
-    <div class="mt-10 rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-950/30" data-controller="delete-account">
-      <div class="flex items-start justify-between gap-6">
-        <div>
-          <h3 class="text-lg font-semibold text-red-900 dark:text-red-200">Danger Zone</h3>
-          <p class="mt-1 text-sm text-red-800/80 dark:text-red-200/80">
-            Deleting your account is irreversible. This will permanently delete your user record and related data from the database.
-          </p>
-        </div>
-        <button
-          type="button"
-          data-action="delete-account#open"
-          class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-        >
-          Delete account
-        </button>
-      </div>
-
-      <!-- Modal -->
-      <div
-        data-delete-account-target="modal"
-        class="hidden fixed inset-0 z-50 items-center justify-center"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Delete account confirmation"
-      >
-        <div class="absolute inset-0 bg-black/50" data-action="click->delete-account#close"></div>
-
-        <div class="relative mx-4 w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete account</h4>
-              <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                This action is irreversible. To confirm, type <span class="font-mono font-semibold">DELETE</span> below.
-              </p>
-            </div>
-            <button type="button" class="rounded-md p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100" data-action="delete-account#close" aria-label="Close">
-              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <form method="post" action="{% url 'delete_account' %}" class="mt-6 space-y-4">
-            {% csrf_token %}
-
-            <div>
-              <label for="delete-confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmation</label>
-              <input
-                id="delete-confirmation"
-                name="confirmation"
-                type="text"
-                autocomplete="off"
-                data-delete-account-target="confirmation"
-                data-action="input->delete-account#update"
-                placeholder="Type DELETE"
-                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-red-500 focus:ring-red-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-              />
-            </div>
-
-            <div class="flex items-center justify-end gap-3">
-              <button type="button" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800" data-action="delete-account#close">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                data-delete-account-target="submit"
-                disabled
-                class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-red-700"
-              >
-                Yes, delete my account
+          <section class="dj-alert dj-alert-danger" data-controller="delete-account">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Danger Zone</h2>
+                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                  Deleting your account is irreversible. This will permanently delete your user record and related data from the database.
+                </p>
+              </div>
+              <button type="button" data-action="delete-account#open" class="dj-button dj-button-danger shrink-0">
+                Delete account
               </button>
             </div>
-          </form>
+
+            <div
+              data-delete-account-target="modal"
+              class="fixed inset-0 z-50 hidden items-center justify-center"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Delete account confirmation"
+            >
+              <div class="absolute inset-0 bg-black/60" data-action="click->delete-account#close"></div>
+
+              <div class="dj-panel-solid relative mx-4 w-full max-w-lg p-6">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h3>
+                    <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                      This action is irreversible. To confirm, type <span class="font-mono font-semibold text-[var(--dj-heading)]">DELETE</span> below.
+                    </p>
+                  </div>
+                  <button type="button" class="dj-icon-button" data-action="delete-account#close" aria-label="Close">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <form method="post" action="{% url 'delete_account' %}" class="mt-6 space-y-4">
+                  {% csrf_token %}
+                  <div>
+                    <label for="delete-confirmation" class="block text-sm font-semibold text-[var(--dj-heading)]">Confirmation</label>
+                    <input
+                      id="delete-confirmation"
+                      name="confirmation"
+                      type="text"
+                      autocomplete="off"
+                      data-delete-account-target="confirmation"
+                      data-action="input->delete-account#update"
+                      placeholder="Type DELETE"
+                      class="dj-input mt-2 block w-full"
+                    />
+                  </div>
+
+                  <div class="flex items-center justify-end gap-3">
+                    <button type="button" class="dj-button dj-button-secondary" data-action="delete-account#close">
+                      Cancel
+                    </button>
+                    <button type="submit" data-delete-account-target="submit" disabled class="dj-button dj-button-danger">
+                      Yes, delete my account
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
-
-  </div>
+  </section>
 {% endblock content %}

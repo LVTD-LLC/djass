@@ -1,184 +1,145 @@
 {% extends "base_landing.html" %}
 {% load webpack_loader static %}
+
 {% block meta %}
-    <title>Djass - Free Access</title>
-    <meta name="description"
-          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
-    <meta name="keywords" content="" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical"
-          href="https://{{ request.get_host }}{% url 'free_access' %}" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Djass - Free Access" />
-    <meta property="og:url"
-          content="https://{{ request.get_host }}{% url 'free_access' %}" />
-    <meta property="og:description"
-          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
-    <meta property="og:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Djass - Free Access" />
-    <meta name="twitter:description"
-          content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
-    <meta name="twitter:image"
-          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <title>Djass - Free Access</title>
+  <meta name="description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
+  <meta name="keywords" content="" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://{{ request.get_host }}{% url 'free_access' %}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Djass - Free Access" />
+  <meta property="og:url" content="https://{{ request.get_host }}{% url 'free_access' %}" />
+  <meta property="og:description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
+  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:creator" content="@rasulkireev" />
+  <meta name="twitter:site" content="@rasulkireev" />
+  <meta name="twitter:title" content="Djass - Free Access" />
+  <meta name="twitter:description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
+  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
+
 {% block content %}
-    <div class="py-24 bg-white dark:bg-gray-950 sm:py-32">
-        <div class="px-6 mx-auto max-w-5xl lg:px-8">
-            <div class="mx-auto max-w-3xl text-center">
-                <h2 class="text-base font-semibold leading-7 text-green-600 dark:text-green-400">Free access while Djass improves</h2>
-                <p class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl">
-                    Generate Django SaaS starters for free.
-                </p>
-                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-300">
-                    Djass is open for more builders right now so people can try the workflow, generate real starter projects, and share the feedback that makes the product better faster.
-                </p>
-                <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    Create an account, configure a starter, and send notes from the in-app feedback button whenever something feels unclear or missing.
-                </p>
+  <section class="py-16 sm:py-24">
+    <div class="dj-container">
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="dj-kicker">Free access while Djass improves</p>
+        <h1 class="dj-section-title mt-3">Generate Django SaaS starters for free.</h1>
+        <p class="dj-section-copy mx-auto mt-5 max-w-2xl">
+          Djass is open for more builders right now so people can try the workflow, generate real starter projects, and share the feedback that makes the product better faster.
+        </p>
+        <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-soft)]">
+          Create an account, configure a starter, and send notes from the in-app feedback button whenever something feels unclear or missing.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <section class="dj-panel p-6 sm:p-8">
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p class="dj-pill dj-pill-accent">Djass Free Access</p>
+              <h2 class="mt-6 text-5xl font-semibold leading-none text-[var(--dj-heading)]">Free for now</h2>
+              <p class="mt-4 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
+                Project generation is available to every signed-in user while this early feedback window is open.
+              </p>
             </div>
-            <div class="mx-auto mt-14 grid gap-6 lg:grid-cols-5">
-                <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900 lg:col-span-3">
-                    <h3 class="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">Djass Free Access</h3>
-                    <p class="mt-6 text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Free for now</p>
-                    <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        Project generation is available to every signed-in user while this early feedback window is open.
-                    </p>
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'project_new' %}"
-                           aria-describedby="tier-free-access"
-                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create a project</a>
-                    {% else %}
-                        <a href="{% url 'account_signup' %}"
-                           aria-describedby="tier-free-access"
-                           class="block px-3 py-2 mt-10 text-sm font-semibold leading-6 text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Create account to start</a>
-                    {% endif %}
-                    <ul role="list"
-                        class="mt-8 space-y-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        <li class="flex gap-x-3">
-                            <svg class="flex-none w-5 h-6 text-green-600"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor"
-                                 aria-hidden="true"
-                                 data-slot="icon">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                            </svg>
-                            Generate starter projects for new SaaS products, experiments, and internal tools
-                        </li>
-                        <li class="flex gap-x-3">
-                            <svg class="flex-none w-5 h-6 text-green-600"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor"
-                                 aria-hidden="true"
-                                 data-slot="icon">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                            </svg>
-                            Use the web app or Projects API from your own scripts and coding agents
-                        </li>
-                        <li class="flex gap-x-3">
-                            <svg class="flex-none w-5 h-6 text-green-600"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor"
-                                 aria-hidden="true"
-                                 data-slot="icon">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                            </svg>
-                            Keep a dashboard history of generated projects and download ZIPs when builds finish
-                        </li>
-                        <li class="flex gap-x-3">
-                            <svg class="flex-none w-5 h-6 text-green-600"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor"
-                                 aria-hidden="true"
-                                 data-slot="icon">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                            </svg>
-                            Share feedback directly from the product so rough edges can be fixed quickly
-                        </li>
-                        <li class="flex gap-x-3">
-                            <svg class="flex-none w-5 h-6 text-green-600"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor"
-                                 aria-hidden="true"
-                                 data-slot="icon">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                            </svg>
-                            Start from the maintained django-saas-starter baseline instead of rebuilding setup from scratch
-                        </li>
-                    </ul>
-                </div>
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-8 dark:border-gray-800 dark:bg-gray-900/50 lg:col-span-2">
-                    <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">Who this is for</h4>
-                    <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        <li>Solo founders and small teams testing a Django SaaS idea</li>
-                        <li>Product teams that want a predictable starting point for new apps and experiments</li>
-                        <li>Builders willing to leave practical feedback after generating real projects</li>
-                    </ul>
-                    <h4 class="mt-8 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-gray-100">
-                        What helps most
-                    </h4>
-                    <ul class="mt-4 space-y-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        <li>Try the full flow from setup to ZIP download</li>
-                        <li>Report confusing fields, missing defaults, and failed generations</li>
-                        <li>Share what you expected the generated starter to include</li>
-                    </ul>
-                    <p class="mt-8 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                        Want to inspect the foundation first?
-                        <a href="https://github.com/rasulkireev/osig"
-                           class="font-semibold text-green-700 hover:underline dark:text-green-400">Review the open-source baseline</a>
-                        before generating your own starter in Djass.
-                    </p>
-                </div>
+            <div class="sm:min-w-56">
+              {% if user.is_authenticated %}
+                <a href="{% url 'project_new' %}" aria-describedby="tier-free-access" class="dj-button dj-button-primary w-full">Create a project</a>
+              {% else %}
+                <a href="{% url 'account_signup' %}" aria-describedby="tier-free-access" class="dj-button dj-button-primary w-full">Create account to start</a>
+              {% endif %}
             </div>
-            <div class="mx-auto mt-16 max-w-4xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">FAQ</h3>
-                <dl class="mt-6 space-y-6 text-sm leading-6">
-                    <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Why is Djass free right now?</dt>
-                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            More usage means better feedback. The goal is to get more people through the complete generation flow, learn what breaks or feels unclear, and improve the product quickly.
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">What exactly is included?</dt>
-                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API.
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">What kind of feedback is useful?</dt>
-                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="font-semibold text-gray-900 dark:text-gray-100">Could access change later?</dt>
-                        <dd class="mt-2 text-gray-600 dark:text-gray-300">
-                            Possibly. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
-                        </dd>
-                    </div>
-                </dl>
+          </div>
+
+          <div id="tier-free-access" class="mt-8 grid gap-3 sm:grid-cols-2">
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Generate starter projects for new SaaS products, experiments, and internal tools</p>
             </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Use the web app or Projects API from your own scripts and coding agents</p>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Keep a dashboard history of generated projects and download ZIPs when builds finish</p>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Share feedback directly from the product so rough edges can be fixed quickly</p>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4 sm:col-span-2">
+              <p class="font-semibold text-[var(--dj-heading)]">Start from the maintained django-saas-starter baseline instead of rebuilding setup from scratch</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="dj-panel p-6 sm:p-8">
+          <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Fit check</h2>
+          <div class="mt-5 border-t border-[var(--dj-border)] pt-5">
+            <h3 class="dj-kicker">Who this is for</h3>
+            <ul class="mt-3 space-y-3 text-sm leading-6 text-[var(--dj-muted)]">
+              <li>Solo founders and small teams testing a Django SaaS idea</li>
+              <li>Product teams that want a predictable starting point for new apps and experiments</li>
+              <li>Builders willing to leave practical feedback after generating real projects</li>
+            </ul>
+          </div>
+          <div class="mt-6 border-t border-[var(--dj-border)] pt-5">
+            <h3 class="dj-kicker">What helps most</h3>
+            <ul class="mt-3 space-y-3 text-sm leading-6 text-[var(--dj-muted)]">
+              <li>Try the full flow from setup to ZIP download</li>
+              <li>Report confusing fields, missing defaults, and failed generations</li>
+              <li>Share what you expected the generated starter to include</li>
+            </ul>
+          </div>
+          <p class="mt-6 border-t border-[var(--dj-border)] pt-5 text-sm leading-6 text-[var(--dj-muted)]">
+            Want to inspect the foundation first?
+            <a href="https://github.com/rasulkireev/osig" class="font-semibold text-[var(--dj-accent-strong)] hover:underline">Review the open-source baseline</a>
+            before generating your own starter in Djass.
+          </p>
+        </aside>
+      </div>
+
+      <section class="dj-panel mt-10 p-6 sm:p-8">
+        <div class="max-w-3xl">
+          <p class="dj-kicker">FAQ</p>
+          <h2 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">What to expect during free access</h2>
         </div>
+        <dl class="mt-8 grid gap-6 md:grid-cols-2">
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <dt class="font-semibold text-[var(--dj-heading)]">Why is Djass free right now?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">More usage means better feedback. The goal is to get more people through the complete generation flow, learn what breaks or feels unclear, and improve the product quickly.</dd>
+          </div>
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <dt class="font-semibold text-[var(--dj-heading)]">What exactly is included?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API.</dd>
+          </div>
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <dt class="font-semibold text-[var(--dj-heading)]">What kind of feedback is useful?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.</dd>
+          </div>
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <dt class="font-semibold text-[var(--dj-heading)]">Could access change later?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Possibly. If the access model changes later, existing users will get clear notice before anything changes for their accounts.</dd>
+          </div>
+        </dl>
+      </section>
     </div>
+  </section>
 {% endblock content %}
+
 {% block schema %}
-    <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Djass - Free Access",
-    "description": "Djass project generation is free while more builders try it, share feedback, and help improve the workflow.",
-    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}{% url 'free_access' %}",
-    "author": {
-      "@type": "Person",
-      "name": "Rasul"
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Djass - Free Access",
+      "description": "Djass project generation is free while more builders try it, share feedback, and help improve the workflow.",
+      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+      "url": "https://{{ request.get_host }}{% url 'free_access' %}",
+      "author": {
+        "@type": "Person",
+        "name": "Rasul"
+      }
     }
-  }
-    </script>
+  </script>
 {% endblock schema %}
