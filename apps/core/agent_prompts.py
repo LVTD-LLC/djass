@@ -175,57 +175,33 @@ def build_djass_agent_skill_md() -> str:
     ).strip().replace("__DJASS_API_BASE_URL__", DJASS_API_BASE_URL)
 
 
-def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_md: str | None = None) -> str:
-    skill_md = skill_md or build_djass_agent_skill_md()
+def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> str:
     prompt = dedent(
         """\
-        You are my AI coding agent. Use Djass to generate a new django-saas-starter
-        repository, wait for the generated ZIP artifact, download it, unzip it into the
-        workspace, and then continue from the generated repo.
+        Use Djass to generate a new django-saas-starter repo, wait for the ZIP artifact,
+        download it, unzip it into the workspace, and continue from the generated repo.
 
-        Runtime values:
+        Read the Djass skill instructions first:
+        __DJASS_SKILL_URL__
+
+        Runtime:
 
         ```bash
         export DJASS_BASE_URL="__DJASS_BASE_URL__"
         export DJASS_API_KEY="__DJASS_API_KEY__"
         ```
 
-        Treat `DJASS_API_KEY` as a secret. Do not print it in logs or commit it.
+        Treat `DJASS_API_KEY` as a secret.
 
-        First, load the `SKILL.md` content below as your Djass operating instructions if
-        your environment supports skills. If it does not, follow the same instructions
-        directly.
-
-        Required workflow:
-
-        1. Call `GET $DJASS_BASE_URL/project-options` and use the returned
-           defaults/groups as the source of truth for supported generator fields.
-        2. Ask me only for product-specific missing values such as project name, slug,
-           description, repo URL, author details, color, and integration flags.
-        3. Create the project with `POST $DJASS_BASE_URL/projects` using
-           `X-API-Key: $DJASS_API_KEY`.
-        4. Poll `GET $DJASS_BASE_URL/projects/{project_id}/status` until `status` is
-           `ready` or `failed`.
-        5. When ready, download `GET $DJASS_BASE_URL/projects/{project_id}/download`
-           to a local `.zip` file.
-        6. Unzip the artifact, inspect `djass-manifest.json` and
-           `project-metadata.json`, then follow the generated repo's setup instructions.
-        7. If Djass MCP tools are available, prefer them over raw HTTP. If they are not
-           available, use the HTTP API. Do not invent unavailable MCP tool names.
-
-        `use_mcp` is a Djass generator flag. Set it to `"y"` when I want the generated
-        repo to include MCP server/tooling support for agent workflows; otherwise use
-        `"n"`.
-
-        SKILL.md content starts below. Preserve it exactly if creating a skill file.
-
-        ---BEGIN SKILL.md---
-        __DJASS_SKILL_MD__
-        ---END SKILL.md---
+        Use the skill workflow: fetch project options, ask only for missing
+        product-specific values, create the project, poll status, download the artifact,
+        inspect `djass-manifest.json` and `project-metadata.json`, then follow the
+        generated repo's setup instructions. Prefer Djass MCP tools when available;
+        otherwise use the HTTP API.
         """
     ).strip()
     return (
         prompt.replace("__DJASS_BASE_URL__", base_url)
         .replace("__DJASS_API_KEY__", api_key)
-        .replace("__DJASS_SKILL_MD__", skill_md)
+        .replace("__DJASS_SKILL_URL__", skill_url)
     )
