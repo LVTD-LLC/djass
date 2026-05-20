@@ -25,7 +25,6 @@ class LandingPageView(TemplateView):
                 source_function="LandingPageView - get_context_data",
                 group="Create Posthog Alias",
             )
-        
 
         return context
 
@@ -50,9 +49,7 @@ class SignupTrackingMixin:
             profile_id=profile.id,
             event_name="user_signed_up",
             properties={
-                "signup_method": (
-                    "passkey" if "passkey" in self.request.path else "password"
-                ),
+                "signup_method": ("passkey" if "passkey" in self.request.path else "password"),
                 "funnel_step": "signup_completed",
                 "entrypoint": "ui",
                 "$set": {
@@ -75,10 +72,8 @@ class AccountSignupView(SignupTrackingMixin, SignupView):
     tracking_source_name = "AccountSignupView"
 
 
-
-class FreeAccessView(TemplateView):
-    template_name = "pages/free-access.html"
-
+class PricingView(TemplateView):
+    template_name = "pages/pricing.html"
 
 
 class PrivacyPolicyView(TemplateView):

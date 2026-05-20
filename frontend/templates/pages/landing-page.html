@@ -29,8 +29,8 @@
           </div>
           <div>
             {% if user.is_authenticated %}
-              <a href="{% url 'project_new' %}" class="dj-button dj-button-secondary w-full">Create a project</a>
-              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Generate a starter now and leave feedback from inside the app.</p>
+              <a href="{% url 'pricing' %}" class="dj-button dj-button-secondary w-full">See pricing and what's included</a>
+              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Review the crossed-out lifetime price and the current free-for-now window.</p>
             {% else %}
               <a href="{% url 'account_login' %}" class="dj-button dj-button-secondary w-full">Sign in to your dashboard</a>
               <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Go to your existing Djass account and continue from your project dashboard.</p>
@@ -167,7 +167,7 @@
         <article class="dj-feature-card">
           <p class="dj-kicker">Content</p>
           <h3 class="mt-3 text-lg font-semibold">Marketing surfaces included</h3>
-          <p class="mt-2 text-sm leading-6">Landing, auth pages, docs, and blog support so you can ship the whole product faster.</p>
+          <p class="mt-2 text-sm leading-6">Landing, pricing, auth pages, docs, and blog support so you can ship the whole product faster.</p>
         </article>
         <article class="dj-feature-card">
           <p class="dj-kicker">API</p>
@@ -202,12 +202,8 @@
           <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">Skip repetitive setup, keep your stack consistent, and spend your time on the parts users will actually notice.</p>
         </div>
         <div class="self-center">
-          {% if user.is_authenticated %}
-            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary w-full sm:w-auto">Create a project</a>
-          {% else %}
-            <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary w-full sm:w-auto">Create your free account</a>
-          {% endif %}
-          <p class="mt-3 text-xs text-[var(--dj-muted)]">Djass is free right now while more builders try it and share feedback.</p>
+          <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full sm:w-auto">See pricing and what's included</a>
+          <p class="mt-3 text-xs text-[var(--dj-muted)]">Opens pricing with the $999 lifetime price crossed out while Djass is free for now.</p>
         </div>
       </div>
     </div>

@@ -34,20 +34,19 @@ def disable_async_task_side_effects(monkeypatch, settings):
     monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: None)
 
 
-def test_free_access_page_shows_feedback_led_copy(client):
-    response = client.get(reverse("free_access"))
+def test_pricing_page_shows_crossed_out_lifetime_price(client):
+    response = client.get(reverse("pricing"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Generate Django SaaS starters for free." in content
-    assert "Free access while Djass improves" in content
-    assert "share the feedback that makes the product better faster" in content
-    assert "$999" not in content
-    assert "payment" not in content.lower()
-    assert "premium" not in content.lower()
+    assert "$999" in content
+    assert "line-through" in content
+    assert "Free for now while Djass improves" in content
+    assert "The listed $999 lifetime price is paused" in content
+    assert "No payment required during the current feedback window" in content
 
 
-def test_free_access_page_ignores_legacy_checkout_params(auth_client, monkeypatch):
+def test_pricing_page_ignores_legacy_checkout_params(auth_client, monkeypatch):
     calls = []
 
     def fake_async_task(*args, **kwargs):
@@ -56,10 +55,17 @@ def test_free_access_page_ignores_legacy_checkout_params(auth_client, monkeypatc
 
     monkeypatch.setattr("apps.pages.views.async_task", fake_async_task)
 
-    response = auth_client.get(f"{reverse('free_access')}?checkout=failed")
+    response = auth_client.get(f"{reverse('pricing')}?checkout=failed")
     assert response.status_code == 200
 
     assert calls == []
+
+
+def test_legacy_free_access_url_redirects_to_pricing(client):
+    response = client.get(reverse("free_access"))
+
+    assert response.status_code == 301
+    assert response.url == reverse("pricing")
 
 
 def test_login_page_hides_passkey_option(client):
@@ -238,9 +244,9 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "Create a project" in content
+    assert "See pricing and what's included" in content
     assert reverse("home") in content
-    assert reverse("project_new") in content
+    assert reverse("pricing") in content
 
 
 def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
@@ -252,12 +258,12 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "Create a project" in content
+    assert "See pricing and what's included" in content
     assert reverse("home") in content
-    assert reverse("project_new") in content
+    assert reverse("pricing") in content
 
 
-def test_landing_and_free_access_copy_is_product_led(client):
+def test_landing_and_pricing_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
@@ -269,17 +275,16 @@ def test_landing_and_free_access_copy_is_product_led(client):
     assert "Djass generates in the background" in landing_content
     assert "agency" not in landing_content.lower()
 
-    free_access_response = client.get(reverse("free_access"))
-    assert free_access_response.status_code == 200
-    free_access_content = free_access_response.content.decode()
-    assert "Free access while Djass improves" in free_access_content
-    assert "Generate Django SaaS starters for free." in free_access_content
-    assert "Review the open-source baseline" in free_access_content
-    assert "Need full control?" not in free_access_content
-    assert "$999" not in free_access_content
-    assert "payment" not in free_access_content.lower()
-    assert "premium" not in free_access_content.lower()
-    assert "agency" not in free_access_content.lower()
+    pricing_response = client.get(reverse("pricing"))
+    assert pricing_response.status_code == 200
+    pricing_content = pricing_response.content.decode()
+    assert "One plan for serious Django SaaS work" in pricing_content
+    assert "$999" in pricing_content
+    assert "line-through" in pricing_content
+    assert "Free for now while Djass improves" in pricing_content
+    assert "Review the open-source baseline" in pricing_content
+    assert "Need full control?" not in pricing_content
+    assert "agency" not in pricing_content.lower()
 
 
 def test_landing_guest_ctas_explain_destination(client):
@@ -293,15 +298,16 @@ def test_landing_guest_ctas_explain_destination(client):
     assert "Go to your existing Djass account and continue from your project dashboard." in content
 
 
-def test_signup_cta_copy_uses_free_access_language(client):
+def test_signup_cta_copy_uses_pricing_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
     assert "Create your Djass account" in landing_content
-    assert "Create your free account" in landing_content
+    assert "See pricing and what's included" in landing_content
 
-    free_access_response = client.get(reverse("free_access"))
-    assert free_access_response.status_code == 200
-    free_access_content = free_access_response.content.decode()
-    assert "Create account to start" in free_access_content
-    assert "$999" not in free_access_content
+    pricing_response = client.get(reverse("pricing"))
+    assert pricing_response.status_code == 200
+    pricing_content = pricing_response.content.decode()
+    assert "Create account to start free" in pricing_content
+    assert "$999" in pricing_content
+    assert "line-through" in pricing_content
