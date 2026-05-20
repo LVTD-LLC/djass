@@ -45,6 +45,70 @@
         </aside>
       </div>
 
+      {% if agent_prompt_available %}
+        <section class="dj-panel mt-4 p-6 sm:p-8">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p class="dj-kicker">Agent workflow</p>
+              <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent project generator prompt</h2>
+              <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--dj-muted)]">
+                Copy this into your AI agent so it can create Djass projects, poll generation, download ZIP artifacts, and understand the MCP option.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary">API docs</a>
+              <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">API key</a>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-5 xl:grid-cols-2">
+            <div class="rounded-lg border border-[var(--dj-border)] bg-[var(--dj-panel-solid)] p-4" data-controller="clipboard">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <label for="djass-agent-prompt" class="block text-sm font-semibold text-[var(--dj-heading)]">Prompt</label>
+                  <p class="mt-1 text-xs text-[var(--dj-muted)]">Includes your API base URL and key.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <p class="text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
+                  <button type="button" data-action="clipboard#copy" class="dj-button dj-button-primary">
+                    Copy prompt
+                  </button>
+                </div>
+              </div>
+              <textarea
+                id="djass-agent-prompt"
+                readonly
+                spellcheck="false"
+                data-clipboard-target="source"
+                class="dj-input mt-3 h-96 w-full resize-y p-4 font-mono text-xs leading-5"
+              >{{ djass_agent_prompt }}</textarea>
+            </div>
+
+            <div class="rounded-lg border border-[var(--dj-border)] bg-[var(--dj-panel-solid)] p-4" data-controller="clipboard">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <label for="djass-skill-md" class="block text-sm font-semibold text-[var(--dj-heading)]">SKILL.md</label>
+                  <p class="mt-1 text-xs text-[var(--dj-muted)]">Reusable instructions for agents that support skills.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <p class="text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
+                  <button type="button" data-action="clipboard#copy" class="dj-button dj-button-primary">
+                    Copy SKILL.md
+                  </button>
+                </div>
+              </div>
+              <textarea
+                id="djass-skill-md"
+                readonly
+                spellcheck="false"
+                data-clipboard-target="source"
+                class="dj-input mt-3 h-96 w-full resize-y p-4 font-mono text-xs leading-5"
+              >{{ djass_agent_skill_md }}</textarea>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+
       <section class="dj-panel mt-4 overflow-hidden">
         <div class="flex flex-col gap-3 border-b border-[var(--dj-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
