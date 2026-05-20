@@ -2,6 +2,7 @@ import pytest
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
+from apps.core.choices import ProfileStates
 from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
 
 
@@ -84,9 +85,7 @@ class TestProjectFlow:
         generation_call = next(
             call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
         )
-        tracking_call = next(
-            call for call in calls if call[0][0] == "apps.core.tasks.track_event"
-        )
+        tracking_call = next(call for call in calls if call[0][0] == "apps.core.tasks.track_event")
         assert generation_call[1]["project_id"] == project.id
         assert tracking_call[1]["event_name"] == "project_created"
         assert tracking_call[1]["profile_id"] == user.profile.id
@@ -137,11 +136,39 @@ class TestProjectFlow:
         generation_call = next(
             call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"
         )
-        tracking_call = next(
-            call for call in calls if call[0][0] == "apps.core.tasks.track_event"
-        )
+        tracking_call = next(call for call in calls if call[0][0] == "apps.core.tasks.track_event")
         assert generation_call[1]["project_id"] == project.id
         assert tracking_call[1]["event_name"] == "project_created"
+        assert tracking_call[1]["properties"]["entrypoint"] == "ui"
+
+    def test_create_project_requires_active_access_when_payments_enabled(
+        self,
+        auth_client,
+        monkeypatch,
+        settings,
+        user,
+    ):
+        calls = []
+
+        def fake_async_task(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "task-id"
+
+        settings.PAYMENTS_ENABLED = True
+        user.profile.state = ProfileStates.STRANGER
+        user.profile.save(update_fields=["state"])
+        user.profile.state_transitions.all().delete()
+        monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
+
+        response = auth_client.post(reverse("project_create"), _valid_project_post_data())
+
+        assert response.status_code == 302
+        assert response.url == reverse("free_access")
+        assert Project.objects.filter(user=user).count() == 0
+        tracking_call = calls[0]
+        assert tracking_call[0][0] == "apps.core.tasks.track_event"
+        assert tracking_call[1]["event_name"] == "project_create_failed"
+        assert tracking_call[1]["properties"]["reason"] == "subscription_required"
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
     def test_create_project_enforces_project_quota(
@@ -172,9 +199,7 @@ class TestProjectFlow:
         assert response.status_code == 302
         assert response.url == reverse("project_new")
         assert Project.objects.filter(user=user).count() == 1
-        assert all(
-            call[0][0] != "apps.core.tasks.generate_project_artifact" for call in calls
-        )
+        assert all(call[0][0] != "apps.core.tasks.generate_project_artifact" for call in calls)
         assert len(calls) == 1
         tracking_call = calls[0]
         assert tracking_call[0][0] == "apps.core.tasks.track_event"
@@ -205,10 +230,7 @@ class TestProjectFlow:
             "Please contact support before creating projects."
         )
         assert expected_message in messages
-        assert (
-            "Project generation is available for signed-in accounts."
-            not in messages
-        )
+        assert "Project generation is available for signed-in accounts." not in messages
 
     def test_create_project_validation_failure_queues_tracking_event(
         self,

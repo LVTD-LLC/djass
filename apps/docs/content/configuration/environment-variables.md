@@ -89,6 +89,15 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `POSTHOG_API_KEY` (project API key `phc_...` used by Djass capture calls)
 - `POSTHOG_HOST` (`https://us.i.posthog.com` or `https://eu.i.posthog.com`)
 
+### Payments
+
+- `PAYMENTS_ENABLED` (default `False`) — when disabled, checkout and customer portal routes stay dormant; when enabled, project generation requires active account access
+- `GRANT_PRO_MEMBERSHIP_ON_SIGNUP` (default `True`) — assigns new users subscribed/pro access immediately
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_ID_ONE_TIME`
+- `STRIPE_ONE_TIME_AMOUNT_CENTS` (default `99900`)
+
 ### AI provider
 
 - `OPENAI_API_KEY`

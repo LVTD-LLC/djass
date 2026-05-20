@@ -25,9 +25,7 @@ def test_signup_page_remains_email_only(client):
 @pytest.mark.django_db
 def test_confirmation_mail_tracks_welcome_vs_resend(user, monkeypatch):
     adapter = CustomAccountAdapter()
-    email_confirmation = SimpleNamespace(
-        email_address=SimpleNamespace(email=user.email, user=user)
-    )
+    email_confirmation = SimpleNamespace(email_address=SimpleNamespace(email=user.email, user=user))
 
     tracked = []
 
@@ -68,6 +66,10 @@ def test_paid_checkout_unlocks_entitlement_and_generation_gate(
     auth_client,
     user,
 ):
+    user.profile.state = ProfileStates.STRANGER
+    user.profile.save(update_fields=["state"])
+    user.profile.state_transitions.all().delete()
+
     assert user.profile.state == ProfileStates.STRANGER
     assert user.profile.has_active_subscription is False
     response = auth_client.get(reverse("project_new"))
