@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 LANDING_TEMPLATE = Path("frontend/templates/pages/landing-page.html")
 PRICING_TEMPLATE = Path("frontend/templates/pages/pricing.html")
 
@@ -14,6 +13,9 @@ def test_landing_template_uses_product_led_copy():
     assert "Create your Djass account" in content
     assert "Sign in to your dashboard" in content
     assert "See pricing and what's included" in content
+    assert "Agent flow" in content
+    assert "/skill.md" in content
+    assert "djass_openapi_docs_url" in content
     assert "premium" not in content.lower()
     assert "API-first delivery for modern Django agencies" not in content
 

@@ -1,32 +1,106 @@
 from textwrap import dedent
 
 DJASS_API_BASE_URL = "https://djass.dev/api/v1"
+DJASS_OPENAPI_DOCS_URL = "https://djass.dev/api/docs"
+DJASS_MCP_DOCS_URL = "https://djass.dev/docs/api/mcp-server/"
 
 
 def build_djass_agent_skill_md() -> str:
-    return dedent(
+    skill = dedent(
         """\
         ---
         name: djass-project-generator
         description: >
-          Generate Djass project repositories through the Djass Projects API, poll
-          generation status, and download ZIP artifacts. Use when a user asks to
-          create a new Djass/django-saas-starter project, retrieve generated repo
-          ZIPs, or automate Djass project setup.
+          Generate Djass project repositories with Djass MCP tools first, then
+          fall back to the Djass Projects API only when MCP is unavailable. Use
+          when a user asks to create a new Djass/django-saas-starter project,
+          retrieve generated repo ZIPs, or automate Djass project setup.
         ---
 
         # Djass Project Generator
 
         ## Runtime Inputs
 
-        Expect these values from the user, environment, or calling prompt:
+        Prefer a configured Djass MCP server. Expected tool names:
+
+        - `get_generator_options`
+        - `generate_project`
+        - `create_project`
+        - `get_project`
+        - `list_projects`
+        - `export_project_artifact`
+
+        MCP setup docs: __DJASS_MCP_DOCS_URL__
+
+        For HTTP fallback, expect these values from the user, environment, or
+        calling prompt:
 
         - `DJASS_BASE_URL`: base API URL ending in `/api/v1`, for example
           `__DJASS_API_BASE_URL__`.
         - `DJASS_API_KEY`: Djass API key. Treat it as a secret. Prefer the
           `X-API-Key` header.
 
-        ## API Authentication
+        OpenAPI docs: __DJASS_OPENAPI_DOCS_URL__
+
+        ## Preferred MCP Workflow
+
+        If Djass MCP tools are available in your tool list, use them. Do not make
+        raw HTTP calls unless MCP is unavailable or a tool fails with clear
+        fallback guidance.
+
+        1. Discover current generator options with `get_generator_options`.
+
+           The response includes:
+           - `defaults`: every supported cookiecutter field and default value.
+           - `groups` or `module_flags`: feature flags grouped for UI, API, and
+             MCP clients.
+
+        2. Ask only for missing product-specific values:
+           - `project_name`
+           - `project_slug`
+           - `project_description`
+           - `repo_url`
+           - author fields, if they matter for the generated repository
+
+        3. Prefer `generate_project` when the user wants the repository available
+           in the current workspace. Pass:
+           - explicit project fields,
+           - feature flags as `"y"` or `"n"`,
+           - `output_dir` for the generated ZIP/extract location,
+           - `extract=true`.
+
+        4. Use `create_project` when the user specifically wants the hosted
+           background queue. Then use `get_project` or `list_projects` until the
+           status is `ready` or `failed`.
+
+        5. When a queued project is ready, call `export_project_artifact` with
+           `extract=true` to write and unpack the ZIP.
+
+        6. Inspect the generated repo:
+           - `djass-manifest.json`
+           - `project-metadata.json`
+           - the generated repo's README/setup instructions
+
+        Project statuses are:
+
+        - `queued`
+        - `generating`
+        - `ready`
+        - `failed`
+
+        `artifact_ready: true` means the ZIP export/download should be available.
+
+        ## MCP Option Guidance
+
+        Djass MCP tools are the preferred control plane for generating a project.
+        The generator option `use_mcp` is different: it controls whether the
+        generated repository itself includes Model Context Protocol support for
+        future agent workflows.
+
+        Set `use_mcp` to `"y"` when the resulting repository should include MCP
+        server/tooling scaffolding. Otherwise keep the discovered default.
+
+        ## API Fallback Authentication
 
         Send one of:
 
@@ -36,7 +110,9 @@ def build_djass_agent_skill_md() -> str:
         A key needs `projects:create` to create projects and `projects:read` to list,
         inspect, poll, or download project artifacts.
 
-        ## API Workflow
+        ## API Fallback Workflow
+
+        Use this only when Djass MCP tools are not available.
 
         1. Discover current generator options:
            `GET {DJASS_BASE_URL}/project-options`
@@ -79,17 +155,6 @@ def build_djass_agent_skill_md() -> str:
            - inspect `project-metadata.json`,
            - then run the generated repo's own setup instructions.
 
-        ## Status Model
-
-        Project statuses are:
-
-        - `queued`
-        - `generating`
-        - `ready`
-        - `failed`
-
-        `artifact_ready: true` means the ZIP download endpoint should be available.
-
         ## Error Handling
 
         Non-2xx API responses have this shape:
@@ -111,23 +176,9 @@ def build_djass_agent_skill_md() -> str:
         Do not retry validation, auth, subscription, quota, or insufficient-scope errors
         without user input.
 
-        ## MCP Guidance
-
-        If Djass MCP tools are available in your tool list, prefer them over raw HTTP.
-        Expected Djass MCP capabilities should mirror the HTTP API:
-
-        - get project options with the same `defaults` and `groups` shape as `GET /project-options`,
-        - create a project with the same payload as `POST /projects`,
-        - list/get/poll projects with the same project and status objects,
-        - download the project artifact when ready.
-
-        If no Djass MCP tools are available, do not invent tool calls. Use the HTTP API above.
-
-        The generator option `use_mcp` controls whether the generated project includes
-        Model Context Protocol support for agent workflows. Set `use_mcp` to `"y"` only
-        when the resulting repository should include MCP server/tooling scaffolding.
-
         ## Minimal curl Flow
+
+        This is an HTTP fallback example. Prefer MCP tools when available.
 
         ```bash
         export DJASS_BASE_URL="__DJASS_API_BASE_URL__"
@@ -172,16 +223,29 @@ def build_djass_agent_skill_md() -> str:
           -o "acme_crm.zip"
         ```
         """
-    ).strip().replace("__DJASS_API_BASE_URL__", DJASS_API_BASE_URL)
+    ).strip()
+    return (
+        skill.replace("__DJASS_API_BASE_URL__", DJASS_API_BASE_URL)
+        .replace("__DJASS_OPENAPI_DOCS_URL__", DJASS_OPENAPI_DOCS_URL)
+        .replace("__DJASS_MCP_DOCS_URL__", DJASS_MCP_DOCS_URL)
+    )
 
 
-def build_djass_agent_prompt(base_url: str, api_key: str) -> str:
+def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> str:
     prompt = dedent(
         """\
         Use Djass to generate a new django-saas-starter repo, wait for the ZIP artifact,
         download it, unzip it into the workspace, and continue from the generated repo.
 
-        Runtime:
+        Read the plain-text Djass skill instructions first:
+        __DJASS_SKILL_URL__
+
+        Preferred path: use Djass MCP tools if they are available in your tool
+        list. Call `get_generator_options`, then prefer `generate_project` with
+        `output_dir` and `extract=true` so the repo lands in the workspace. Use
+        the HTTP API only if Djass MCP is unavailable.
+
+        HTTP fallback runtime:
 
         ```bash
         export DJASS_BASE_URL="__DJASS_BASE_URL__"
@@ -190,11 +254,14 @@ def build_djass_agent_prompt(base_url: str, api_key: str) -> str:
 
         Treat `DJASS_API_KEY` as a secret.
 
-        Fetch project options, ask only for missing
-        product-specific values, create the project, poll status, download the artifact,
-        inspect `djass-manifest.json` and `project-metadata.json`, then follow the
-        generated repo's setup instructions. Prefer Djass MCP tools when available;
-        otherwise use the HTTP API.
+        Use the skill workflow: fetch project options, ask only for missing
+        product-specific values, create or generate the project, export/download
+        the artifact, inspect `djass-manifest.json` and `project-metadata.json`,
+        then follow the generated repo's setup instructions.
         """
     ).strip()
-    return prompt.replace("__DJASS_BASE_URL__", base_url).replace("__DJASS_API_KEY__", api_key)
+    return (
+        prompt.replace("__DJASS_BASE_URL__", base_url)
+        .replace("__DJASS_API_KEY__", api_key)
+        .replace("__DJASS_SKILL_URL__", skill_url)
+    )

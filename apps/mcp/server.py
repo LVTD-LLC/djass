@@ -47,6 +47,7 @@ def _payload_from_args(
     use_ai: YNFlag,
     use_logfire: YNFlag,
     use_healthchecks: YNFlag,
+    use_mcp: YNFlag,
     use_ci: YNFlag,
     extra_context: dict[str, Any] | None,
 ) -> dict[str, Any]:
@@ -71,6 +72,7 @@ def _payload_from_args(
         "use_ai": use_ai,
         "use_logfire": use_logfire,
         "use_healthchecks": use_healthchecks,
+        "use_mcp": use_mcp,
         "use_ci": use_ci,
     }
     if extra_context:
@@ -107,6 +109,7 @@ def create_project(
     use_ai: YNFlag = "y",
     use_logfire: YNFlag = "y",
     use_healthchecks: YNFlag = "y",
+    use_mcp: YNFlag = "n",
     use_ci: YNFlag = "y",
     user_email: str | None = None,
     username: str | None = None,
@@ -137,6 +140,7 @@ def create_project(
         use_ai=use_ai,
         use_logfire=use_logfire,
         use_healthchecks=use_healthchecks,
+        use_mcp=use_mcp,
         use_ci=use_ci,
         extra_context=extra_context,
     )
@@ -175,6 +179,7 @@ def generate_project(
     use_ai: YNFlag = "y",
     use_logfire: YNFlag = "y",
     use_healthchecks: YNFlag = "y",
+    use_mcp: YNFlag = "n",
     use_ci: YNFlag = "y",
     user_email: str | None = None,
     username: str | None = None,
@@ -208,6 +213,7 @@ def generate_project(
         use_ai=use_ai,
         use_logfire=use_logfire,
         use_healthchecks=use_healthchecks,
+        use_mcp=use_mcp,
         use_ci=use_ci,
         extra_context=extra_context,
     )

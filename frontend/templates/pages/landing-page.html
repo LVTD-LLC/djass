@@ -103,27 +103,35 @@
         <p class="dj-kicker">How it works</p>
         <h2 class="dj-section-title mt-3">Pick your input path, then let Djass generate the starter for you.</h2>
         <p class="dj-section-copy mt-4">
-          New visitors should be able to scan this once and understand the full flow: start in the web app or through the API, let Djass build in the background, then continue from a clean generated codebase.
+          Start in the web app, call the Projects API, or teach your coding agent with the plain Djass skill so it can use MCP first.
         </p>
       </div>
       <div class="mt-8 grid gap-4 lg:grid-cols-[1.25fr_0.9fr_0.9fr]">
         <article class="dj-panel p-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <p class="dj-pill dj-pill-accent">Step 1</p>
-            <span class="dj-pill">UI + API</span>
+            <span class="dj-pill">UI + API + MCP</span>
           </div>
           <h3 class="mt-4 text-lg font-semibold">Choose how you create the project</h3>
-          <p class="mt-2 text-sm leading-6">Use the path that matches your workflow while keeping the same generated output.</p>
-          <div class="mt-5 grid gap-3 sm:grid-cols-2">
+          <p class="mt-2 text-sm leading-6">Use the path that matches your workflow while keeping the same generated ZIP output.</p>
+          <div class="mt-5 grid gap-3 sm:grid-cols-3">
             <div class="border-t border-[var(--dj-border)] pt-4">
               <p class="dj-kicker">UI flow</p>
-              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Open the web app, choose your stack, and submit.</p>
-              <p class="mt-2 text-sm leading-6">Best when a founder or teammate wants to configure a project manually in a few clicks.</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Click Create Project, follow the form, and download the ZIP.</p>
+              <p class="mt-2 text-sm leading-6">Best when a founder or teammate wants to configure a project manually.</p>
+              <a href="{% if user.is_authenticated %}{% url 'project_new' %}{% else %}{% url 'account_signup' %}{% endif %}" class="dj-button dj-button-secondary mt-4 w-full">Start in UI</a>
             </div>
             <div class="border-t border-[var(--dj-border)] pt-4">
               <p class="dj-kicker">API flow</p>
-              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Send the same project spec over the API from your own tools or agents.</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Send the same project spec from scripts or internal tools.</p>
               <p class="mt-2 text-sm leading-6">Best when you want repeatable project setup inside scripts, internal platforms, or agent workflows.</p>
+              <a href="{{ djass_openapi_docs_url }}" class="dj-button dj-button-secondary mt-4 w-full">OpenAPI docs</a>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="dj-kicker">Agent flow</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Give your agent the prompt that points to <span class="font-mono">/skill.md</span>.</p>
+              <p class="mt-2 text-sm leading-6">Best when you want the agent to use Djass MCP tools and continue inside the generated repo.</p>
+              <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary mt-4 w-full">Skill.md</a>
             </div>
           </div>
         </article>

@@ -326,6 +326,8 @@ def test_mcp_tools_accept_chatwoot_flag():
 
     assert "use_chatwoot" in signature(create_project).parameters
     assert "use_chatwoot" in signature(generate_project).parameters
+    assert "use_mcp" in signature(create_project).parameters
+    assert "use_mcp" in signature(generate_project).parameters
 
     payload = _payload_from_args(
         project_name="Support CRM",
@@ -348,7 +350,9 @@ def test_mcp_tools_accept_chatwoot_flag():
         use_ai="y",
         use_logfire="y",
         use_healthchecks="y",
+        use_mcp="y",
         use_ci="y",
         extra_context=None,
     )
     assert payload["use_chatwoot"] == "y"
+    assert payload["use_mcp"] == "y"

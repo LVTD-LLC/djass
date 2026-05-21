@@ -24,6 +24,47 @@
         </div>
       </div>
 
+      <section class="dj-panel mt-4 p-6 sm:p-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p class="dj-kicker">Generation paths</p>
+            <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Three ways to generate a project</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--dj-muted)]">
+              Use the dashboard UI, call the Projects API from your own tools, or give your coding agent the plain Djass skill so it can use MCP first.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create Project</a>
+            <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary">OpenAPI docs</a>
+            <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary">Skill.md</a>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-5 lg:grid-cols-3">
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <p class="dj-kicker">1. UI</p>
+            <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Click Create Project</h3>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+              Fill out the guided form, submit the job, then download the ZIP when the dashboard marks it ready.
+            </p>
+          </div>
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <p class="dj-kicker">2. API</p>
+            <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Send a project spec</h3>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+              Use the OpenAPI docs for project options, creation, status polling, and artifact download endpoints.
+            </p>
+          </div>
+          <div class="border-t border-[var(--dj-border)] pt-4">
+            <p class="dj-kicker">3. Agent</p>
+            <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Teach the agent once</h3>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+              Copy the prompt below. It points the agent to <span class="font-mono">/skill.md</span> and tells it to use Djass MCP tools before HTTP fallback.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {% if agent_prompt_available %}
         <section class="dj-panel mt-4 p-6 sm:p-8">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -31,11 +72,13 @@
               <p class="dj-kicker">Agent workflow</p>
               <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent project generator prompt</h2>
               <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--dj-muted)]">
-                Copy this short prompt into your AI agent to create, poll, and download a generated project through the API.
+                Copy this short prompt into your AI agent. It points to the plain markdown skill and tells the agent to prefer Djass MCP tools.
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary">API docs</a>
+              <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary">Skill.md</a>
+              <a href="{{ djass_mcp_docs_url }}" class="dj-button dj-button-secondary">MCP docs</a>
+              <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary">OpenAPI docs</a>
               <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">API key</a>
             </div>
           </div>
@@ -44,7 +87,7 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <label for="djass-agent-prompt" class="block text-sm font-semibold text-[var(--dj-heading)]">Prompt</label>
-                <p class="mt-1 text-xs text-[var(--dj-muted)]">Includes your API base URL and key.</p>
+                <p class="mt-1 text-xs text-[var(--dj-muted)]">Includes your Skill.md link, MCP preference, and API fallback key.</p>
               </div>
               <div class="flex items-center gap-3">
                 <p class="text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
