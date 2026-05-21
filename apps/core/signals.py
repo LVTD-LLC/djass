@@ -1,13 +1,13 @@
 from allauth.account.signals import email_confirmed, user_signed_up
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 
-from apps.core.tasks import add_email_to_buttondown
-
 from apps.core.models import Profile, ProfileStates
+from apps.core.tasks import add_email_to_buttondown
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -16,9 +16,17 @@ logger = get_djass_logger(__name__)
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        profile = Profile.objects.create(user=instance)
+        target_state = (
+            ProfileStates.SUBSCRIBED
+            if getattr(settings, "GRANT_PRO_MEMBERSHIP_ON_SIGNUP", True)
+            else ProfileStates.SIGNED_UP
+        )
+        profile = Profile.objects.create(user=instance, state=target_state)
         profile.track_state_change(
-            to_state=ProfileStates.SIGNED_UP,
+            to_state=target_state,
+            metadata={"grant": "pro_membership_on_signup"}
+            if target_state == ProfileStates.SUBSCRIBED
+            else None,
             source_function="create_user_profile signal",
         )
 
@@ -39,13 +47,13 @@ def add_email_to_buttondown_on_confirm(sender, **kwargs):
 
 @receiver(user_signed_up)
 def email_confirmation_callback(sender, request, user, **kwargs):
-    if 'sociallogin' in kwargs:
+    if "sociallogin" in kwargs:
         logger.info(
             "Adding new user to buttondown newsletter on social signup",
             kwargs=kwargs,
             sender=sender,
         )
-        email = kwargs['sociallogin'].user.email
+        email = kwargs["sociallogin"].user.email
         if email:
             async_task(add_email_to_buttondown, email, tag="user")
 
@@ -105,4 +113,3 @@ def track_user_login_failed(sender, credentials=None, request=None, **kwargs):
         source_function="user_login_failed signal",
         group="Track Event",
     )
-

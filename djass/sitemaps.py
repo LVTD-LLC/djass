@@ -1,10 +1,8 @@
 from django.contrib import sitemaps
-from django.urls import reverse
 from django.contrib.sitemaps import GenericSitemap
-
+from django.urls import reverse
 
 from apps.blog.models import BlogPost
-
 from apps.docs.views import get_docs_navigation
 
 
@@ -23,8 +21,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
         return [
             "landing",
             "uses",
-            "free_access",
-            
+            "pricing",
             "blog_posts",
         ]
 
@@ -38,6 +35,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
             str: Url for the sitemap item
         """
         return reverse(item)
+
 
 class DocsSitemap(sitemaps.Sitemap):
     """Generate Sitemap for documentation pages"""
@@ -82,7 +80,6 @@ class DocsSitemap(sitemaps.Sitemap):
 
 sitemaps = {
     "static": StaticViewSitemap,
-    
     "blog": GenericSitemap(
         {"queryset": BlogPost.objects.all(), "date_field": "created_at"},
         priority=0.85,

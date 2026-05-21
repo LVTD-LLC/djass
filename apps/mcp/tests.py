@@ -134,12 +134,15 @@ def test_queue_project_generation_uses_django_q(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_explicit_user_email_does_not_fall_back_to_derived_username(django_user_model):
+def test_explicit_user_email_does_not_fall_back_to_derived_username(django_user_model, monkeypatch):
     existing = django_user_model.objects.create_user(
         username="alice",
         email="existing-alice@example.local",
         password="password123",
     )
+    existing.profile.state = ProfileStates.STRANGER
+    existing.profile.save(update_fields=["state"])
+    monkeypatch.setattr("apps.mcp.services.async_task", lambda *args, **kwargs: "task-id")
 
     result = queue_project_generation(
         _payload(project_slug="identity_check"),
@@ -150,7 +153,7 @@ def test_explicit_user_email_does_not_fall_back_to_derived_username(django_user_
     existing.refresh_from_db()
     assert project.user.email == "alice@example.local"
     assert project.user_id != existing.id
-    assert existing.profile.state != ProfileStates.SUBSCRIBED
+    assert existing.profile.state == ProfileStates.STRANGER
 
 
 @pytest.mark.django_db

@@ -1,46 +1,47 @@
 ---
-title: Free Access Page Copy (Feedback Window)
-description: Publish-ready conversion copy for Djass free access while the product gathers feedback.
-keywords: Djass, free access, product positioning, feedback
+title: Premium Offer Page Copy (Free For Now)
+description: Publish-ready conversion copy for the Djass pricing page while the $999 lifetime price is paused.
+keywords: Djass, pricing copy, product positioning, free for now, premium offer
 author: Scribe
 ---
 
-This doc is implementation-ready copy mapped to page sections for the current Djass free access page.
+This doc is implementation-ready copy mapped to the current Djass pricing page.
 
 ## Audience and qualification intent
 
 - Primary audience: founders, solo builders, and product teams testing Django SaaS starters.
-- Desired behavior: create a project, inspect the generated ZIP, and leave specific product feedback.
+- Desired behavior: notice the normal $999 lifetime price, understand it is free for now, create a project, and leave practical product feedback.
 - Explicit ask: report confusing setup fields, missing defaults, generation failures, and anything that slows down the workflow.
 
 ## Page copy map (production)
 
 ### 1) Hero badge
 
-**Free access while Djass improves.**
+**One plan for serious Django SaaS work.**
 
 ### 2) Hero headline
 
-**Generate Django SaaS starters for free.**
+**$999** crossed out, followed by **Free for now while Djass improves.**
 
 ### 3) Hero support text
 
-Djass is open for more builders right now so people can try the workflow, generate real starter projects, and share the feedback that makes the product better faster.
+Djass still has one clear lifetime price anchor, but project generation is free right now while more builders try the workflow, generate real starter projects, and share practical feedback.
 
 Create an account, configure a starter, and send notes from the in-app feedback button whenever something feels unclear or missing.
 
-### 4) Access card title
+### 4) Pricing card title + price
 
-- **Djass Free Access**
+- **Djass Premium Plan**
+- **$999** crossed out
 - **Free for now**
 
 ### 5) Core value bullets
 
 - Generate starter projects for new SaaS products, experiments, and internal tools
+- Lifetime updates to the starter so every new build starts from a current, maintained baseline
+- Faster project kickoff with a repeatable baseline your team and coding agents can use the same way every time
 - Use the web app or Projects API from your own scripts and coding agents
-- Keep a dashboard history of generated projects and download ZIPs when builds finish
-- Share feedback directly from the product so rough edges can be fixed quickly
-- Start from the maintained django-saas-starter baseline instead of rebuilding setup from scratch
+- No payment required during the current feedback window
 
 ### 6) Fit criteria section
 
@@ -60,17 +61,17 @@ Want to inspect the foundation first? You can review the open-source baseline be
 
 ### 8) FAQ block
 
-**Why is Djass free right now?**  
-More usage means better feedback. The goal is to get more people through the complete generation flow, learn what breaks or feels unclear, and improve the product quickly.
+**Why show $999 if Djass is free right now?**
+The lifetime price stays visible so expectations are clear. It is crossed out because the current product generation workflow is free while more builders test it and share feedback.
 
-**What exactly is included?**  
+**What exactly is included?**
 You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API.
 
-**What kind of feedback is useful?**  
+**What kind of feedback is useful?**
 Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.
 
-**Could access change later?**  
-Possibly. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
+**Could pricing change later?**
+Yes. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
 
 ## Final CTA copy variants
 
@@ -78,12 +79,12 @@ Use these verbatim.
 
 ### Landing context CTA variants
 
-1. **Primary:** Create your free account
-2. **Alternative:** Create a project
-3. **Alternative:** Try Djass now
+1. **Primary:** See pricing and what's included
+2. **Alternative:** Review current pricing
+3. **Alternative:** See why Djass is free for now
 
 ### App context CTA variants
 
-1. **Primary:** Create a project
+1. **Primary:** Create a project for free
 2. **Alternative:** Generate a starter
 3. **Alternative:** Start from django-saas-starter

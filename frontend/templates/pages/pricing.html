@@ -2,33 +2,36 @@
 {% load webpack_loader static %}
 
 {% block meta %}
-  <title>Djass - Free Access</title>
-  <meta name="description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
+  <title>Djass - Pricing</title>
+  <meta name="description" content="Djass pricing shows the $999 lifetime price crossed out while project generation is free for now." />
   <meta name="keywords" content="" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://{{ request.get_host }}{% url 'free_access' %}" />
+  <link rel="canonical" href="https://{{ request.get_host }}{% url 'pricing' %}" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Djass - Free Access" />
-  <meta property="og:url" content="https://{{ request.get_host }}{% url 'free_access' %}" />
-  <meta property="og:description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
-  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta property="og:title" content="Djass - Pricing" />
+  <meta property="og:url" content="https://{{ request.get_host }}{% url 'pricing' %}" />
+  <meta property="og:description" content="Djass pricing shows the $999 lifetime price crossed out while project generation is free for now." />
+  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:creator" content="@rasulkireev" />
   <meta name="twitter:site" content="@rasulkireev" />
-  <meta name="twitter:title" content="Djass - Free Access" />
-  <meta name="twitter:description" content="Djass project generation is free while more builders try it, share feedback, and help improve the workflow." />
-  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta name="twitter:title" content="Djass - Pricing" />
+  <meta name="twitter:description" content="Djass pricing shows the $999 lifetime price crossed out while project generation is free for now." />
+  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
   <section class="py-16 sm:py-24">
     <div class="dj-container">
       <div class="mx-auto max-w-3xl text-center">
-        <p class="dj-kicker">Free access while Djass improves</p>
-        <h1 class="dj-section-title mt-3">Generate Django SaaS starters for free.</h1>
+        <p class="dj-kicker">One plan for serious Django SaaS work</p>
+        <h1 class="dj-section-title mt-3">
+          <span class="line-through decoration-2 decoration-[var(--dj-soft)]">$999</span>
+          Free for now while Djass improves.
+        </h1>
         <p class="dj-section-copy mx-auto mt-5 max-w-2xl">
-          Djass is open for more builders right now so people can try the workflow, generate real starter projects, and share the feedback that makes the product better faster.
+          Djass still has one clear lifetime price anchor, but project generation is free right now while more builders try the workflow, generate real starter projects, and share practical feedback.
         </p>
         <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-soft)]">
           Create an account, configure a starter, and send notes from the in-app feedback button whenever something feels unclear or missing.
@@ -39,36 +42,40 @@
         <section class="dj-panel p-6 sm:p-8">
           <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p class="dj-pill dj-pill-accent">Djass Free Access</p>
-              <h2 class="mt-6 text-5xl font-semibold leading-none text-[var(--dj-heading)]">Free for now</h2>
+              <p class="dj-pill dj-pill-accent">Djass Premium Plan</p>
+              <h2 id="tier-lifetime" class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-2 text-5xl font-semibold leading-none text-[var(--dj-heading)]">
+                <span class="line-through decoration-2 decoration-[var(--dj-soft)]">$999</span>
+                <span class="text-[var(--dj-accent-strong)]">Free</span>
+                <span class="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--dj-muted)]">for now</span>
+              </h2>
               <p class="mt-4 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
-                Project generation is available to every signed-in user while this early feedback window is open.
+                The listed $999 lifetime price is paused. Signed-in users can generate projects for free while this feedback window is open.
               </p>
             </div>
             <div class="sm:min-w-56">
               {% if user.is_authenticated %}
-                <a href="{% url 'project_new' %}" aria-describedby="tier-free-access" class="dj-button dj-button-primary w-full">Create a project</a>
+                <a href="{% url 'project_new' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Create a project for free</a>
               {% else %}
-                <a href="{% url 'account_signup' %}" aria-describedby="tier-free-access" class="dj-button dj-button-primary w-full">Create account to start</a>
+                <a href="{% url 'account_signup' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Create account to start free</a>
               {% endif %}
             </div>
           </div>
 
-          <div id="tier-free-access" class="mt-8 grid gap-3 sm:grid-cols-2">
+          <div class="mt-8 grid gap-3 sm:grid-cols-2">
             <div class="border-t border-[var(--dj-border)] pt-4">
               <p class="font-semibold text-[var(--dj-heading)]">Generate starter projects for new SaaS products, experiments, and internal tools</p>
             </div>
             <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Lifetime updates to the starter so every new build starts from a current, maintained baseline</p>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
+              <p class="font-semibold text-[var(--dj-heading)]">Faster project kickoff with a repeatable baseline your team and coding agents can use the same way every time</p>
+            </div>
+            <div class="border-t border-[var(--dj-border)] pt-4">
               <p class="font-semibold text-[var(--dj-heading)]">Use the web app or Projects API from your own scripts and coding agents</p>
             </div>
-            <div class="border-t border-[var(--dj-border)] pt-4">
-              <p class="font-semibold text-[var(--dj-heading)]">Keep a dashboard history of generated projects and download ZIPs when builds finish</p>
-            </div>
-            <div class="border-t border-[var(--dj-border)] pt-4">
-              <p class="font-semibold text-[var(--dj-heading)]">Share feedback directly from the product so rough edges can be fixed quickly</p>
-            </div>
             <div class="border-t border-[var(--dj-border)] pt-4 sm:col-span-2">
-              <p class="font-semibold text-[var(--dj-heading)]">Start from the maintained django-saas-starter baseline instead of rebuilding setup from scratch</p>
+              <p class="font-semibold text-[var(--dj-heading)]">No payment required during the current feedback window</p>
             </div>
           </div>
         </section>
@@ -102,12 +109,12 @@
       <section class="dj-panel mt-10 p-6 sm:p-8">
         <div class="max-w-3xl">
           <p class="dj-kicker">FAQ</p>
-          <h2 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">What to expect during free access</h2>
+          <h2 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">What to expect while Djass is free for now</h2>
         </div>
         <dl class="mt-8 grid gap-6 md:grid-cols-2">
           <div class="border-t border-[var(--dj-border)] pt-4">
-            <dt class="font-semibold text-[var(--dj-heading)]">Why is Djass free right now?</dt>
-            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">More usage means better feedback. The goal is to get more people through the complete generation flow, learn what breaks or feels unclear, and improve the product quickly.</dd>
+            <dt class="font-semibold text-[var(--dj-heading)]">Why show $999 if Djass is free right now?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">The lifetime price stays visible so expectations are clear. It is crossed out because the current product generation workflow is free while more builders test it and share feedback.</dd>
           </div>
           <div class="border-t border-[var(--dj-border)] pt-4">
             <dt class="font-semibold text-[var(--dj-heading)]">What exactly is included?</dt>
@@ -118,8 +125,8 @@
             <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.</dd>
           </div>
           <div class="border-t border-[var(--dj-border)] pt-4">
-            <dt class="font-semibold text-[var(--dj-heading)]">Could access change later?</dt>
-            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Possibly. If the access model changes later, existing users will get clear notice before anything changes for their accounts.</dd>
+            <dt class="font-semibold text-[var(--dj-heading)]">Could pricing change later?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Yes. If the access model changes later, existing users will get clear notice before anything changes for their accounts.</dd>
           </div>
         </dl>
       </section>
@@ -132,10 +139,10 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Djass - Free Access",
-      "description": "Djass project generation is free while more builders try it, share feedback, and help improve the workflow.",
-      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Free Access&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-      "url": "https://{{ request.get_host }}{% url 'free_access' %}",
+      "name": "Djass - Pricing",
+      "description": "Djass pricing shows the $999 lifetime price crossed out while project generation is free for now.",
+      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+      "url": "https://{{ request.get_host }}{% url 'pricing' %}",
       "author": {
         "@type": "Person",
         "name": "Rasul"

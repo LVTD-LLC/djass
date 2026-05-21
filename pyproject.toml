@@ -2,7 +2,7 @@
 name = "djass"
 version = "0.1.0"
 description = "Web app wrapper around django-saas-starter cookiecutter."
-authors = [{ name = "Rasul", email = "rasul@example.com" }]
+authors = [{ name = "Rasul", email = "rasul@lvtd.dev" }]
 requires-python = ">=3.14,<4.0"
 dependencies = [
     "cookiecutter>=2.6.0",
