@@ -145,6 +145,6 @@ envVarGroups:
 
       # Chatwoot website inbox widget
       - key: CHATWOOT_BASE_URL
-        value: https://chatwoot.cap.gregagi.com
+        value: ""
       - key: CHATWOOT_WEBSITE_TOKEN
-        value: LBR57G9rh7sh1fRF4wjDqKhB
+        value: ""

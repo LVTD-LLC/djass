@@ -52,7 +52,7 @@ class TestHomeView:
         assert "Generation unavailable" in content
 
     @override_settings(
-        CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com/",
+        CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
         CHATWOOT_WEBSITE_TOKEN="testtoken",
     )
     def test_home_renders_chatwoot_widget_when_configured(self, auth_client):

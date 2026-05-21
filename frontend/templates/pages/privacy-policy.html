@@ -99,7 +99,9 @@
     </p>
     <ul>
       <li>PostHog and Plausible for usage analytics</li>
+      {% if chatwoot_base_url and chatwoot_website_token %}
       <li>Chatwoot for customer support chat</li>
+      {% endif %}
     </ul>
     <p>
       You can control cookies through your browser settings. Note that disabling
