@@ -5,6 +5,7 @@ from apps.core import views
 urlpatterns = [
     # App pages
     path("home", views.HomeView.as_view(), name="home"),
+    path("agent-skill", views.AgentSkillView.as_view(), name="agent_skill"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     path("projects/new", views.ProjectCreateView.as_view(), name="project_new"),

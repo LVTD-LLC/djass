@@ -26,19 +26,20 @@ class TestHomeView:
         assert "Generation available" in content
         assert "Generation locked" not in content
 
-    def test_home_shows_copyable_agent_prompt_and_skill(self, auth_client, user):
+    def test_home_shows_short_copyable_agent_prompt(self, auth_client, user):
         response = auth_client.get(reverse("home"))
 
         assert response.status_code == 200
         content = response.content.decode()
         assert "Agent project generator prompt" in content
         assert "Copy prompt" in content
-        assert "Copy SKILL.md" in content
+        assert "Copy SKILL.md" not in content
+        assert reverse("agent_skill") in content
         assert "https://djass.dev/api/v1" in content
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
-        assert "GET $DJASS_BASE_URL/projects/{project_id}/download" in content
-        assert "If Djass MCP tools are available" in content
+        assert "---BEGIN SKILL.md---" not in content
+        assert "## API Workflow" not in content
 
     def test_home_omits_agent_prompt_when_profile_is_missing(self, auth_client, user):
         Profile.objects.filter(user=user).delete()
@@ -72,6 +73,20 @@ class TestHomeView:
 
         assert response.status_code == 200
         assert "window.chatwootSDK.run" not in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestAgentSkillView:
+    def test_agent_skill_page_shows_copyable_skill(self, client, user):
+        response = client.get(reverse("agent_skill"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Djass Agent Skill" in content
+        assert "Copy SKILL.md" in content
+        assert "## API Workflow" in content
+        assert "GET {DJASS_BASE_URL}/project-options" in content
+        assert user.profile.key not in content
 
 
 @pytest.mark.django_db
