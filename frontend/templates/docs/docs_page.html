@@ -27,15 +27,15 @@
 <h1>{{ page_title }}</h1>
 {{ content|safe }}
 
-<nav class="pt-8 mt-12 border-t border-gray-200 not-prose" aria-label="Docs pages navigation">
-    <div class="flex gap-4 justify-between">
+<nav class="not-prose mt-12 border-t border-[var(--dj-border)] pt-8" aria-label="Docs pages navigation">
+    <div class="grid gap-4 sm:grid-cols-2">
         <div class="flex-1">
             {% if previous_page %}
-            <a href="{{ previous_page.url }}" class="block p-4 no-underline rounded-lg border border-gray-300 transition-colors group hover:border-gray-400">
-                <div class="mb-1 text-xs font-medium text-gray-500">
-                    ← Previous
+            <a href="{{ previous_page.url }}" class="dj-panel block p-4 no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
+                <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">
+                    Previous
                 </div>
-                <div class="text-base font-medium text-gray-700 group-hover:text-gray-900">
+                <div class="text-base font-semibold text-[var(--dj-heading)]">
                     {{ previous_page.page_title }}
                 </div>
             </a>
@@ -44,11 +44,11 @@
 
         <div class="flex-1">
             {% if next_page %}
-            <a href="{{ next_page.url }}" class="block p-4 text-right no-underline rounded-lg border border-gray-300 transition-colors group hover:border-gray-400">
-                <div class="mb-1 text-xs font-medium text-gray-500">
-                    Next →
+            <a href="{{ next_page.url }}" class="dj-panel block p-4 text-right no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
+                <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">
+                    Next
                 </div>
-                <div class="text-base font-medium text-gray-700 group-hover:text-gray-900">
+                <div class="text-base font-semibold text-[var(--dj-heading)]">
                     {{ next_page.page_title }}
                 </div>
             </a>

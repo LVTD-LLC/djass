@@ -1,38 +1,40 @@
 #!/bin/sh
 
-# Default to server command if no arguments provided
-if [ $# -eq 0 ]; then
-    echo "No arguments provided. Defaulting to running the server."
-    server=true
-else
-    server=false
-fi
+set -e
 
-# All commands before the conditional ones
 export PROJECT_NAME=djass
 
 export DJANGO_SETTINGS_MODULE="djass.settings"
 
+process_type="${DJASS_PROCESS_TYPE:-server}"
+
 while getopts ":sw" option; do
     case "${option}" in
         s)  # Run server
-            server=true
+            process_type="server"
             ;;
         w)  # Run worker
-            server=false
+            process_type="worker"
             ;;
         *)  # Invalid option
             echo "Invalid option: -$OPTARG" >&2
+            exit 1
             ;;
     esac
 done
 shift $((OPTIND - 1))
 
-# If no valid option provided, default to server
-if [ "$server" = true ]; then
-    python manage.py collectstatic --noinput
-    python manage.py migrate
-    gunicorn ${PROJECT_NAME}.wsgi:application --bind 0.0.0.0:80 --workers 3 --threads 2
-else
-    python manage.py qcluster
-fi
+case "$process_type" in
+    server)
+        python manage.py collectstatic --noinput
+        python manage.py migrate
+        gunicorn ${PROJECT_NAME}.wsgi:application --bind 0.0.0.0:80 --workers 3 --threads 2
+        ;;
+    worker|workers)
+        python manage.py qcluster
+        ;;
+    *)
+        echo "Invalid DJASS_PROCESS_TYPE: $process_type. Expected 'server' or 'worker'." >&2
+        exit 1
+        ;;
+esac

@@ -2,19 +2,17 @@
 {% load widget_tweaks %}
 
 {% block content %}
-    <div class="mx-auto my-4 prose md:my-10 lg:prose-lg">
-        <h1 class="text-center">Please confirm Sign Out</h1>
-        <form method="post" class="flex flex-row justify-center" action="{% url 'account_logout' %}">
-            {% csrf_token %}
-
-            {% if redirect_field_value %}
-                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-            {% endif %}
-
-            <button class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-red-600 border border-transparent border-solid rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    type="submit">
-                Sign Out
-            </button>
-        </form>
+  <div class="dj-auth-wrap">
+    <div class="dj-auth-card text-center">
+      <p class="dj-pill dj-pill-danger mx-auto">Session</p>
+      <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Please confirm Sign Out</h1>
+      <form method="post" class="mt-8" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+        {% endif %}
+        <button class="dj-button dj-button-danger w-full" type="submit">Sign Out</button>
+      </form>
     </div>
+  </div>
 {% endblock content %}
