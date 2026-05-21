@@ -37,7 +37,10 @@ class TestHomeView:
         assert "Open account menu" in content
         assert "Skill page" not in content
         assert 'href="/uses"' not in content
-        assert 'href="/projects/new" class="dj-button dj-button-secondary">Create</a>' not in content
+        assert (
+            'href="/projects/new" class="dj-button dj-button-secondary">Create</a>'
+            not in content
+        )
 
     def test_home_shows_short_copyable_agent_prompt(self, auth_client, user):
         response = auth_client.get(reverse("home"))
