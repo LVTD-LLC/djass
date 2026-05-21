@@ -278,6 +278,15 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
     assert reverse("pricing") in content
 
 
+def test_landing_header_omits_stack_link(client):
+    response = client.get(reverse("landing"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert 'href="/uses"' not in content
+    assert ">Stack</a>" not in content
+
+
 def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])

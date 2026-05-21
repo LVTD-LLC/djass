@@ -23,8 +23,17 @@ class TestHomeView:
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
         content = response.content.decode()
-        assert "Generation available" in content
+        assert "Create Project" in content
         assert "Generation locked" not in content
+
+    def test_authenticated_app_header_uses_account_menu(self, auth_client):
+        response = auth_client.get(reverse("home"))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Open account menu" in content
+        assert "Skill page" not in content
+        assert 'href="/uses"' not in content
+        assert 'href="/projects/new" class="dj-button dj-button-secondary">Create</a>' not in content
 
     def test_home_shows_short_copyable_agent_prompt(self, auth_client, user):
         response = auth_client.get(reverse("home"))
@@ -34,7 +43,8 @@ class TestHomeView:
         assert "Agent project generator prompt" in content
         assert "Copy prompt" in content
         assert "Copy SKILL.md" not in content
-        assert reverse("agent_skill") in content
+        assert "Skill page" not in content
+        assert reverse("agent_skill") not in content
         assert "https://djass.dev/api/v1" in content
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
