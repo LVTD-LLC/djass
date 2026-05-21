@@ -175,14 +175,11 @@ def build_djass_agent_skill_md() -> str:
     ).strip().replace("__DJASS_API_BASE_URL__", DJASS_API_BASE_URL)
 
 
-def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> str:
+def build_djass_agent_prompt(base_url: str, api_key: str) -> str:
     prompt = dedent(
         """\
         Use Djass to generate a new django-saas-starter repo, wait for the ZIP artifact,
         download it, unzip it into the workspace, and continue from the generated repo.
-
-        Read the Djass skill instructions first:
-        __DJASS_SKILL_URL__
 
         Runtime:
 
@@ -193,15 +190,11 @@ def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> 
 
         Treat `DJASS_API_KEY` as a secret.
 
-        Use the skill workflow: fetch project options, ask only for missing
+        Fetch project options, ask only for missing
         product-specific values, create the project, poll status, download the artifact,
         inspect `djass-manifest.json` and `project-metadata.json`, then follow the
         generated repo's setup instructions. Prefer Djass MCP tools when available;
         otherwise use the HTTP API.
         """
     ).strip()
-    return (
-        prompt.replace("__DJASS_BASE_URL__", base_url)
-        .replace("__DJASS_API_KEY__", api_key)
-        .replace("__DJASS_SKILL_URL__", skill_url)
-    )
+    return prompt.replace("__DJASS_BASE_URL__", base_url).replace("__DJASS_API_KEY__", api_key)

@@ -3,46 +3,25 @@
 {% block content %}
   <section class="pb-16 pt-8">
     <div class="dj-container-wide">
-      <div class="grid gap-4 lg:grid-cols-[0.72fr_0.28fr]">
-        <div class="dj-panel p-6 sm:p-8">
-          <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p class="dj-kicker">Control plane</p>
-              <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Project Dashboard</h1>
-              <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
-                Track generation status, retry failed builds, and download generated ZIPs once the background job finishes.
-              </p>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-              {% if can_generate %}
-                <span class="dj-pill dj-pill-success">Generation available</span>
-                <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create Project</a>
-              {% elif project_limit_reached %}
-                <span class="dj-pill dj-pill-warning">Project limit reached</span>
-              {% else %}
-                <span class="dj-pill dj-pill-warning">Generation unavailable</span>
-              {% endif %}
-            </div>
+      <div class="dj-panel p-6 sm:p-8">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="dj-kicker">Control plane</p>
+            <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Project Dashboard</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
+              Track generation status, retry failed builds, and download generated ZIPs once the background job finishes.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            {% if can_generate %}
+              <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create Project</a>
+            {% elif project_limit_reached %}
+              <span class="dj-pill dj-pill-warning">Project limit reached</span>
+            {% else %}
+              <span class="dj-pill dj-pill-warning">Generation unavailable</span>
+            {% endif %}
           </div>
         </div>
-
-        <aside class="dj-panel p-6 sm:p-8">
-          <p class="dj-kicker">Artifact flow</p>
-          <div class="mt-5 space-y-4">
-            <div class="flex items-center justify-between border-b border-[var(--dj-border)] pb-3">
-              <span class="text-sm text-[var(--dj-muted)]">Spec</span>
-              <span class="font-mono text-sm text-[var(--dj-heading)]">submitted</span>
-            </div>
-            <div class="flex items-center justify-between border-b border-[var(--dj-border)] pb-3">
-              <span class="text-sm text-[var(--dj-muted)]">Worker</span>
-              <span class="font-mono text-sm text-[var(--dj-heading)]">queued</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-[var(--dj-muted)]">Download</span>
-              <span class="font-mono text-sm text-[var(--dj-heading)]">zip</span>
-            </div>
-          </div>
-        </aside>
       </div>
 
       {% if agent_prompt_available %}
@@ -52,11 +31,10 @@
               <p class="dj-kicker">Agent workflow</p>
               <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent project generator prompt</h2>
               <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--dj-muted)]">
-                Copy this short prompt into your AI agent. The full reusable skill lives on its own page.
+                Copy this short prompt into your AI agent to create, poll, and download a generated project through the API.
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary">Skill page</a>
               <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary">API docs</a>
               <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">API key</a>
             </div>
@@ -66,7 +44,7 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <label for="djass-agent-prompt" class="block text-sm font-semibold text-[var(--dj-heading)]">Prompt</label>
-                <p class="mt-1 text-xs text-[var(--dj-muted)]">Includes your API base URL, key, and skill page link.</p>
+                <p class="mt-1 text-xs text-[var(--dj-muted)]">Includes your API base URL and key.</p>
               </div>
               <div class="flex items-center gap-3">
                 <p class="text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>

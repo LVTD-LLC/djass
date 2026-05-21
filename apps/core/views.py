@@ -107,11 +107,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["agent_prompt_available"] = False
         if can_create_projects:
             context["projects_api_base_url"] = DJASS_API_BASE_URL
-            skill_url = self.request.build_absolute_uri(reverse("agent_skill"))
             context["djass_agent_prompt"] = build_djass_agent_prompt(
                 DJASS_API_BASE_URL,
                 self.request.user.profile.key,
-                skill_url=skill_url,
             )
             context["agent_prompt_available"] = True
 

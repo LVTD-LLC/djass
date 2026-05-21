@@ -2,6 +2,7 @@
 <header class="fixed left-0 top-3 z-50 w-full{% if site_header_variant != 'app' %} px-0{% endif %}">
     <div class="dj-nav-frame">
         <div class="dj-nav">
+            {% with current_url=request.resolver_match.url_name %}
             {% if site_header_variant == 'app' %}
                 <a href="{% url 'home' %}" class="dj-brand">
                     <img src="{% static 'vendors/images/logo.svg' %}" alt="Djass Logo" />
@@ -15,10 +16,19 @@
             {% endif %}
             <nav class="ml-4 hidden items-center gap-1 lg:flex"
                  aria-label="Primary navigation">
-                <a href="{% url 'docs_home' %}" class="dj-nav-link">Docs</a>
-                <a href="{% url 'blog_posts' %}" class="dj-nav-link">Blog</a>
-                <a href="{% url 'pricing' %}" class="dj-nav-link">Pricing</a>
-                <a href="{% url 'uses' %}" class="dj-nav-link">Stack</a>
+                {% if site_header_variant == 'app' and user.is_authenticated %}
+                    <a href="{% url 'home' %}"
+                       class="dj-nav-link{% if current_url == 'home' %} dj-nav-link-active{% endif %}">Dashboard</a>
+                    <a href="{% url 'docs_home' %}"
+                       class="dj-nav-link{% if current_url == 'docs_home' or current_url == 'docs_page' %} dj-nav-link-active{% endif %}">Docs</a>
+                {% else %}
+                    <a href="{% url 'docs_home' %}"
+                       class="dj-nav-link{% if current_url == 'docs_home' or current_url == 'docs_page' %} dj-nav-link-active{% endif %}">Docs</a>
+                    <a href="{% url 'blog_posts' %}"
+                       class="dj-nav-link{% if current_url == 'blog_posts' or current_url == 'blog_post' %} dj-nav-link-active{% endif %}">Blog</a>
+                    <a href="{% url 'pricing' %}"
+                       class="dj-nav-link{% if current_url == 'pricing' %} dj-nav-link-active{% endif %}">Pricing</a>
+                {% endif %}
             </nav>
             <div class="ml-auto hidden items-center gap-2 lg:flex">
                 <button type="button"
@@ -59,17 +69,39 @@
                     </svg>
                 </button>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'home' %}" class="dj-button dj-button-secondary">Dashboard</a>
-                    <a href="{% url 'project_new' %}" class="dj-button dj-button-secondary">Create</a>
-                    <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">Settings</a>
-                    {% if user.is_superuser %}
-                        <a href="{% url 'admin_panel' %}"
-                           class="dj-button dj-button-secondary text-[var(--dj-accent-strong)]">Admin</a>
+                    {% if site_header_variant != 'app' %}
+                        <a href="{% url 'home' %}" class="dj-button dj-button-primary">Dashboard</a>
                     {% endif %}
-                    <form method="post" action="{% url 'account_logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="dj-button dj-button-secondary">Sign out</button>
-                    </form>
+                    <div class="relative" data-controller="dropdown">
+                        <button type="button"
+                                class="dj-nav-menu-button"
+                                aria-label="Open account menu"
+                                data-action="dropdown#toggle click@window->dropdown#hide">
+                            <span>Account</span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.8"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="h-4 w-4"
+                                 aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div data-dropdown-target="menu" class="dj-nav-menu hidden">
+                            <a href="{% url 'settings' %}" class="dj-nav-menu-item">Settings</a>
+                            {% if user.is_superuser %}
+                                <a href="{% url 'admin_panel' %}" class="dj-nav-menu-item">Admin</a>
+                            {% endif %}
+                            <div class="dj-nav-menu-divider"></div>
+                            <form method="post" action="{% url 'account_logout' %}" class="dj-nav-menu-form">
+                                {% csrf_token %}
+                                <button type="submit" class="dj-nav-menu-item w-full">Sign out</button>
+                            </form>
+                        </div>
+                    </div>
                 {% else %}
                     <a href="{% url 'account_login' %}" class="dj-button dj-button-subtle">Sign in</a>
                     <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary">Create account</a>
@@ -86,35 +118,35 @@
                 <div data-dropdown-target="menu" class="dj-mobile-menu hidden">
                     <nav aria-label="Mobile navigation">
                         <ul class="divide-y divide-[var(--dj-border)] px-2 py-2">
-                            <li>
-                                <a href="{% url 'docs_home' %}"
-                                   class="dj-nav-link w-full justify-center">Docs</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'blog_posts' %}"
-                                   class="dj-nav-link w-full justify-center">Blog</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'pricing' %}" class="dj-nav-link w-full justify-center">Pricing</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'uses' %}" class="dj-nav-link w-full justify-center">Stack</a>
-                            </li>
                             {% if user.is_authenticated %}
                                 <li>
-                                    <a href="{% url 'home' %}" class="dj-nav-link w-full justify-center">Dashboard</a>
+                                    <a href="{% url 'home' %}"
+                                       class="dj-nav-link w-full justify-center{% if current_url == 'home' %} dj-nav-link-active{% endif %}">Dashboard</a>
+                                </li>
+                            {% endif %}
+                            <li>
+                                <a href="{% url 'docs_home' %}"
+                                   class="dj-nav-link w-full justify-center{% if current_url == 'docs_home' or current_url == 'docs_page' %} dj-nav-link-active{% endif %}">Docs</a>
+                            </li>
+                            {% if site_header_variant != 'app' or not user.is_authenticated %}
+                                <li>
+                                    <a href="{% url 'blog_posts' %}"
+                                       class="dj-nav-link w-full justify-center{% if current_url == 'blog_posts' or current_url == 'blog_post' %} dj-nav-link-active{% endif %}">Blog</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'project_new' %}"
-                                       class="dj-nav-link w-full justify-center">Create</a>
+                                    <a href="{% url 'pricing' %}"
+                                       class="dj-nav-link w-full justify-center{% if current_url == 'pricing' %} dj-nav-link-active{% endif %}">Pricing</a>
                                 </li>
+                            {% endif %}
+                            {% if user.is_authenticated %}
                                 <li>
-                                    <a href="{% url 'settings' %}" class="dj-nav-link w-full justify-center">Settings</a>
+                                    <a href="{% url 'settings' %}"
+                                       class="dj-nav-link w-full justify-center{% if current_url == 'settings' %} dj-nav-link-active{% endif %}">Settings</a>
                                 </li>
                                 {% if user.is_superuser %}
                                     <li>
                                         <a href="{% url 'admin_panel' %}"
-                                           class="dj-nav-link w-full justify-center">Admin</a>
+                                           class="dj-nav-link w-full justify-center{% if current_url == 'admin_panel' %} dj-nav-link-active{% endif %}">Admin</a>
                                     </li>
                                 {% endif %}
                                 <li class="p-2">
@@ -137,6 +169,7 @@
                     </nav>
                 </div>
             </div>
+            {% endwith %}
         </div>
     </div>
 </header>
