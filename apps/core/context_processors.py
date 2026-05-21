@@ -25,6 +25,13 @@ def posthog_api_key(request):
     }
 
 
+def chatwoot_settings(request):
+    return {
+        "chatwoot_base_url": settings.CHATWOOT_BASE_URL,
+        "chatwoot_website_token": settings.CHATWOOT_WEBSITE_TOKEN,
+    }
+
+
 def mjml_url(request):
     return {"mjml_url": settings.MJML_URL}
 

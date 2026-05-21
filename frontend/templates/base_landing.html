@@ -77,7 +77,9 @@
       {% include 'components/messages.html' with messages=messages %}
     {% endblock default_messages %}
     {% if user.is_authenticated %}
-      {% include 'components/feedback.html' %}
+      {% if not chatwoot_base_url or not chatwoot_website_token %}
+        {% include 'components/feedback.html' %}
+      {% endif %}
     {% endif %}
 
     <div class="dj-page-shell">
@@ -115,5 +117,6 @@
         }
       </script>
     {% endblock schema %}
+    {% include "components/chatwoot.html" %}
   </body>
 </html>

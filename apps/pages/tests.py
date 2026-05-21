@@ -46,6 +46,35 @@ def test_pricing_page_shows_crossed_out_lifetime_price(client):
     assert "No payment required during the current feedback window" in content
 
 
+@override_settings(
+    CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
+    CHATWOOT_WEBSITE_TOKEN="testtoken",
+)
+def test_landing_base_renders_chatwoot_widget_when_configured(client):
+    response = client.get(reverse("landing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'var BASE_URL = "https://chatwoot.cap.gregagi.com";' in content
+    assert 'websiteToken: "testtoken"' in content
+
+
+@override_settings(CHATWOOT_BASE_URL="", CHATWOOT_WEBSITE_TOKEN="")
+def test_privacy_policy_omits_chatwoot_when_widget_is_not_configured(client):
+    response = client.get(reverse("privacy_policy"))
+
+    assert response.status_code == 200
+    assert "Chatwoot for customer support chat" not in response.content.decode()
+
+
+@override_settings(CHATWOOT_BASE_URL="https://chatwoot.example.com", CHATWOOT_WEBSITE_TOKEN="token")
+def test_privacy_policy_lists_chatwoot_when_widget_is_configured(client):
+    response = client.get(reverse("privacy_policy"))
+
+    assert response.status_code == 200
+    assert "Chatwoot for customer support chat" in response.content.decode()
+
+
 def test_pricing_page_ignores_legacy_checkout_params(auth_client, monkeypatch):
     calls = []
 

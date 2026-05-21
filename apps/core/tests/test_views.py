@@ -52,6 +52,27 @@ class TestHomeView:
         assert "Copy prompt" not in content
         assert "Generation unavailable" in content
 
+    @override_settings(
+        CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
+        CHATWOOT_WEBSITE_TOKEN="testtoken",
+    )
+    def test_home_renders_chatwoot_widget_when_configured(self, auth_client):
+        response = auth_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'var BASE_URL = "https://chatwoot.cap.gregagi.com";' in content
+        assert 'websiteToken: "testtoken"' in content
+        assert 'BASE_URL + "/packs/js/sdk.js"' in content
+        assert 'data-controller="feedback"' not in content
+
+    @override_settings(CHATWOOT_BASE_URL="", CHATWOOT_WEBSITE_TOKEN="")
+    def test_home_omits_chatwoot_widget_without_config(self, auth_client):
+        response = auth_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        assert "window.chatwootSDK.run" not in response.content.decode()
+
 
 @pytest.mark.django_db
 class TestProjectCreateView:
