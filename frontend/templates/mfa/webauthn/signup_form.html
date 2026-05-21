@@ -18,10 +18,10 @@
 
       <form class="mt-8 space-y-5" method="post" action="{% url 'mfa_signup_webauthn' %}">
         {% csrf_token %}
-        {{ form.non_field_errors|safe }}
+        {{ form.non_field_errors }}
         {% for field in form.hidden_fields %}{{ field }}{% endfor %}
         <div>
-          {{ form.name.errors|safe }}
+          {{ form.name.errors }}
           <label for="{{ form.name.id_for_label }}" class="block text-sm font-semibold text-[var(--dj-heading)]">Passkey name</label>
           {% render_field form.name class="dj-input mt-2 block w-full px-3 py-2 text-sm" %}
         </div>
