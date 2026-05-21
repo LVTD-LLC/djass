@@ -15,6 +15,7 @@ def test_landing_template_uses_product_led_copy():
     assert "See pricing and what's included" in content
     assert "Agent flow" in content
     assert "/skill.md" in content
+    assert "djass_openapi_docs_url" in content
     assert "premium" not in content.lower()
     assert "API-first delivery for modern Django agencies" not in content
 

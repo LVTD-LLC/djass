@@ -3,6 +3,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django_q.tasks import async_task
 
+from apps.core.agent_prompts import DJASS_OPENAPI_DOCS_URL
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -13,6 +14,7 @@ class LandingPageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["djass_openapi_docs_url"] = DJASS_OPENAPI_DOCS_URL
 
         if self.request.user.is_authenticated and settings.POSTHOG_API_KEY:
             user = self.request.user
