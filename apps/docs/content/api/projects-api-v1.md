@@ -1,6 +1,6 @@
 # Djass Projects API (v1)
 
-**Base URL:** `https://<your-djass-host>/api/v1`  
+**Base URL:** `https://djass.dev/api/v1`
 **Coverage:** `create`, `list`, `get`, `status`, and `download` endpoints for project generation.
 
 ---
@@ -324,7 +324,7 @@ When the artifact is not ready, poll `GET /projects/{project_id}/status` until
 
 ```bash
 # 0) Set runtime values
-export DJASS_BASE_URL="https://your-djass-host/api/v1"
+export DJASS_BASE_URL="https://djass.dev/api/v1"
 export DJASS_API_KEY="replace-with-key"
 
 # 1) Create project

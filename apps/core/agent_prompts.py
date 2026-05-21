@@ -1,5 +1,7 @@
 from textwrap import dedent
 
+DJASS_API_BASE_URL = "https://djass.dev/api/v1"
+
 
 def build_djass_agent_skill_md() -> str:
     return dedent(
@@ -20,7 +22,7 @@ def build_djass_agent_skill_md() -> str:
         Expect these values from the user, environment, or calling prompt:
 
         - `DJASS_BASE_URL`: base API URL ending in `/api/v1`, for example
-          `https://djass.dev/api/v1`.
+          `__DJASS_API_BASE_URL__`.
         - `DJASS_API_KEY`: Djass API key. Treat it as a secret. Prefer the
           `X-API-Key` header.
 
@@ -128,7 +130,7 @@ def build_djass_agent_skill_md() -> str:
         ## Minimal curl Flow
 
         ```bash
-        export DJASS_BASE_URL="https://djass.dev/api/v1"
+        export DJASS_BASE_URL="__DJASS_API_BASE_URL__"
         export DJASS_API_KEY="replace-with-user-key"
 
         curl -sS "$DJASS_BASE_URL/project-options"
@@ -170,7 +172,7 @@ def build_djass_agent_skill_md() -> str:
           -o "acme_crm.zip"
         ```
         """
-    ).strip()
+    ).strip().replace("__DJASS_API_BASE_URL__", DJASS_API_BASE_URL)
 
 
 def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_md: str | None = None) -> str:
