@@ -3,7 +3,7 @@ FROM node:24.15.0 AS build
 WORKDIR /app
 COPY . .
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM python:3.14.5
@@ -14,11 +14,9 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 RUN pip install --no-cache-dir uv
-# NOTE: We intentionally don't require uv.lock here so freshly-generated projects build out of the box.
-# If you want fully reproducible builds, generate and commit a uv.lock in your rendered project, then add --frozen.
-RUN uv sync --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . .
 COPY --from=build /app/frontend/static/ ./frontend/static/

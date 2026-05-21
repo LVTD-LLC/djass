@@ -1,0 +1,18 @@
+{% extends "base_landing.html" %}
+
+{% block meta %}
+  <title>Signups paused · Djass</title>
+{% endblock meta %}
+
+{% block content %}
+  <div class="dj-auth-wrap">
+    <div class="dj-auth-card text-center">
+      <p class="dj-pill dj-pill-accent mx-auto">Djass account</p>
+      <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Signups are paused</h1>
+      <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
+        New account creation is currently closed. Existing users can still sign in.
+      </p>
+      <a href="{% url 'account_login' %}" class="dj-button dj-button-primary mt-8 w-full">Sign in</a>
+    </div>
+  </div>
+{% endblock content %}

@@ -353,6 +353,7 @@ def resend_confirmation_email(request):
         )
         if settings.ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED:
             return redirect("account_email_verification_sent")
+        messages.success(request, "Confirmation email sent. Please check your inbox.")
 
     except Exception as e:
         messages.error(request, "Failed to send confirmation email. Please try again later.")

@@ -165,6 +165,39 @@ def test_signup_page_is_email_only(client):
     assert 'name="password2"' not in content
 
 
+@override_settings(ALLOW_SIGNUPS=False)
+def test_signup_page_is_closed_when_signups_are_disabled(client):
+    response = client.get(reverse("account_signup"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "Signups are paused" in content
+    assert 'name="email"' not in content
+    assert "Existing users can still sign in" in content
+
+
+@override_settings(ALLOW_SIGNUPS=False)
+def test_signup_post_does_not_create_user_when_signups_are_disabled(client, django_user_model):
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "closed-signup@example.com",
+            "password1": "StrongPass123!!",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Signups are paused" in response.content.decode()
+    assert not django_user_model.objects.filter(email="closed-signup@example.com").exists()
+
+
+@override_settings(ALLOW_SIGNUPS=False)
+def test_passkey_signup_page_is_closed_when_signups_are_disabled(client):
+    response = client.get(reverse("account_signup_by_passkey"))
+    assert response.status_code == 200
+    assert "Signups are paused" in response.content.decode()
+
+
 def test_email_verification_sent_page_requires_pending_code_process(client):
     response = client.get(reverse("account_email_verification_sent"))
     assert response.status_code == 302

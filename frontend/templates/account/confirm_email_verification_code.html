@@ -18,9 +18,9 @@
 
       <form class="mt-8 space-y-5" method="post" action="{% url 'account_email_verification_sent' %}">
         {% csrf_token %}
-        {{ verify_form.non_field_errors|safe }}
+        {{ verify_form.non_field_errors }}
         <div>
-          {{ verify_form.code.errors|safe }}
+          {{ verify_form.code.errors }}
           <label for="{{ verify_form.code.id_for_label }}" class="sr-only">Verification code</label>
           {% render_field verify_form.code autocomplete="one-time-code" inputmode="numeric" class="dj-input block w-full px-3 py-2 text-center text-lg font-semibold tracking-widest" %}
         </div>
@@ -53,9 +53,9 @@
           <summary class="cursor-pointer text-sm font-semibold text-[var(--dj-heading)]">Use a different email address</summary>
           <form class="mt-4 space-y-4" method="post" action="{% url 'account_email_verification_sent' %}">
             {% csrf_token %}
-            {{ change_form.non_field_errors|safe }}
+            {{ change_form.non_field_errors }}
             <div>
-              {{ change_form.email.errors|safe }}
+              {{ change_form.email.errors }}
               <label for="{{ change_form.email.id_for_label }}" class="sr-only">Email</label>
               {% render_field change_form.email autocomplete="email" class="dj-input block w-full px-3 py-2 text-sm" %}
             </div>
