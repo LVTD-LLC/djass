@@ -92,7 +92,7 @@
             <nav class="ml-4 hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
               <a href="{% url 'docs_home' %}" class="dj-nav-link">Docs</a>
               <a href="{% url 'blog_posts' %}" class="dj-nav-link">Blog</a>
-              <a href="{% url 'free_access' %}" class="dj-nav-link">Free Access</a>
+              <a href="{% url 'pricing' %}" class="dj-nav-link">Pricing</a>
               <a href="{% url 'uses' %}" class="dj-nav-link">Stack</a>
             </nav>
 
@@ -139,7 +139,7 @@
                   <ul class="divide-y divide-[var(--dj-border)] px-2 py-2">
                     <li><a href="{% url 'docs_home' %}" class="dj-nav-link w-full justify-center">Docs</a></li>
                     <li><a href="{% url 'blog_posts' %}" class="dj-nav-link w-full justify-center">Blog</a></li>
-                    <li><a href="{% url 'free_access' %}" class="dj-nav-link w-full justify-center">Free Access</a></li>
+                    <li><a href="{% url 'pricing' %}" class="dj-nav-link w-full justify-center">Pricing</a></li>
                     <li><a href="{% url 'uses' %}" class="dj-nav-link w-full justify-center">Stack</a></li>
                     {% if user.is_authenticated %}
                       <li><a href="{% url 'home' %}" class="dj-nav-link w-full justify-center">Dashboard</a></li>
