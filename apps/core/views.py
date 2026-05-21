@@ -527,6 +527,26 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
     checkout_id = getattr(checkout_session, "id", None)
     if checkout_id:
         event_properties["checkout_id"] = checkout_id
+    session_url = getattr(checkout_session, "url", None)
+    if not session_url:
+        logger.error(
+            "Stripe checkout session missing URL",
+            profile_id=profile.id,
+            checkout_id=checkout_id,
+        )
+        _queue_profile_event(
+            profile=profile,
+            event_name="checkout_failed",
+            properties={
+                **event_properties,
+                "reason": "session_url_missing",
+                "funnel_step": "checkout_failed",
+                "entrypoint": "ui",
+            },
+            source_function="create_checkout_session",
+        )
+        messages.error(request, "Unable to start checkout. Please try again.")
+        return redirect("free_access")
 
     _queue_profile_event(
         profile=profile,
@@ -539,7 +559,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
         source_function="create_checkout_session",
     )
 
-    return redirect(checkout_session.url)
+    return redirect(session_url)
 
 
 @login_required
@@ -569,7 +589,17 @@ def create_customer_portal_session(request):
         messages.error(request, "Unable to open the billing portal. Please try again.")
         return redirect("settings")
 
-    return redirect(session.url)
+    session_url = getattr(session, "url", None)
+    if not session_url:
+        logger.error(
+            "Stripe portal session missing URL",
+            profile_id=profile.id,
+            stripe_customer_id=profile.stripe_customer_id,
+        )
+        messages.error(request, "Unable to open the billing portal. Please try again.")
+        return redirect("settings")
+
+    return redirect(session_url)
 
 
 class AdminPanelView(UserPassesTestMixin, TemplateView):

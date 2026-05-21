@@ -18,7 +18,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         target_state = (
             ProfileStates.SUBSCRIBED
-            if settings.GRANT_PRO_MEMBERSHIP_ON_SIGNUP
+            if getattr(settings, "GRANT_PRO_MEMBERSHIP_ON_SIGNUP", True)
             else ProfileStates.SIGNED_UP
         )
         profile = Profile.objects.create(user=instance, state=target_state)
