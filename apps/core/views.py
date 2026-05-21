@@ -4,7 +4,11 @@ import stripe
 from allauth.account.internal.flows.email_verification import (
     send_verification_email_to_address,
 )
+from allauth.account.internal.flows.email_verification_by_code import (
+    EmailVerificationProcess,
+)
 from allauth.account.models import EmailAddress
+from allauth.core.exceptions import ImmediateHttpResponse
 from allauth.mfa.models import Authenticator
 from django.conf import settings
 from django.contrib import messages
@@ -339,7 +343,15 @@ def resend_confirmation_email(request):
             )
             return redirect("settings")
 
-        sent = send_verification_email_to_address(request, email_address, signup=False)
+        if settings.ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED:
+            process = EmailVerificationProcess.initiate(
+                request=request,
+                user=email_address.user,
+                email=email_address.email,
+            )
+            sent = process.did_send
+        else:
+            sent = send_verification_email_to_address(request, email_address, signup=False)
         if not sent:
             messages.error(
                 request,
@@ -355,6 +367,8 @@ def resend_confirmation_email(request):
             return redirect("account_email_verification_sent")
         messages.success(request, "Confirmation email sent. Please check your inbox.")
 
+    except ImmediateHttpResponse:
+        raise
     except Exception as e:
         messages.error(request, "Failed to send confirmation email. Please try again later.")
         logger.error(
