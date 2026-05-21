@@ -1,4 +1,4 @@
-{% load webpack_loader static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -68,10 +68,23 @@
       })();
     </script>
 
-    {% stylesheet_pack 'index' %}
-    {% javascript_pack 'index' attrs='defer' %}
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    <style>[x-cloak] { display: none !important; }</style>
+    <script>
+      document.addEventListener("htmx:configRequest", function (event) {
+        event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.htmx) {
+          window.htmx.config.historyRestoreAsHxRequest = false;
+        }
+      });
+    </script>
+    <script defer src="{% static 'vendors/js/htmx.min.js' %}"></script>
+    <script defer src="{% static 'vendors/js/alpine.min.js' %}"></script>
+    <script type="module" src="{% static 'js/app.js' %}"></script>
   </head>
-  <body {% if request.user.is_authenticated %}data-controller="user-settings"{% endif %}>
+  <body {% if request.user.is_authenticated %}data-user-settings-cache{% endif %}>
     {% include 'components/referrer_banner.html' %}
     {% block default_messages %}
       {% include 'components/messages.html' with messages=messages %}
@@ -99,13 +112,12 @@
             <div class="ml-auto hidden items-center gap-2 lg:flex">
               <button
                 type="button"
-                data-controller="theme"
-                data-action="click->theme#toggle"
+                data-theme-toggle
                 class="dj-icon-button"
                 aria-label="Toggle theme"
               >
-                <span class="sr-only" data-theme-target="label">Theme</span>
-                <svg data-theme-target="iconLight" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <span class="sr-only" data-theme-label>Theme</span>
+                <svg data-theme-icon="light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2" />
                   <path d="M12 20v2" />
@@ -116,7 +128,7 @@
                   <path d="M4.93 19.07l1.41-1.41" />
                   <path d="M17.66 6.34l1.41-1.41" />
                 </svg>
-                <svg data-theme-target="iconDark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="hidden h-5 w-5">
+                <svg data-theme-icon="dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="hidden h-5 w-5">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
                 </svg>
               </button>

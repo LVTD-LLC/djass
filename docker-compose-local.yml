@@ -41,7 +41,7 @@ services:
       redis:
         condition: service_started
       frontend:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env
 
@@ -62,13 +62,17 @@ services:
       - .env
 
   frontend:
-    image: node:18
+    image: node:24.15.0
     working_dir: /app
-    command: sh -c "npm install && npm run start"
+    command: sh -c "rm -f frontend/static/.assets-ready && npm install && npm run watch"
     volumes:
       - .:/app
-    ports:
-      - "9091:9091"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f frontend/static/.assets-ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   mailhog:
     image: mailhog/mailhog

@@ -6,6 +6,10 @@ media/
 # Javascript
 node_modules/
 bundles/
+frontend/static/.assets-ready
+frontend/static/css/
+frontend/static/js/
+frontend/static/vendors/js/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -20,6 +24,10 @@ __pycache__/
 build/
 develop-eggs/
 static/
+!frontend/static/
+!frontend/static/vendors/
+!frontend/static/vendors/images/
+!frontend/static/vendors/images/**
 assets/css/main.css
 dist/
 downloads/

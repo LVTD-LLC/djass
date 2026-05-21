@@ -1,0 +1,72 @@
+{% extends "mfa/recovery_codes/base.html" %}
+{% load static %}
+
+{% block mfa_content %}
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="dj-kicker">Security</p>
+      <h1 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Recovery codes</h1>
+      <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+        Save these one-time codes somewhere safe. They let you sign in if you lose access to your passkey.
+      </p>
+    </div>
+    <a href="{% url 'mfa_index' %}" class="dj-button dj-button-secondary">Back to passkeys</a>
+  </div>
+
+  <div class="dj-panel mt-8 p-4">
+    <p class="text-sm font-semibold text-[var(--dj-heading)]">
+      {{ unused_codes|length }} of {{ total_count }} recovery codes available.
+    </p>
+    <p class="mt-1 text-sm text-[var(--dj-muted)]">
+      Each code can be used once. Generate a new set if these are lost or mostly used.
+    </p>
+  </div>
+
+  {% if can_view_codes and unused_codes %}
+    <div class="mt-6">
+      <label for="recovery_codes" class="block text-sm font-semibold text-[var(--dj-heading)]">Unused codes</label>
+      <textarea id="recovery_codes" rows="{{ unused_codes|length }}" readonly class="dj-input mt-2 block w-full px-3 py-2 font-mono text-sm leading-6">{% for code in unused_codes %}{{ code }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+    </div>
+  {% elif unused_codes %}
+    <div class="dj-alert dj-alert-warning mt-6">
+      These recovery codes have already been shown. Generate a new set if you need codes you can save again.
+    </div>
+  {% else %}
+    <div class="dj-alert dj-alert-danger mt-6">
+      No unused recovery codes remain. Generate a new set before you need a fallback sign-in method.
+    </div>
+  {% endif %}
+
+  {% if mfa_recovery_codes_show_once and can_view_codes %}
+    <div class="dj-panel mt-4 p-4">
+      <label class="flex gap-3 text-sm text-[var(--dj-muted)]" for="codes_saved">
+        <input id="codes_saved" type="checkbox" class="mt-1 h-4 w-4 rounded border-gray-300">
+        <span>
+          <span class="font-semibold text-[var(--dj-heading)]">I have saved my recovery codes</span>
+          <span class="mt-1 block">You will not be able to view this set again after leaving this page.</span>
+        </span>
+      </label>
+    </div>
+  {% endif %}
+
+  <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+    {% if can_download_codes %}
+      <a href="{% url 'mfa_download_recovery_codes' %}" class="dj-button dj-button-primary">Download codes</a>
+    {% endif %}
+    {% if can_generate_codes %}
+      <a href="{% url 'mfa_generate_recovery_codes' %}" class="dj-button dj-button-secondary">Generate new codes</a>
+    {% endif %}
+  </div>
+
+  {% if mfa_recovery_codes_show_once and can_view_codes %}
+    <script src="{% static 'mfa/js/recovery_codes.js' %}"></script>
+    <script src="{% static 'account/js/onload.js' %}"></script>
+    <script data-allauth-onload="allauth.recoveryCodes.forms.viewForm" type="application/json">{
+      "ids": {
+        "saveConfirmation": "codes_saved",
+        "recoveryCodes": "recovery_codes"
+      }
+    }</script>
+  {% endif %}
+{% endblock mfa_content %}

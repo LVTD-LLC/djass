@@ -1,0 +1,11 @@
+{% extends "base_app.html" %}
+
+{% block content %}
+  <section class="pb-16 pt-8">
+    <div class="dj-container-narrow">
+      <div class="dj-panel p-6 sm:p-8">
+        {% block mfa_content %}{% endblock mfa_content %}
+      </div>
+    </div>
+  </section>
+{% endblock content %}

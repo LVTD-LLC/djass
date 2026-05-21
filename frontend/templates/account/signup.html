@@ -41,7 +41,7 @@
         <button type="submit" class="dj-button dj-button-primary w-full">Sign up</button>
       </form>
 
-      {% if PASSKEY_SIGNUP_ENABLED %}
+      {% if PASSKEY_SIGNUP_ENABLED and signup_by_passkey_url %}
         <div class="mt-8 border-t border-[var(--dj-border)] pt-6">
           <p class="text-center text-xs font-semibold uppercase text-[var(--dj-soft)]">Passkey</p>
           <a href="{{ signup_by_passkey_url }}" class="dj-button dj-button-secondary mt-4 w-full">
