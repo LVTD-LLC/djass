@@ -1,27 +1,32 @@
-# Frontend assets
+# Frontend
 
-This directory contains Webpack/Tailwind assets and Django template integrations used by Djass.
+Djass uses Django templates as the primary UI layer, with a small static asset
+build:
 
-## Available commands
+- Tailwind CSS is compiled from `frontend/src/styles/index.css` to
+  `frontend/static/css/app.css`.
+- HTMX and Alpine.js are copied from npm packages to
+  `frontend/static/vendors/js/`.
+- Browser modules are copied from `frontend/src/js/` to `frontend/static/js/`.
 
-### `npm run start`
-
-Starts the frontend dev server with live reloading (default port `9091`).
-
-### `npm run watch`
-
-Runs Webpack in watch mode.
-
-### `npm run build`
-
-Builds production frontend assets.
-
-## Typical workflow
-
-For full local development, use the repo root command:
+## Scripts
 
 ```bash
-make serve
+npm install
+npm run build
+npm run watch
+npm run lint
 ```
 
-This starts backend, workers, and frontend together with the expected local stack.
+`npm run build` prepares production static assets before `collectstatic`.
+`npm run watch` keeps Tailwind CSS rebuilding during local development.
+
+## Frontend Rules
+
+- Use Django templates first.
+- Use HTMX when an action needs fresh server-rendered HTML.
+- Use Alpine.js when state is local to the browser, such as dropdowns, modals,
+  and toggles.
+- Keep normal Django forms and server validation as the source of truth.
+- Do not add a JavaScript bundler unless the product intentionally adopts a
+  different frontend architecture.

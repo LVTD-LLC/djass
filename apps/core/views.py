@@ -1,7 +1,15 @@
 from urllib.parse import urlencode
 
 import stripe
-from allauth.account.models import EmailAddress, EmailConfirmation
+from allauth.account.internal.flows.email_verification import (
+    send_verification_email_to_address,
+)
+from allauth.account.internal.flows.email_verification_by_code import (
+    EmailVerificationProcess,
+)
+from allauth.account.models import EmailAddress
+from allauth.core.exceptions import ImmediateHttpResponse
+from allauth.mfa.models import Authenticator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -285,26 +293,37 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = "pages/user-settings.html"
 
     def get_object(self):
-        return self.request.user.profile
+        profile, _created = Profile.objects.get_or_create(user=self.request.user)
+        return profile
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        profile = self.object
 
-        email_address = EmailAddress.objects.get_for_user(user, user.email)
-        context["email_verified"] = email_address.verified
+        email_address = EmailAddress.objects.filter(user=user, email__iexact=user.email).first()
+        context["email_verified"] = bool(email_address and email_address.verified)
         context["resend_confirmation_url"] = reverse("resend_confirmation")
-        context["api_key"] = user.profile.key
+        context["passkey_count"] = Authenticator.objects.filter(
+            user=user,
+            type=Authenticator.Type.WEBAUTHN,
+        ).count()
+        context["has_recovery_codes"] = Authenticator.objects.filter(
+            user=user,
+            type=Authenticator.Type.RECOVERY_CODES,
+        ).exists()
+        context["api_key"] = profile.key
 
         return context
 
 
 @login_required
+@require_POST
 def resend_confirmation_email(request):
     user = request.user
 
     try:
-        email_address = EmailAddress.objects.get_for_user(user, user.email)
+        email_address = EmailAddress.objects.filter(user=user, email__iexact=user.email).first()
 
         if not email_address:
             messages.error(request, "No email address found for your account.")
@@ -324,17 +343,32 @@ def resend_confirmation_email(request):
             )
             return redirect("settings")
 
-        # Create or get existing email confirmation
-        email_confirmation = EmailConfirmation.create(email_address)
-        email_confirmation.send(request, signup=False)
-
-        messages.success(request, "Confirmation email has been sent. Please check your inbox.")
+        if settings.ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED:
+            process = EmailVerificationProcess.initiate(
+                request=request,
+                user=email_address.user,
+                email=email_address.email,
+            )
+            sent = process.did_send
+        else:
+            sent = send_verification_email_to_address(request, email_address, signup=False)
+        if not sent:
+            messages.error(
+                request,
+                "Please wait before requesting another confirmation email.",
+            )
+            return redirect("settings")
         logger.info(
             "[Resend Confirmation] Email sent successfully",
             user_id=user.id,
             user_email=user.email,
         )
+        if settings.ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED:
+            return redirect("account_email_verification_sent")
+        messages.success(request, "Confirmation email sent. Please check your inbox.")
 
+    except ImmediateHttpResponse:
+        raise
     except Exception as e:
         messages.error(request, "Failed to send confirmation email. Please try again later.")
         logger.error(

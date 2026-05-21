@@ -1,4 +1,4 @@
-{% load webpack_loader static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -68,10 +68,23 @@
       })();
     </script>
 
-    {% stylesheet_pack 'index' %}
-    {% javascript_pack 'index' attrs='defer' %}
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    <style>[x-cloak] { display: none !important; }</style>
+    <script>
+      document.addEventListener("htmx:configRequest", function (event) {
+        event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.htmx) {
+          window.htmx.config.historyRestoreAsHxRequest = false;
+        }
+      });
+    </script>
+    <script defer src="{% static 'vendors/js/htmx.min.js' %}"></script>
+    <script defer src="{% static 'vendors/js/alpine.min.js' %}"></script>
+    <script type="module" src="{% static 'js/app.js' %}"></script>
   </head>
-  <body {% if request.user.is_authenticated %}data-controller="user-settings"{% endif %}>
+  <body {% if request.user.is_authenticated %}data-user-settings-cache{% endif %}>
     {% block default_messages %}
       {% include 'components/messages.html' with messages=messages %}
     {% endblock default_messages %}

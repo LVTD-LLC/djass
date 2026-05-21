@@ -13,17 +13,29 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
 from django.contrib.sitemaps.views import sitemap
+from django.urls import include, path
 from django.views.generic import TemplateView
 
+from apps.pages.views import AccountSignupByPasskeyView, AccountSignupView
 from djass.sitemaps import sitemaps
-from apps.pages.views import AccountSignupView
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+]
+
+if settings.MFA_PASSKEY_SIGNUP_ENABLED:
+    urlpatterns.append(
+        path(
+            "accounts/signup/passkey/",
+            AccountSignupByPasskeyView.as_view(),
+            name="account_signup_by_passkey",
+        )
+    )
+
+urlpatterns += [
     # Override allauth signup with custom view.
     path("accounts/signup/", AccountSignupView.as_view(), name="account_signup"),
     path("accounts/", include("allauth.urls")),

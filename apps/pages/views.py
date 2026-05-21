@@ -1,4 +1,4 @@
-from allauth.account.views import SignupView
+from allauth.account.views import SignupByPasskeyView, SignupView
 from django.conf import settings
 from django.views.generic import TemplateView
 from django_q.tasks import async_task
@@ -68,8 +68,15 @@ class SignupTrackingMixin:
 
 
 class AccountSignupView(SignupTrackingMixin, SignupView):
+    # signup.html uses allauth's injected entrance context for passkey signup
+    # keys such as PASSKEY_SIGNUP_ENABLED and signup_by_passkey_url.
     template_name = "account/signup.html"
     tracking_source_name = "AccountSignupView"
+
+
+class AccountSignupByPasskeyView(SignupTrackingMixin, SignupByPasskeyView):
+    template_name = "account/signup_by_passkey.html"
+    tracking_source_name = "AccountSignupByPasskeyView"
 
 
 class PricingView(TemplateView):

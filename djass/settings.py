@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import logging
 import os
 from pathlib import Path
+from urllib.parse import quote
 
 import environ
 import logfire
@@ -42,7 +43,7 @@ env = environ.Env(
 ENVIRONMENT = env("ENVIRONMENT")
 COOKIECUTTER_TEMPLATE_PATH = env(
     "COOKIECUTTER_TEMPLATE_PATH",
-    default="https://github.com/rasulkireev/django-saas-starter.git",
+    default="https://github.com/LVTD-LLC/django-saas-starter.git",
 )
 
 LOGFIRE_TOKEN = env("LOGFIRE_TOKEN", default="")
@@ -97,10 +98,10 @@ DEFAULT_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.sitemaps",
+    "django.contrib.humanize",
 ]
 
 THIRD_PARTY_APPS = [
-    "webpack_boilerplate",
     "widget_tweaks",
     "anymail",
     "allauth",
@@ -131,6 +132,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
@@ -152,6 +154,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.current_state",
+                "apps.core.context_processors.mfa_recovery_codes_settings",
                 "apps.core.context_processors.posthog_api_key",
                 "apps.core.context_processors.chatwoot_settings",
                 "apps.core.context_processors.mjml_url",
@@ -168,22 +171,29 @@ WSGI_APPLICATION = "djass.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-POSTGRES_DB = env("POSTGRES_DB")
-POSTGRES_USER = env("POSTGRES_USER")
-POSTGRES_PASSWORD = env("POSTGRES_PASSWORD")
-POSTGRES_HOST = env("POSTGRES_HOST")
-POSTGRES_PORT = env("POSTGRES_PORT", default="5432")
+DATABASE_URL = env("DATABASE_URL", default="")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": POSTGRES_DB,
-        "USER": POSTGRES_USER,
-        "PASSWORD": POSTGRES_PASSWORD,
-        "HOST": POSTGRES_HOST,
-        "PORT": POSTGRES_PORT,
+if DATABASE_URL:
+    DATABASES = {
+        "default": env.db("DATABASE_URL"),
     }
-}
+else:
+    POSTGRES_DB = env("POSTGRES_DB")
+    POSTGRES_USER = env("POSTGRES_USER")
+    POSTGRES_PASSWORD = env("POSTGRES_PASSWORD")
+    POSTGRES_HOST = env("POSTGRES_HOST")
+    POSTGRES_PORT = env("POSTGRES_PORT", default="5432")
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": POSTGRES_DB,
+            "USER": POSTGRES_USER,
+            "PASSWORD": POSTGRES_PASSWORD,
+            "HOST": POSTGRES_HOST,
+            "PORT": POSTGRES_PORT,
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -224,7 +234,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR.joinpath("static/")
 
 STATICFILES_DIRS = [
-    BASE_DIR.joinpath("frontend/build"),
+    BASE_DIR.joinpath("frontend/static"),
 ]
 
 folder_name = f"djass-{ENVIRONMENT}"
@@ -271,10 +281,6 @@ else:
         },
     }
 
-WEBPACK_LOADER = {
-    "MANIFEST_FILE": BASE_DIR.joinpath("frontend/build/manifest.json"),
-}
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -298,9 +304,9 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
-ACCOUNT_EMAIL_VERIFICATION = "optional"
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ALLOW_SIGNUPS = env.bool("ALLOW_SIGNUPS", default=True)
 ACCOUNT_FORMS = {
     "signup": "apps.core.forms.CustomSignUpForm",
     "login": "apps.core.forms.CustomLoginForm",
@@ -310,9 +316,9 @@ if ENVIRONMENT != "dev":
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
 # Passkey (WebAuthn) auth support via django-allauth MFA.
-MFA_SUPPORTED_TYPES = ["webauthn"]
-MFA_PASSKEY_LOGIN_ENABLED = False
-MFA_PASSKEY_SIGNUP_ENABLED = False
+MFA_SUPPORTED_TYPES = ["webauthn", "recovery_codes"]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_PASSKEY_SIGNUP_ENABLED = True
 # Local dev uses http://localhost, so allow insecure origin only in debug.
 MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG
 
@@ -364,10 +370,27 @@ REDIS_PORT = env("REDIS_PORT", default="6379")
 REDIS_PASSWORD = env("REDIS_PASSWORD", default="")
 REDIS_DB = env("REDIS_DB", default="0")
 
-if REDIS_PASSWORD:
-    REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
-else:
-    REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+def build_redis_url(host: str, port: str, db: str, password: str = "") -> str:
+    encoded_password = quote(password, safe="")
+    credentials = f":{encoded_password}@" if password else ""
+    return f"redis://{credentials}{host}:{port}/{db}"
+
+
+REDIS_URL = env("REDIS_URL", default="") or build_redis_url(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB,
+    password=REDIS_PASSWORD,
+)
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+        "KEY_PREFIX": "djass",
+    }
+}
 
 Q_CLUSTER = {
     "name": "djass-q",

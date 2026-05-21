@@ -5,34 +5,10 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(autouse=True)
-def use_test_asset_pipeline(settings, tmp_path):
+def use_test_asset_pipeline(settings):
     settings.STORAGES["staticfiles"]["BACKEND"] = (
         "django.contrib.staticfiles.storage.StaticFilesStorage"
     )
-    manifest_file = tmp_path / "manifest.json"
-    manifest_file.write_text(
-        """
-        {
-          "entrypoints": {
-            "index": {
-              "assets": {
-                "js": [],
-                "css": []
-              }
-            }
-          }
-        }
-        """,
-        encoding="utf-8",
-    )
-    settings.WEBPACK_LOADER = {
-        "MANIFEST_FILE": manifest_file,
-        "CACHE": False,
-    }
-
-    from webpack_boilerplate import utils as webpack_utils
-
-    webpack_utils._loaders.clear()
 
 
 def test_docs_introduction_mentions_api_first_agent_ready(client):

@@ -1,5 +1,5 @@
 {% extends 'base_app.html' %}
-{% load webpack_loader static %}
+{% load static %}
 {% load widget_tweaks %}
 
 {% block meta %}
@@ -26,6 +26,44 @@
         </aside>
 
         <div class="space-y-4">
+          <section class="dj-panel p-6" aria-labelledby="passkey-settings-heading">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p class="dj-kicker">Security</p>
+                <h2 id="passkey-settings-heading" class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h2>
+                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                  Add a passkey after account creation to sign in faster without typing your password.
+                  {% if passkey_count %}You have {{ passkey_count }} passkey{{ passkey_count|pluralize }} set up.{% endif %}
+                </p>
+              </div>
+              <div class="flex flex-col gap-2 sm:flex-row">
+                {% if email_verified %}
+                  <a href="{% url 'mfa_add_webauthn' %}" class="dj-button dj-button-primary">
+                    Add passkey
+                  </a>
+                {% else %}
+                  <button type="button" disabled aria-disabled="true" class="dj-button dj-button-secondary cursor-not-allowed opacity-60">
+                    Confirm email to add passkey
+                  </button>
+                {% endif %}
+                {% if passkey_count %}
+                  <a href="{% url 'mfa_list_webauthn' %}" class="dj-button dj-button-secondary">
+                    Manage passkeys
+                  </a>
+                  {% if has_recovery_codes %}
+                    <a href="{% url 'mfa_view_recovery_codes' %}" class="dj-button dj-button-secondary">
+                      View recovery codes
+                    </a>
+                  {% else %}
+                    <a href="{% url 'mfa_generate_recovery_codes' %}" class="dj-button dj-button-secondary border-[var(--dj-warning)] text-[var(--dj-warning)]">
+                      Generate recovery codes
+                    </a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </section>
+
           <section class="dj-panel p-6" data-controller="clipboard">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>

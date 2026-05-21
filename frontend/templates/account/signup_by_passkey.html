@@ -16,12 +16,21 @@
       </div>
       <form class="mt-8 space-y-5" id="signup_form" method="post" action="{% url 'account_signup_by_passkey' %}">
         {% csrf_token %}
-        {{ form.non_field_errors | safe }}
-        <div>
-          {{ form.email.errors | safe }}
-          <label for="email" class="sr-only">Email</label>
-          {% render_field form.email id="email" name="email" placeholder="Email" type="email" autocomplete="email" required="True" class="dj-input block w-full px-3 py-2 text-sm" %}
-        </div>
+        {{ form.non_field_errors }}
+        {% if form.username %}
+          <div>
+            {{ form.username.errors }}
+            <label for="username" class="sr-only">Username</label>
+            {% render_field form.username id="username" name="username" placeholder="Username" type="text" autocomplete="username" required=True class="dj-input block w-full px-3 py-2 text-sm" %}
+          </div>
+        {% endif %}
+        {% if form.email %}
+          <div>
+            {{ form.email.errors }}
+            <label for="email" class="sr-only">Email</label>
+            {% render_field form.email id="email" name="email" placeholder="Email" type="email" autocomplete="email" required="True" class="dj-input block w-full px-3 py-2 text-sm" %}
+          </div>
+        {% endif %}
         {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}

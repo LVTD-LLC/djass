@@ -64,26 +64,21 @@ jobs:
           version: "latest"
 
       - name: Set up Python (uv-managed)
-        run: uv python install 3.14
+        run: uv python install 3.14.5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
       - name: Sync dependencies
         run: uv sync
 
-      - name: Create dummy webpack manifest (tests)
+      - name: Build frontend assets
         run: |
-          mkdir -p frontend/build
-          cat > frontend/build/manifest.json <<'EOF'
-          {
-            "entrypoints": {
-              "index": {
-                "assets": {
-                  "js": [],
-                  "css": []
-                }
-              }
-            }
-          }
-          EOF
+          npm ci
+          npm run build
 
       - name: Django checks
         run: uv run python manage.py check

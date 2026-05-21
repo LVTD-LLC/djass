@@ -1,5 +1,9 @@
 import pytest
+from allauth.account.internal.flows.email_verification_by_code import (
+    EMAIL_VERIFICATION_CODE_SESSION_KEY,
+)
 from allauth.account.models import EmailAddress
+from django.contrib.messages import get_messages
 from django.test import override_settings
 from django.urls import reverse
 
@@ -155,6 +159,53 @@ def test_settings_shows_copyable_agent_api_key(auth_client, user):
     assert "X-API-Key" in content
     assert "Authorization: Bearer" in content
     assert f'value="{user.profile.key}"' in content
+
+
+@pytest.mark.django_db
+@override_settings(ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED=False)
+def test_resend_confirmation_sets_success_message_for_link_flow(
+    auth_client,
+    monkeypatch,
+    user,
+):
+    EmailAddress.objects.create(user=user, email=user.email, verified=False, primary=True)
+    monkeypatch.setattr(
+        "apps.core.views.send_verification_email_to_address",
+        lambda *args, **kwargs: True,
+    )
+
+    response = auth_client.post(reverse("resend_confirmation"), follow=True)
+
+    assert response.status_code == 200
+    messages = [message.message for message in get_messages(response.wsgi_request)]
+    assert "Confirmation email sent. Please check your inbox." in messages
+
+
+@pytest.mark.django_db
+@override_settings(ACCOUNT_RATE_LIMITS=False)
+def test_resend_confirmation_redirects_to_pending_code_process(
+    auth_client,
+    monkeypatch,
+    user,
+):
+    EmailAddress.objects.create(user=user, email=user.email, verified=False, primary=True)
+    sent_confirmations = []
+
+    def fake_send_confirmation_mail(self, request, emailconfirmation, signup):
+        sent_confirmations.append((emailconfirmation.email_address.email, signup))
+
+    monkeypatch.setattr(
+        "djass.adapters.CustomAccountAdapter.send_confirmation_mail",
+        fake_send_confirmation_mail,
+    )
+
+    response = auth_client.post(reverse("resend_confirmation"), follow=True)
+
+    assert response.status_code == 200
+    assert response.redirect_chain == [(reverse("account_email_verification_sent"), 302)]
+    assert "Enter email verification code" in response.content.decode()
+    assert sent_confirmations == [(user.email, False)]
+    assert auth_client.session[EMAIL_VERIFICATION_CODE_SESSION_KEY]["email"] == user.email
 
 
 @override_settings(STRIPE_PRICE_IDS={"one-time": "price_one_time"})

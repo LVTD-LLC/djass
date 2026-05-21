@@ -1,9 +1,9 @@
+from allauth.mfa import app_settings as mfa_app_settings
 from allauth.socialaccount.models import SocialApp
 from django.conf import settings
 
 from apps.core.choices import ProfileStates
 from apps.core.models import Profile
-
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -16,6 +16,10 @@ def current_state(request):
         except Profile.DoesNotExist:
             logger.warning("Authenticated user is missing a profile", user_id=request.user.id)
     return {"current_state": ProfileStates.STRANGER}
+
+
+def mfa_recovery_codes_settings(request):
+    return {"mfa_recovery_codes_show_once": mfa_app_settings.RECOVERY_CODES_SHOW_ONCE}
 
 
 def posthog_api_key(request):

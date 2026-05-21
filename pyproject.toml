@@ -3,28 +3,28 @@ name = "djass"
 version = "0.1.0"
 description = "Web app wrapper around django-saas-starter cookiecutter."
 authors = [{ name = "Rasul", email = "rasul@lvtd.dev" }]
-requires-python = ">=3.14,<4.0"
+requires-python = ">=3.14.5,<4.0"
 dependencies = [
     "cookiecutter>=2.6.0",
-    "django>=6.0.2",
-    "django-allauth>=65.14.0",
-    "django-anymail>=14.0",
-    "django-environ>=0.12.0",
+    "django>=6.0.5",
+    "django-allauth>=65.16.1",
+    "django-anymail>=15.0",
+    "django-environ>=0.13.0",
     "django-extensions>=4.1",
+    "django-htmx>=1.27.0",
     "django-ninja>=1.5.3",
     "django-q2>=1.9.0",
     "django-storages>=1.14.6",
     "django-structlog>=10.0.0",
     "django-widget-tweaks>=1.5.1",
-    "fido2>=1.1.2,<3",
-    "gunicorn>=25.0.1",
+    "fido2>=2.2.0,<3",
+    "gunicorn>=26.0.0",
     "ipython>=9.10.0",
     "markdown>=3.10.1",
     "pillow>=12.1.0",
     "psycopg[binary]>=3.3.2",
     "pytest>=9.0.2",
     "pytest-django>=4.11.1",
-    "python-webpack-boilerplate>=1.0.4",
     "redis>=7.1.0",
     "structlog>=25.5.0",
     "tqdm>=4.67.3",
@@ -56,9 +56,14 @@ djass-mcp = "apps.mcp.server:main"
 [dependency-groups]
 dev = [
     "djlint>=1.36.4",
-    "pre-commit>=4.5.1",
-    "ruff>=0.15.0",
-    "ty>=0.0.15",
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.12",
+    "ty>=0.0.34",
+]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [tool.ruff]

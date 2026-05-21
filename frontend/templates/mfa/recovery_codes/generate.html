@@ -1,0 +1,38 @@
+{% extends "mfa/recovery_codes/base.html" %}
+
+{% block mfa_content %}
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="dj-kicker">Security</p>
+      <h1 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Generate recovery codes</h1>
+      <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+        Create a fresh set of one-time backup codes for your account.
+      </p>
+    </div>
+    <a href="{% url 'mfa_index' %}" class="dj-button dj-button-secondary">Back to passkeys</a>
+  </div>
+
+  <div class="dj-alert dj-alert-warning mt-8">
+    <p class="text-sm text-[var(--dj-heading)]">
+      Recovery codes are the fallback for passkey-protected accounts. Store them in a password manager or another private place you can reach without this device.
+    </p>
+    {% if unused_code_count %}
+      <p class="mt-3 text-sm font-medium text-[var(--dj-danger)]">
+        Generating new codes will invalidate your {{ unused_code_count }} existing unused code{{ unused_code_count|pluralize }}.
+      </p>
+    {% endif %}
+  </div>
+
+  <form class="mt-8 space-y-6" method="post" action="{% url 'mfa_generate_recovery_codes' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button type="submit" class="dj-button {% if unused_code_count %}dj-button-danger{% else %}dj-button-primary{% endif %}">
+        Generate recovery codes
+      </button>
+      <a href="{% url 'mfa_index' %}" class="dj-button dj-button-secondary">Cancel</a>
+    </div>
+  </form>
+{% endblock mfa_content %}

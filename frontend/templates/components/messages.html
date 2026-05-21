@@ -1,7 +1,7 @@
 {% if messages %}
-<div class="fixed right-4 top-4 z-50 space-y-3" data-controller="reveal">
+<div class="fixed right-4 top-4 z-50 space-y-3" data-messages-container>
   {% for message in messages %}
-    <div data-reveal-target="item" data-message-id="{{ forloop.counter }}" class="dj-alert {% if message.tags == 'error' %}dj-alert-danger{% else %}dj-alert-success{% endif %} max-w-sm translate-x-full opacity-0 shadow-lg transition-all duration-300 ease-in-out">
+    <div data-message-item data-message-id="{{ forloop.counter }}" class="dj-alert {% if message.tags == 'error' %}dj-alert-danger{% else %}dj-alert-success{% endif %} max-w-sm translate-x-full opacity-0 shadow-lg transition-all duration-300 ease-in-out">
       <div class="flex items-start">
         <div class="mr-3 flex-shrink-0">
           <svg class="h-5 w-5" viewBox="0 0 24 24">
@@ -13,7 +13,7 @@
           <p class="text-sm text-[var(--dj-heading)]">{{ message }}</p>
         </div>
         <div class="ml-3 flex-shrink-0">
-          <button data-action="click->reveal#hide" data-message-id="{{ forloop.counter }}" type="button" class="dj-icon-button h-6 w-6" aria-label="Dismiss">
+          <button data-message-dismiss type="button" class="dj-icon-button h-6 w-6" aria-label="Dismiss">
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -23,54 +23,4 @@
     </div>
   {% endfor %}
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const items = document.querySelectorAll('[data-reveal-target="item"]');
-    items.forEach((item, index) => {
-      setTimeout(() => {
-        item.classList.remove('opacity-0', 'translate-x-full');
-        startTimer(item);
-      }, index * 100);
-    });
-  });
-
-  function startTimer(item) {
-    const timerCircle = item.querySelector('[data-timer-circle]');
-    const radius = 10;
-    const circumference = 2 * Math.PI * radius;
-
-    timerCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-    timerCircle.style.strokeDashoffset = circumference;
-
-    let progress = 0;
-    const interval = setInterval(() => {
-      if (progress >= 100) {
-        clearInterval(interval);
-        hideMessage(item);
-      } else {
-        progress++;
-        const offset = circumference - (progress / 100) * circumference;
-        timerCircle.style.strokeDashoffset = offset;
-      }
-    }, 50);
-  }
-
-  function hideMessage(item) {
-    item.classList.add('opacity-0', 'translate-x-full');
-    setTimeout(() => {
-      item.remove();
-    }, 300);
-  }
-
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('[data-action="click->reveal#hide"]')) {
-      const messageId = event.target.closest('[data-action="click->reveal#hide"]').getAttribute('data-message-id');
-      const item = document.querySelector(`[data-reveal-target="item"][data-message-id="${messageId}"]`);
-      if (item) {
-        hideMessage(item);
-      }
-    }
-  });
-</script>
 {% endif %}

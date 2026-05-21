@@ -1,0 +1,67 @@
+{% extends "mfa/base_manage.html" %}
+
+{% block meta %}
+  <title>Passkeys · Djass</title>
+{% endblock meta %}
+
+{% block mfa_content %}
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="dj-kicker">Security</p>
+      <h1 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h1>
+      <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+        Add a passkey to sign in faster and more securely with your device unlock, fingerprint, or face ID.
+      </p>
+    </div>
+    <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">Back to settings</a>
+  </div>
+
+  {% if "webauthn" in MFA_SUPPORTED_TYPES %}
+    <div class="dj-panel mt-8 p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Your passkeys</h2>
+          <p class="mt-1 text-sm text-[var(--dj-muted)]">
+            {% if authenticators.webauthn|length %}
+              You have added {{ authenticators.webauthn|length }} passkey{{ authenticators.webauthn|length|pluralize }}.
+            {% else %}
+              No passkeys have been added yet.
+            {% endif %}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          {% if authenticators.webauthn|length %}
+            <a href="{% url 'mfa_list_webauthn' %}" class="dj-button dj-button-secondary">Manage</a>
+          {% endif %}
+          <a href="{% url 'mfa_add_webauthn' %}" class="dj-button dj-button-primary">Add passkey</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if "recovery_codes" in MFA_SUPPORTED_TYPES %}
+    <div class="dj-panel mt-6 p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recovery codes</h2>
+          <p class="mt-1 text-sm text-[var(--dj-muted)]">
+            {% if authenticators.recovery_codes %}
+              Backup codes are ready if you lose access to your passkey.
+            {% elif authenticators.webauthn|length %}
+              Generate backup codes so losing a passkey does not lock you out.
+            {% else %}
+              Add a passkey first, then save recovery codes as your fallback.
+            {% endif %}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          {% if authenticators.recovery_codes %}
+            <a href="{% url 'mfa_view_recovery_codes' %}" class="dj-button dj-button-secondary">View codes</a>
+          {% elif authenticators.webauthn|length %}
+            <a href="{% url 'mfa_generate_recovery_codes' %}" class="dj-button dj-button-primary">Generate codes</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock mfa_content %}

@@ -1,4 +1,5 @@
 import pytest
+from allauth.account.models import EmailAddress
 from django.contrib.messages import get_messages
 from django.test import RequestFactory, override_settings
 from django.urls import reverse
@@ -11,11 +12,18 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def user(django_user_model):
-    return django_user_model.objects.create_user(
+    user = django_user_model.objects.create_user(
         username="testuser",
         email="testuser@example.com",
         password="password123",
     )
+    EmailAddress.objects.create(
+        user=user,
+        email=user.email,
+        primary=True,
+        verified=True,
+    )
+    return user
 
 
 @pytest.fixture
@@ -29,6 +37,7 @@ def disable_async_task_side_effects(monkeypatch, settings):
     settings.STORAGES["staticfiles"]["BACKEND"] = (
         "django.contrib.staticfiles.storage.StaticFilesStorage"
     )
+    settings.ACCOUNT_RATE_LIMITS = False
     monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: None)
     monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: None)
     monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: None)
@@ -97,13 +106,13 @@ def test_legacy_free_access_url_redirects_to_pricing(client):
     assert response.url == reverse("pricing")
 
 
-def test_login_page_hides_passkey_option(client):
+def test_login_page_shows_passkey_option(client):
     response = client.get(reverse("account_login"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Sign in with a passkey" not in content
-    assert 'id="mfa_login"' not in content
+    assert "Sign in with a passkey" in content
+    assert 'id="mfa_login"' in content
     assert 'name="login"' in content
 
 
@@ -137,12 +146,12 @@ def test_login_accepts_username(client, user):
     assert response.url == reverse("home")
 
 
-def test_signup_page_hides_passkey_option(client):
+def test_signup_page_shows_passkey_option(client):
     response = client.get(reverse("account_signup"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Sign up using a passkey" not in content
+    assert "Sign up using a passkey" in content
 
 
 def test_signup_page_is_email_only(client):
@@ -156,16 +165,46 @@ def test_signup_page_is_email_only(client):
     assert 'name="password2"' not in content
 
 
-def test_email_verification_sent_page_uses_branded_template(client):
-    response = client.get(reverse("account_email_verification_sent"))
+@override_settings(ALLOW_SIGNUPS=False)
+def test_signup_page_is_closed_when_signups_are_disabled(client):
+    response = client.get(reverse("account_signup"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Check your inbox" in content
-    assert "Continue to dashboard" in content
+    assert "Signups are paused" in content
+    assert 'name="email"' not in content
+    assert "Existing users can still sign in" in content
 
 
-def test_signup_redirects_to_dashboard_without_blocking_on_email_confirmation(client, monkeypatch):
+@override_settings(ALLOW_SIGNUPS=False)
+def test_signup_post_does_not_create_user_when_signups_are_disabled(client, django_user_model):
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "closed-signup@example.com",
+            "password1": "StrongPass123!!",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Signups are paused" in response.content.decode()
+    assert not django_user_model.objects.filter(email="closed-signup@example.com").exists()
+
+
+@override_settings(ALLOW_SIGNUPS=False)
+def test_passkey_signup_page_is_closed_when_signups_are_disabled(client):
+    response = client.get(reverse("account_signup_by_passkey"))
+    assert response.status_code == 200
+    assert "Signups are paused" in response.content.decode()
+
+
+def test_email_verification_sent_page_requires_pending_code_process(client):
+    response = client.get(reverse("account_email_verification_sent"))
+    assert response.status_code == 302
+    assert response.url == reverse("account_login")
+
+
+def test_signup_redirects_to_email_verification_code(client, monkeypatch):
     monkeypatch.setattr(
         "allauth.account.adapter.DefaultAccountAdapter.send_confirmation_mail",
         lambda *args, **kwargs: "ok",
@@ -183,7 +222,31 @@ def test_signup_redirects_to_dashboard_without_blocking_on_email_confirmation(cl
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("home")
+    assert response.url == reverse("account_email_verification_sent")
+
+
+def test_signup_email_verification_code_page_uses_branded_template(client, monkeypatch):
+    monkeypatch.setattr(
+        "allauth.account.adapter.DefaultAccountAdapter.send_confirmation_mail",
+        lambda *args, **kwargs: "ok",
+    )
+    monkeypatch.setattr("apps.core.models.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.core.signals.async_task", lambda *args, **kwargs: "task-id")
+    monkeypatch.setattr("apps.pages.views.async_task", lambda *args, **kwargs: "task-id")
+
+    response = client.post(
+        reverse("account_signup"),
+        data={
+            "email": "signup-code@example.com",
+            "password1": "StrongPass123!!",
+        },
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Enter email verification code" in content
+    assert "Confirm email" in content
 
 
 @override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
@@ -234,9 +297,10 @@ def test_signup_survives_confirmation_mail_failure(client, django_user_model, mo
     ) in messages
 
 
-def test_passkey_signup_page_is_disabled(client):
+def test_passkey_signup_page_is_enabled(client):
     response = client.get("/accounts/signup/passkey/")
-    assert response.status_code == 404
+    assert response.status_code == 200
+    assert "Create your account with a passkey" in response.content.decode()
 
 
 def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
@@ -322,7 +386,10 @@ def test_landing_guest_ctas_explain_destination(client):
 
     content = response.content.decode()
     assert "Create your Djass account" in content
-    assert "Create an account to configure your starter, run generation, and track project history." in content
+    assert (
+        "Create an account to configure your starter, run generation, and track project history."
+        in content
+    )
     assert "Sign in to your dashboard" in content
     assert "Go to your existing Djass account and continue from your project dashboard." in content
 

@@ -48,12 +48,22 @@
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
           Thank you for signing up! To complete your registration, please confirm your email address.
         </mj-text>
+        {% if code %}
+        <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
+          Enter this verification code to confirm your email address:
+        </mj-text>
+        <mj-text font-size="32px" color="#1f2937" font-weight="700" letter-spacing="6px" align="center" padding="8px 0 24px 0">
+          {{ code }}
+        </mj-text>
+        {% else %}
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 30px 0">
           Click the button below to verify your email:
         </mj-text>
+        {% endif %}
       </mj-column>
     </mj-section>
 
+    {% if not code %}
     <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
       <mj-column>
         <mj-button
@@ -78,6 +88,12 @@
         <mj-text font-size="13px" color="#2563eb" line-height="20px" padding="0 0 20px 0">
           {{ activate_url }}
         </mj-text>
+      </mj-column>
+    </mj-section>
+    {% endif %}
+
+    <mj-section background-color="#ffffff" padding="0 20px 30px 20px">
+      <mj-column>
         <mj-text font-size="14px" color="#6b7280" line-height="20px" padding="20px 0 0 0">
           If you didn't create an account, you can safely ignore this email.
         </mj-text>
