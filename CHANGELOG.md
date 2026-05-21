@@ -17,6 +17,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 
 ### Added
+- Djass SVG logo assets with refreshed PNG and favicon fallbacks.
 - Login now accepts either username or email address.
 - Copyable Agent API key section on the user settings page so users can give their key to coding agents.
 - Production Sentry observability configuration for Djass errors, logs, traces, profiles, Django/Redis/cache spans, and AI-agent spans via Pydantic AI/OpenAI/Anthropic/Google GenAI integrations.
