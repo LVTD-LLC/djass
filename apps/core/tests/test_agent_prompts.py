@@ -13,16 +13,15 @@ def test_agent_skill_uses_canonical_api_base_url():
     assert "__DJASS_API_BASE_URL__" not in skill_md
 
 
-def test_agent_prompt_embeds_skill_without_outer_markdown_fence():
+def test_agent_prompt_references_skill_page_without_embedding_skill():
     prompt = build_djass_agent_prompt(
         "https://djass.dev/api/v1",
         "test-key",
-        skill_md="# Skill\n\n```bash\necho ok\n```",
+        skill_url="http://testserver/agent-skill",
     )
 
     assert "export DJASS_BASE_URL=\"https://djass.dev/api/v1\"" in prompt
     assert "export DJASS_API_KEY=\"test-key\"" in prompt
-    assert "---BEGIN SKILL.md---" in prompt
-    assert "---END SKILL.md---" in prompt
-    assert "```markdown" not in prompt
-    assert "```bash\necho ok\n```" in prompt
+    assert "http://testserver/agent-skill" in prompt
+    assert "---BEGIN SKILL.md---" not in prompt
+    assert "## API Workflow" not in prompt

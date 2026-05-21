@@ -71,6 +71,11 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 - `SERVER_EMAIL` (optional error sender override)
 - `BUTTONDOWN_API_KEY`
 
+### Customer support
+
+- `CHATWOOT_BASE_URL` (e.g. `https://chatwoot.example.com`)
+- `CHATWOOT_WEBSITE_TOKEN` (public website inbox token)
+
 ### Observability
 
 - `SENTRY_DSN`

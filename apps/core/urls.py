@@ -5,11 +5,16 @@ from apps.core import views
 urlpatterns = [
     # App pages
     path("home", views.HomeView.as_view(), name="home"),
+    path("agent-skill", views.AgentSkillView.as_view(), name="agent_skill"),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     path("projects/new", views.ProjectCreateView.as_view(), name="project_new"),
     path("projects/create", views.create_project, name="project_create"),
-    path("projects/<int:project_id>/download", views.download_project_artifact, name="project_download"),
+    path(
+        "projects/<int:project_id>/download",
+        views.download_project_artifact,
+        name="project_download",
+    ),
     path("projects/<int:project_id>/retry", views.retry_project_generation, name="project_retry"),
     # Utils
     path("resend-confirmation/", views.resend_confirmation_email, name="resend_confirmation"),
@@ -22,9 +27,8 @@ urlpatterns = [
         name="user_upgrade_checkout_session",
     ),
     path(
-      "create-customer-portal/",
-      views.create_customer_portal_session,
-      name="create_customer_portal_session"
+        "create-customer-portal/",
+        views.create_customer_portal_session,
+        name="create_customer_portal_session",
     ),
-    
 ]

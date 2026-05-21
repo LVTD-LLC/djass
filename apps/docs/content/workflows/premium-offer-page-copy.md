@@ -61,16 +61,16 @@ Want to inspect the foundation first? You can review the open-source baseline be
 
 ### 8) FAQ block
 
-**Why show $999 if Djass is free right now?**  
+**Why show $999 if Djass is free right now?**
 The lifetime price stays visible so expectations are clear. It is crossed out because the current product generation workflow is free while more builders test it and share feedback.
 
-**What exactly is included?**  
+**What exactly is included?**
 You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API.
 
-**What kind of feedback is useful?**  
+**What kind of feedback is useful?**
 Send notes about confusing copy, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.
 
-**Could pricing change later?**  
+**Could pricing change later?**
 Yes. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
 
 ## Final CTA copy variants

@@ -103,15 +103,25 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["agent_prompt_available"] = False
         if can_create_projects:
             context["projects_api_base_url"] = DJASS_API_BASE_URL
-            skill_md = build_djass_agent_skill_md()
+            skill_url = self.request.build_absolute_uri(reverse("agent_skill"))
             context["djass_agent_prompt"] = build_djass_agent_prompt(
                 DJASS_API_BASE_URL,
                 self.request.user.profile.key,
-                skill_md=skill_md,
+                skill_url=skill_url,
             )
-            context["djass_agent_skill_md"] = skill_md
             context["agent_prompt_available"] = True
 
+        return context
+
+
+class AgentSkillView(TemplateView):
+    # Deliberately public: this page only serves static agent instructions.
+    # Keep user-specific values, especially API keys, out of this context.
+    template_name = "pages/agent-skill.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["djass_agent_skill_md"] = build_djass_agent_skill_md()
         return context
 
 
