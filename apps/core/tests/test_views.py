@@ -45,15 +45,18 @@ class TestHomeView:
         assert response.status_code == 200
         content = response.content.decode()
         assert "Agent project generator prompt" in content
+        assert "Three ways to generate a project" in content
         assert "Copy prompt" in content
         assert "Copy SKILL.md" not in content
         assert "Skill page" not in content
-        assert reverse("agent_skill") not in content
+        assert reverse("agent_skill") in content
+        assert "/skill.md" in content
+        assert "OpenAPI docs" in content
         assert "https://djass.dev/api/v1" in content
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
         assert "---BEGIN SKILL.md---" not in content
-        assert "## API Workflow" not in content
+        assert "## API Fallback Workflow" not in content
 
     def test_home_omits_agent_prompt_when_profile_is_missing(self, auth_client, user):
         Profile.objects.filter(user=user).delete()
@@ -91,16 +94,24 @@ class TestHomeView:
 
 @pytest.mark.django_db
 class TestAgentSkillView:
-    def test_agent_skill_page_shows_copyable_skill(self, client, user):
+    def test_agent_skill_endpoint_serves_plain_markdown(self, client, user):
         response = client.get(reverse("agent_skill"))
 
         assert response.status_code == 200
+        assert response.headers["Content-Type"].startswith("text/markdown")
         content = response.content.decode()
-        assert "Djass Agent Skill" in content
-        assert "Copy SKILL.md" in content
-        assert "## API Workflow" in content
+        assert "# Djass Project Generator" in content
+        assert "<html" not in content
+        assert "## Preferred MCP Workflow" in content
+        assert "## API Fallback Workflow" in content
         assert "GET {DJASS_BASE_URL}/project-options" in content
         assert user.profile.key not in content
+
+    def test_legacy_agent_skill_url_redirects_to_markdown(self, client):
+        response = client.get("/agent-skill")
+
+        assert response.status_code == 301
+        assert response.url == reverse("agent_skill")
 
 
 @pytest.mark.django_db

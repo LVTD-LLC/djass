@@ -23,6 +23,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.text import slugify
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
@@ -30,6 +31,8 @@ from django_q.tasks import async_task
 
 from apps.core.agent_prompts import (
     DJASS_API_BASE_URL,
+    DJASS_MCP_DOCS_URL,
+    DJASS_OPENAPI_DOCS_URL,
     build_djass_agent_prompt,
     build_djass_agent_skill_md,
 )
@@ -104,27 +107,30 @@ class HomeView(LoginRequiredMixin, TemplateView):
             self.request.user
         )
         context["can_generate"] = can_create_projects and not context["project_limit_reached"]
+        context["projects_openapi_docs_url"] = DJASS_OPENAPI_DOCS_URL
+        context["djass_mcp_docs_url"] = DJASS_MCP_DOCS_URL
         context["agent_prompt_available"] = False
         if can_create_projects:
             context["projects_api_base_url"] = DJASS_API_BASE_URL
+            skill_url = self.request.build_absolute_uri(reverse("agent_skill"))
             context["djass_agent_prompt"] = build_djass_agent_prompt(
                 DJASS_API_BASE_URL,
                 self.request.user.profile.key,
+                skill_url=skill_url,
             )
             context["agent_prompt_available"] = True
 
         return context
 
 
-class AgentSkillView(TemplateView):
-    # Deliberately public: this page only serves static agent instructions.
-    # Keep user-specific values, especially API keys, out of this context.
-    template_name = "pages/agent-skill.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["djass_agent_skill_md"] = build_djass_agent_skill_md()
-        return context
+class AgentSkillView(View):
+    # Deliberately public: this endpoint only serves static agent instructions.
+    # Keep user-specific values, especially API keys, out of this response.
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(
+            build_djass_agent_skill_md(),
+            content_type="text/markdown; charset=utf-8",
+        )
 
 
 class ProjectCreateView(LoginRequiredMixin, TemplateView):

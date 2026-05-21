@@ -1,11 +1,13 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from apps.core import views
 
 urlpatterns = [
     # App pages
     path("home", views.HomeView.as_view(), name="home"),
-    path("agent-skill", views.AgentSkillView.as_view(), name="agent_skill"),
+    path("skill.md", views.AgentSkillView.as_view(), name="agent_skill"),
+    path("agent-skill", RedirectView.as_view(pattern_name="agent_skill", permanent=True)),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     path("projects/new", views.ProjectCreateView.as_view(), name="project_new"),

@@ -374,6 +374,9 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "How it works" in landing_content
     assert "UI flow" in landing_content
     assert "API flow" in landing_content
+    assert "Agent flow" in landing_content
+    assert "/skill.md" in landing_content
+    assert "OpenAPI docs" in landing_content
     assert "Djass generates in the background" in landing_content
     assert "agency" not in landing_content.lower()
 
