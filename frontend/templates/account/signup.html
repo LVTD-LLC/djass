@@ -18,17 +18,17 @@
 
       <form class="mt-8 space-y-5" id="signup_form" method="post" action="{% url 'account_signup' %}">
         {% csrf_token %}
-        {{ form.non_field_errors | safe }}
+        {{ form.non_field_errors }}
         <input type="hidden" name="remember" value="true" />
 
         <div class="space-y-4">
           <div>
-            {{ form.email.errors | safe }}
+            {{ form.email.errors }}
             <label for="email" class="sr-only">Email</label>
             {% render_field form.email id="email" name="email" placeholder="Email" type="email" autocomplete="email" required="True" class="dj-input block w-full px-3 py-2 text-sm" %}
           </div>
           <div>
-            {{ form.password1.errors | safe }}
+            {{ form.password1.errors }}
             <label for="password1" class="sr-only">Password</label>
             {% render_field form.password1 id="password1" name="password1" placeholder="Password" type="password" autocomplete="new-password" required="True" class="dj-input block w-full px-3 py-2 text-sm" %}
           </div>
