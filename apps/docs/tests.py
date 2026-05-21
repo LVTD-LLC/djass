@@ -5,10 +5,34 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(autouse=True)
-def use_plain_staticfiles_storage(settings):
+def use_test_asset_pipeline(settings, tmp_path):
     settings.STORAGES["staticfiles"]["BACKEND"] = (
         "django.contrib.staticfiles.storage.StaticFilesStorage"
     )
+    manifest_file = tmp_path / "manifest.json"
+    manifest_file.write_text(
+        """
+        {
+          "entrypoints": {
+            "index": {
+              "assets": {
+                "js": [],
+                "css": []
+              }
+            }
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+    settings.WEBPACK_LOADER = {
+        "MANIFEST_FILE": manifest_file,
+        "CACHE": False,
+    }
+
+    from webpack_boilerplate import utils as webpack_utils
+
+    webpack_utils._loaders.clear()
 
 
 def test_docs_introduction_mentions_api_first_agent_ready(client):
@@ -52,5 +76,19 @@ def test_docs_page_supports_markdown_variant_after_trailing_slash(client):
 
 def test_docs_markdown_variant_returns_404_for_missing_page(client):
     response = client.get("/docs/getting-started/missing-page.md")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/docs/../AGENTS.md",
+        "/docs/../AGENTS/",
+        "/docs/getting-started/../.md",
+    ],
+)
+def test_docs_reject_path_traversal_segments(client, path):
+    response = client.get(path)
 
     assert response.status_code == 404

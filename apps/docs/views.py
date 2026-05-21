@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import frontmatter
@@ -11,13 +12,30 @@ from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
 
+DOCS_SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
 
 def get_docs_content_dir():
     return Path(settings.BASE_DIR) / "apps" / "docs" / "content"
 
 
+def validate_docs_slug(value):
+    if not DOCS_SLUG_PATTERN.fullmatch(value):
+        raise Http404("Documentation page not found")
+
+    return value
+
+
 def get_docs_markdown_file(category, page):
-    return get_docs_content_dir() / category / f"{page}.md"
+    category_slug = validate_docs_slug(category)
+    page_slug = validate_docs_slug(page)
+    content_dir = get_docs_content_dir().resolve()
+    markdown_file = (content_dir / category_slug / f"{page_slug}.md").resolve()
+
+    if not markdown_file.is_relative_to(content_dir):
+        raise Http404("Documentation page not found")
+
+    return markdown_file
 
 
 def load_docs_post(category, page):
@@ -205,6 +223,8 @@ def docs_page_view(request, category, page):
         }
 
         return render(request, "docs/docs_page.html", context)
+    except Http404:
+        raise
     except Exception as e:
         logger.error("Error loading documentation page", category=category, page=page, error=str(e))
         raise Http404("Documentation page not found") from e
@@ -220,6 +240,8 @@ def docs_markdown_view(request, category, page):
         markdown_content = render_docs_markdown(post, default_page_title)
 
         return HttpResponse(markdown_content, content_type="text/markdown; charset=utf-8")
+    except Http404:
+        raise
     except Exception as e:
         logger.error(
             "Error loading documentation markdown page",
