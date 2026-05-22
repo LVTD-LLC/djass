@@ -47,17 +47,23 @@ class TestHomeView:
 
         assert response.status_code == 200
         content = response.content.decode()
-        assert "Agent project generator prompt" in content
+        assert "Agent project generator prompt" not in content
         assert "Three ways to generate a project" in content
+        assert "Copy the prompt below" not in content
+        assert "Copy this short prompt" not in content
         assert "Copy prompt" in content
         assert "Copy SKILL.md" not in content
         assert "Skill page" not in content
+        assert f'href="{reverse("agent_skill")}"' not in content
         assert reverse("agent_skill") in content
         assert "/skill.md" in content
         assert "OpenAPI docs" in content
+        assert "MCP docs" in content
         assert "https://djass.dev/api/v1" in content
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
+        assert 'id="djass-agent-prompt"' in content
+        assert 'class="dj-input mt-3 h-64 w-full resize-y p-4 font-mono text-xs leading-5"' not in content
         assert "---BEGIN SKILL.md---" not in content
         assert "## API Fallback Workflow" not in content
 
