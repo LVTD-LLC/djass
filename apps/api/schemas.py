@@ -65,6 +65,7 @@ def _project_create_fields() -> dict[str, tuple[Any, Any]]:
     fields = {
         "project_name": (str, ...),
         "project_slug": (str, ...),
+        "caprover_app_name": (str, COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]),
         "project_description": (str, COOKIECUTTER_FIELD_DEFAULTS["project_description"]),
         "repo_url": (str, COOKIECUTTER_FIELD_DEFAULTS["repo_url"]),
         "author_name": (str, COOKIECUTTER_FIELD_DEFAULTS["author_name"]),

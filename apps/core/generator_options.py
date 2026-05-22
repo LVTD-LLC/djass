@@ -13,6 +13,8 @@ PROJECT_SLUG_DEFAULT = (
     "|replace('.', '_')"
     "|trim() }}"
 )
+CAPROVER_APP_NAME_DEFAULT = "{{ cookiecutter.project_slug|replace('_', '-') }}"
+COPY_WITHOUT_RENDER_DEFAULT = ["skills", "skills/**"]
 
 
 @dataclass(frozen=True)
@@ -145,6 +147,11 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
             PROJECT_SLUG_DEFAULT,
             "Project Slug",
         ),
+        GeneratorField(
+            "caprover_app_name",
+            CAPROVER_APP_NAME_DEFAULT,
+            "CapRover App Name",
+        ),
         GeneratorField("repo_url", "https://github.com/cookiecutter/cookiecutter", "Repo URL"),
         GeneratorField(
             "project_description",
@@ -169,6 +176,8 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("use_healthchecks", "y", "Use Healthchecks", "monitoring", True),
         GeneratorField("use_mcp", "n", "Use MCP", "ai", True),
         GeneratorField("use_ci", "y", "Use CI", "delivery", True),
+        GeneratorField("use_digitalocean", "n", "Use DigitalOcean", "delivery", True),
+        GeneratorField("_copy_without_render", COPY_WITHOUT_RENDER_DEFAULT, "Copy Without Render"),
     ),
     categories=(
         GeneratorOptionCategory("monitoring", "Monitoring"),

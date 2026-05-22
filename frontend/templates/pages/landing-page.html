@@ -8,7 +8,7 @@
         </div>
       {% endif %}
 
-      <div class="dj-split-hero">
+      <div class="grid items-stretch gap-[clamp(1.5rem,4vw,3rem)] border-b border-[var(--dj-border)] pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-12">
         <div class="lg:col-span-7">
           <p class="dj-kicker">Django SaaS starter, without setup drag</p>
           <h1 class="dj-hero-title mt-5">
@@ -39,39 +39,39 @@
             </div>
           </div>
 
-          <div class="dj-hero-index mt-8">
-            <div>
+          <div class="mt-8 grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] sm:grid-cols-3">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">01 Input</p>
               <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">UI, API, or MCP</p>
             </div>
-            <div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">02 Build</p>
               <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Background generation</p>
             </div>
-            <div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">03 Output</p>
               <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Downloadable repo ZIP</p>
             </div>
           </div>
         </div>
 
-        <aside class="dj-system-diagram lg:col-span-5" aria-label="Djass generation flow">
-          <div class="dj-system-node">
+        <aside class="grid min-h-[24rem] gap-px self-stretch border border-[var(--dj-border)] bg-[var(--dj-border)] lg:col-span-5 lg:grid-cols-2" aria-label="Djass generation flow">
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
             <p class="dj-kicker">UI flow</p>
             <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Click through the form.</h2>
             <p class="text-sm leading-6 text-[var(--dj-muted)]">Choose options, submit the job, and return to the dashboard for status.</p>
           </div>
-          <div class="dj-system-node">
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
             <p class="dj-kicker">API flow</p>
             <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Send the same spec.</h2>
             <p class="text-sm leading-6 text-[var(--dj-muted)]">Use the Projects API for scripts, internal tools, and repeatable setup.</p>
           </div>
-          <div class="dj-system-node">
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
             <p class="dj-kicker">Agent flow</p>
             <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Point agents at <span class="font-mono">/skill.md</span>.</h2>
             <p class="text-sm leading-6 text-[var(--dj-muted)]">Let coding agents use Djass MCP tools first, then fall back to HTTP.</p>
           </div>
-          <div class="dj-system-node dj-system-node-accent">
+          <div class="grid content-start gap-3 bg-[var(--dj-accent)] p-4 text-[var(--dj-on-accent)] [&_*]:text-[var(--dj-on-accent)]">
             <p class="dj-kicker">Generated artifact</p>
             <h2 class="text-2xl font-semibold">codebase.zip</h2>
             <p class="font-mono text-sm">ready for git init</p>
@@ -92,8 +92,8 @@
           </p>
         </div>
 
-        <div class="dj-method-grid">
-          <article class="dj-method-card">
+        <div class="grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] lg:grid-cols-3">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">01</p>
             <div>
               <p class="dj-kicker">UI flow</p>
@@ -103,7 +103,7 @@
             <a href="{% if user.is_authenticated %}{% url 'project_new' %}{% else %}{% url 'account_signup' %}{% endif %}" class="dj-button dj-button-secondary mt-auto w-full">Start in UI</a>
           </article>
 
-          <article class="dj-method-card">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">02</p>
             <div>
               <p class="dj-kicker">API flow</p>
@@ -113,7 +113,7 @@
             <a href="{{ djass_openapi_docs_url }}" class="dj-button dj-button-secondary mt-auto w-full">OpenAPI docs</a>
           </article>
 
-          <article class="dj-method-card">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">03</p>
             <div>
               <p class="dj-kicker">Agent flow</p>
@@ -165,13 +165,13 @@
           </p>
         </div>
 
-        <div class="dj-included-matrix">
-          <div class="dj-included-row">
-            <div>
+        <div class="grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)]">
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">Core</p>
               <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Runtime</h3>
             </div>
-            <div class="dj-tag-list">
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
               <span class="dj-stack-tag">Django 6</span>
               <span class="dj-stack-tag">Python 3.14</span>
               <span class="dj-stack-tag">django-allauth</span>
@@ -181,12 +181,12 @@
             </div>
           </div>
 
-          <div class="dj-included-row">
-            <div>
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">Interface</p>
               <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Product pages</h3>
             </div>
-            <div class="dj-tag-list">
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
               <span class="dj-stack-tag">Tailwind</span>
               <span class="dj-stack-tag">HTMX</span>
               <span class="dj-stack-tag">Alpine</span>
@@ -198,12 +198,12 @@
             </div>
           </div>
 
-          <div class="dj-included-row">
-            <div>
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">Data</p>
               <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Storage and jobs</h3>
             </div>
-            <div class="dj-tag-list">
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
               <span class="dj-stack-tag">Postgres 18</span>
               <span class="dj-stack-tag">pgvector</span>
               <span class="dj-stack-tag">Redis</span>
@@ -212,12 +212,12 @@
             </div>
           </div>
 
-          <div class="dj-included-row">
-            <div>
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">Integrations</p>
               <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Selectable modules</h3>
             </div>
-            <div class="dj-tag-list">
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
               <span class="dj-stack-tag">Stripe</span>
               <span class="dj-stack-tag">Sentry</span>
               <span class="dj-stack-tag">PostHog</span>
@@ -231,18 +231,19 @@
             </div>
           </div>
 
-          <div class="dj-included-row">
-            <div>
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
               <p class="dj-kicker">Automation</p>
               <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">API and agents</h3>
             </div>
-            <div class="dj-tag-list">
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
               <span class="dj-stack-tag">django-ninja</span>
               <span class="dj-stack-tag">OpenAPI</span>
               <span class="dj-stack-tag">token auth</span>
               <span class="dj-stack-tag">MCP option</span>
               <span class="dj-stack-tag">GitHub Actions</span>
               <span class="dj-stack-tag">CapRover path</span>
+              <span class="dj-stack-tag">DigitalOcean option</span>
             </div>
           </div>
         </div>

@@ -3,14 +3,14 @@
 {% block content %}
   <section class="pb-16 pt-8">
     <div class="dj-container-wide">
-      <div class="dj-app-hero">
+      <div class="grid items-stretch gap-[clamp(1.5rem,4vw,3rem)] rounded-[4px] border border-[var(--dj-border)] bg-[var(--dj-panel-solid)] p-[clamp(1.25rem,3vw,2rem)] lg:grid-cols-[minmax(0,0.8fr)_minmax(20rem,0.2fr)]">
         <div>
           <p class="dj-kicker">Control plane</p>
           <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Generate projects</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
             Create a Django SaaS repo through the UI, API, or MCP. Djass queues the build, tracks status, and gives you a ZIP when it is ready.
           </p>
-          <div class="dj-status-strip">
+          <div class="flex flex-wrap items-center gap-3 border-t border-[var(--dj-border)] pt-4">
             {% if can_generate %}
               <span class="dj-pill dj-pill-success">Generation available</span>
             {% elif project_limit_reached %}
@@ -22,16 +22,16 @@
           </div>
         </div>
 
-        <div class="dj-compact-list self-start">
+        <div class="grid gap-px self-start border border-[var(--dj-border)] bg-[var(--dj-border)]">
           {% if can_generate %}
-            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary w-full">Create Project</a>
+            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary w-full !rounded-none">Create Project</a>
           {% elif project_limit_reached %}
             <span class="dj-pill dj-pill-warning">Project limit reached</span>
           {% else %}
             <span class="dj-pill dj-pill-warning">Generation unavailable</span>
           {% endif %}
-          <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary w-full">OpenAPI docs</a>
-          <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary w-full">Skill.md</a>
+          <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary w-full !rounded-none">OpenAPI docs</a>
+          <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary w-full !rounded-none">Skill.md</a>
         </div>
       </div>
 
@@ -46,8 +46,8 @@
           </div>
         </div>
 
-        <div class="dj-action-strip mt-6">
-          <article class="dj-action-tile">
+        <div class="mt-6 grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] md:grid-cols-3">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">01</p>
             <div>
               <p class="dj-kicker">UI</p>
@@ -57,7 +57,7 @@
             <a href="{% url 'project_new' %}" class="dj-button dj-button-secondary mt-auto w-full">Open form</a>
           </article>
 
-          <article class="dj-action-tile">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">02</p>
             <div>
               <p class="dj-kicker">API</p>
@@ -67,7 +67,7 @@
             <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary mt-auto w-full">OpenAPI docs</a>
           </article>
 
-          <article class="dj-action-tile">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
             <p class="dj-method-number">03</p>
             <div>
               <p class="dj-kicker">MCP</p>
@@ -226,6 +226,7 @@
             <span class="dj-stack-tag">S3</span>
             <span class="dj-stack-tag">MCP option</span>
             <span class="dj-stack-tag">GitHub Actions</span>
+            <span class="dj-stack-tag">DigitalOcean option</span>
           </div>
         </div>
       </section>

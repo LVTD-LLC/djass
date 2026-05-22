@@ -28,6 +28,7 @@ not block unrelated PRs.
 
 - **Project Name / Slug**: naming used in generated files and package metadata.
 - **Repo URL / Description / Author fields**: metadata used in templates and defaults.
+- **CapRover App Name**: deployment app name derived from the project slug.
 - **Project Main Color**: controls primary Tailwind color references used in templates.
 
 ## Integration toggles
@@ -66,6 +67,7 @@ not block unrelated PRs.
 ## Delivery toggles
 
 - **Use CI**: includes GitHub Actions CI workflow.
+- **Use DigitalOcean**: includes DigitalOcean deployment scaffolding when enabled.
 
 ## Recommendation
 

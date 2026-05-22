@@ -55,16 +55,17 @@ class ProfileUpdateForm(forms.ModelForm):
 class ProjectCreateForm(forms.ModelForm):
     BOOL_CHOICES = (("y", "Yes"), ("n", "No"))
     TEXT_INPUT_CLASS = (
-        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm "
-        "text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 "
-        "focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
-        "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-500"
+        "mt-1 block w-full rounded-[4px] border border-[var(--dj-border)] "
+        "bg-[var(--dj-panel-solid)] px-3 py-2 text-sm text-[var(--dj-heading)] "
+        "placeholder:text-[var(--dj-soft)] focus:border-[var(--dj-accent)] "
+        "focus:outline-none focus:ring-2 "
+        "focus:ring-[color-mix(in_srgb,var(--dj-accent)_28%,transparent)]"
     )
     SELECT_CLASS = (
-        "mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm "
-        "text-gray-900 "
-        "focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 "
-        "dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+        "mt-1 block w-full rounded-[4px] border border-[var(--dj-border)] "
+        "bg-[var(--dj-panel-solid)] px-3 py-2 text-sm text-[var(--dj-heading)] "
+        "focus:border-[var(--dj-accent)] focus:outline-none focus:ring-2 "
+        "focus:ring-[color-mix(in_srgb,var(--dj-accent)_28%,transparent)]"
     )
 
     repo_url = forms.URLField(required=False)
@@ -80,6 +81,11 @@ class ProjectCreateForm(forms.ModelForm):
         required=True,
     )
     project_slug = forms.CharField(max_length=255, required=True)
+    caprover_app_name = forms.CharField(
+        max_length=255,
+        initial=COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"],
+        required=False,
+    )
     project_description = forms.CharField(
         max_length=255,
         initial=COOKIECUTTER_FIELD_DEFAULTS["project_description"],
@@ -156,6 +162,10 @@ class ProjectCreateForm(forms.ModelForm):
     def clean_project_main_color(self):
         value = (self.cleaned_data.get("project_main_color") or "").strip()
         return value or "green"
+
+    def clean_caprover_app_name(self):
+        value = (self.cleaned_data.get("caprover_app_name") or "").strip()
+        return value or COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
 
     def get_cookiecutter_payload(self):
         payload = {}

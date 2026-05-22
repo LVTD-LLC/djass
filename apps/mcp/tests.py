@@ -328,10 +328,13 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     create_parameters = signature(create_project).parameters
     generate_parameters = signature(generate_project).parameters
     for field_name in COOKIECUTTER_FIELD_DEFAULTS:
+        if field_name.startswith("_"):
+            continue
         assert field_name in create_parameters
         assert field_name in generate_parameters
 
     expected_mcp_defaults = {
+        "caprover_app_name": "",
         "project_description": "",
         "repo_url": "",
         "author_name": "",
@@ -347,6 +350,7 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     payload = _payload_from_args(
         project_name="Support CRM",
         project_slug="support_crm",
+        caprover_app_name="",
         project_description="",
         repo_url="",
         author_name="",
@@ -367,6 +371,7 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_healthchecks="y",
         use_mcp="y",
         use_ci="y",
+        use_digitalocean="n",
         extra_context=None,
     )
     assert payload["use_chatwoot"] == "y"
