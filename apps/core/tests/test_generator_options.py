@@ -33,6 +33,10 @@ def test_generator_options_are_grouped_by_category():
         "use_mjml",
     }
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
+    assert {option["key"] for option in groups["delivery"]["options"]} >= {
+        "use_ci",
+        "use_digitalocean",
+    }
 
 
 def test_api_and_mcp_catalog_payloads_match():
@@ -49,10 +53,24 @@ def test_catalog_feature_flags_feed_ui_api_and_mcp():
     assert feature_flag_keys.issubset(ProjectCreateForm().fields)
     assert feature_flag_keys.issubset(ProjectCreateIn.model_fields)
     assert {
-        option["key"]
-        for group in catalog.as_mcp_payload()["groups"]
-        for option in group["options"]
+        option["key"] for group in catalog.as_mcp_payload()["groups"] for option in group["options"]
     } == feature_flag_keys
+
+
+def test_caprover_app_name_preserves_cookiecutter_default_expression():
+    form = ProjectCreateForm(
+        {
+            "project_name": "My SaaS",
+            "project_slug": "my_saas",
+            "caprover_app_name": COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"],
+        }
+    )
+
+    assert form.is_valid()
+    assert (
+        form.get_cookiecutter_payload()["caprover_app_name"]
+        == COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
+    )
 
 
 def test_sync_cookiecutter_options_check_passes_when_catalog_matches(tmp_path):
@@ -73,6 +91,15 @@ def test_sync_cookiecutter_options_check_detects_drift(tmp_path):
 
     with pytest.raises(CommandError, match="Added upstream: use_future_feature"):
         call_command("sync_cookiecutter_options", "--source", str(source_path), "--check")
+
+
+def test_sync_cookiecutter_options_ignores_cookiecutter_private_config(tmp_path):
+    source_defaults = OrderedDict(COOKIECUTTER_FIELD_DEFAULTS)
+    source_defaults["_copy_without_render"] = ["skills", "skills/**"]
+    source_path = tmp_path / "cookiecutter.json"
+    source_path.write_text(json.dumps(source_defaults, indent=2) + "\n", encoding="utf-8")
+
+    call_command("sync_cookiecutter_options", "--source", str(source_path), "--check")
 
 
 def test_sync_cookiecutter_options_can_skip_remote_network_errors(monkeypatch):

@@ -13,10 +13,12 @@ if not django_apps.ready:
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS
 from apps.mcp import services
 from apps.mcp.services import MCPServiceError
 
 YNFlag = Literal["y", "n"]
+CAPROVER_APP_NAME_DEFAULT = COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
 
 mcp = FastMCP("Djass")
 
@@ -56,7 +58,7 @@ def _payload_from_args(
     payload: dict[str, Any] = {
         "project_name": project_name,
         "project_slug": project_slug,
-        "caprover_app_name": caprover_app_name,
+        "caprover_app_name": caprover_app_name or CAPROVER_APP_NAME_DEFAULT,
         "project_description": project_description,
         "repo_url": repo_url,
         "author_name": author_name,

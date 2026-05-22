@@ -18,6 +18,7 @@
   --dj-panel-solid: oklch(0.992 0.004 95);
   --dj-panel-elevated: oklch(0.986 0.005 95);
   --dj-input: oklch(0.992 0.004 95);
+  --dj-code-bg: oklch(0.16 0.012 255);
   --dj-grid: oklch(0.16 0.012 255 / 0.055);
   --dj-accent: oklch(0.58 0.22 30);
   --dj-accent-strong: oklch(0.48 0.21 30);
@@ -44,6 +45,7 @@
   --dj-panel-solid: oklch(0.19 0.014 255);
   --dj-panel-elevated: oklch(0.23 0.014 255);
   --dj-input: oklch(0.18 0.014 255);
+  --dj-code-bg: oklch(0.12 0.012 255);
   --dj-grid: oklch(0.9 0.012 255 / 0.055);
   --dj-accent: oklch(0.66 0.19 30);
   --dj-accent-strong: oklch(0.74 0.16 30);
@@ -610,7 +612,7 @@ body {
 .dj-prose :where(pre) {
   border: 1px solid var(--dj-border);
   border-radius: 4px;
-  background: var(--dj-heading);
+  background: var(--dj-code-bg);
   box-shadow: none;
 }
 

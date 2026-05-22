@@ -14,7 +14,6 @@ PROJECT_SLUG_DEFAULT = (
     "|trim() }}"
 )
 CAPROVER_APP_NAME_DEFAULT = "{{ cookiecutter.project_slug|replace('_', '-') }}"
-COPY_WITHOUT_RENDER_DEFAULT = ["skills", "skills/**"]
 
 
 @dataclass(frozen=True)
@@ -123,7 +122,12 @@ class GeneratorOptionCatalog:
         return self.as_api_payload()
 
     def drift_from_cookiecutter(self, cookiecutter_defaults: dict[str, Any]) -> CookiecutterDrift:
-        local_defaults = self.defaults
+        local_defaults = OrderedDict(
+            (key, value) for key, value in self.defaults.items() if not key.startswith("_")
+        )
+        cookiecutter_defaults = OrderedDict(
+            (key, value) for key, value in cookiecutter_defaults.items() if not key.startswith("_")
+        )
         local_keys = set(local_defaults)
         source_keys = set(cookiecutter_defaults)
         return CookiecutterDrift(
@@ -177,7 +181,6 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("use_mcp", "n", "Use MCP", "ai", True),
         GeneratorField("use_ci", "y", "Use CI", "delivery", True),
         GeneratorField("use_digitalocean", "n", "Use DigitalOcean", "delivery", True),
-        GeneratorField("_copy_without_render", COPY_WITHOUT_RENDER_DEFAULT, "Copy Without Render"),
     ),
     categories=(
         GeneratorOptionCategory("monitoring", "Monitoring"),

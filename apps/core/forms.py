@@ -81,11 +81,7 @@ class ProjectCreateForm(forms.ModelForm):
         required=True,
     )
     project_slug = forms.CharField(max_length=255, required=True)
-    caprover_app_name = forms.CharField(
-        max_length=255,
-        initial=COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"],
-        required=False,
-    )
+    caprover_app_name = forms.CharField(max_length=255, required=False)
     project_description = forms.CharField(
         max_length=255,
         initial=COOKIECUTTER_FIELD_DEFAULTS["project_description"],
@@ -151,6 +147,17 @@ class ProjectCreateForm(forms.ModelForm):
             raise forms.ValidationError("Project slug must contain letters or numbers.")
         return normalized
 
+    def clean_caprover_app_name(self):
+        value = (self.cleaned_data.get("caprover_app_name") or "").strip()
+        default_value = COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
+        if not value or value == default_value:
+            return default_value
+
+        normalized = slugify(value)
+        if not normalized:
+            raise forms.ValidationError("CapRover app name must contain letters or numbers.")
+        return normalized
+
     def clean_author_email(self):
         value = (self.cleaned_data.get("author_email") or "").strip()
         if value:
@@ -162,10 +169,6 @@ class ProjectCreateForm(forms.ModelForm):
     def clean_project_main_color(self):
         value = (self.cleaned_data.get("project_main_color") or "").strip()
         return value or "green"
-
-    def clean_caprover_app_name(self):
-        value = (self.cleaned_data.get("caprover_app_name") or "").strip()
-        return value or COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
 
     def get_cookiecutter_payload(self):
         payload = {}

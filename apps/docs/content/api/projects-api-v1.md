@@ -83,10 +83,12 @@ Retry guidance may appear in `error.details.retry_guidance`.
   "defaults": {
     "project_name": "My Awesome Project",
     "project_slug": "{{ cookiecutter.project_name.lower()|replace(' ', '_')|replace('-', '_')|replace('.', '_')|trim() }}",
+    "caprover_app_name": "{{ cookiecutter.project_slug|replace('_', '-') }}",
     "repo_url": "https://github.com/cookiecutter/cookiecutter",
     "use_posthog": "y",
     "use_chatwoot": "n",
-    "use_mcp": "n"
+    "use_mcp": "n",
+    "use_digitalocean": "n"
   },
   "groups": [
     {
@@ -121,6 +123,7 @@ Notes:
 {
   "project_name": "Acme CRM",
   "project_slug": "acme_crm",
+  "caprover_app_name": "acme-crm",
   "project_description": "Internal CRM for support and sales",
   "repo_url": "https://github.com/acme/acme-crm",
   "author_name": "Acme Bot",
@@ -140,7 +143,8 @@ Notes:
   "use_logfire": "y",
   "use_healthchecks": "y",
   "use_mcp": "n",
-  "use_ci": "y"
+  "use_ci": "y",
+  "use_digitalocean": "n"
 }
 ```
 
@@ -168,6 +172,7 @@ Notes:
     "input_payload": {
       "project_name": "Acme CRM",
       "project_slug": "acme_crm",
+      "caprover_app_name": "acme-crm",
       "project_description": "Internal CRM for support and sales",
       "repo_url": "https://github.com/acme/acme-crm",
       "author_name": "Acme Bot",
@@ -187,7 +192,8 @@ Notes:
       "use_logfire": "y",
       "use_healthchecks": "y",
       "use_mcp": "n",
-      "use_ci": "y"
+      "use_ci": "y",
+      "use_digitalocean": "n"
     }
   }
 }
@@ -334,6 +340,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
   --data '{
     "project_name": "Acme CRM",
     "project_slug": "acme_crm",
+    "caprover_app_name": "acme-crm",
     "project_description": "Internal CRM for support and sales",
     "repo_url": "https://github.com/acme/acme-crm",
     "author_name": "Acme Bot",
@@ -353,7 +360,8 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "use_logfire": "y",
     "use_healthchecks": "y",
     "use_mcp": "n",
-    "use_ci": "y"
+    "use_ci": "y",
+    "use_digitalocean": "n"
   }'
 
 # 2) Get latest project (or parse ID from create response)

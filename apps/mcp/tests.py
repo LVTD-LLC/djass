@@ -350,7 +350,7 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     payload = _payload_from_args(
         project_name="Support CRM",
         project_slug="support_crm",
-        caprover_app_name="",
+        caprover_app_name="support-crm",
         project_description="",
         repo_url="",
         author_name="",
@@ -376,3 +376,35 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     )
     assert payload["use_chatwoot"] == "y"
     assert payload["use_mcp"] == "y"
+    assert payload["use_digitalocean"] == "n"
+
+    defaulted_payload = _payload_from_args(
+        project_name="Support CRM",
+        project_slug="support_crm",
+        caprover_app_name="",
+        project_description="",
+        repo_url="",
+        author_name="",
+        author_email="",
+        author_url="",
+        project_main_color="green",
+        use_posthog="y",
+        use_chatwoot="y",
+        use_buttondown="y",
+        use_s3="y",
+        use_stripe="y",
+        use_sentry="y",
+        generate_blog="y",
+        generate_docs="y",
+        use_mjml="y",
+        use_ai="y",
+        use_logfire="y",
+        use_healthchecks="y",
+        use_mcp="y",
+        use_ci="y",
+        use_digitalocean="n",
+        extra_context=None,
+    )
+    assert (
+        defaulted_payload["caprover_app_name"] == COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
+    )
