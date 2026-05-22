@@ -80,6 +80,7 @@ class ProjectCreateForm(forms.ModelForm):
         required=True,
     )
     project_slug = forms.CharField(max_length=255, required=True)
+    caprover_app_name = forms.CharField(max_length=255, required=False)
     project_description = forms.CharField(
         max_length=255,
         initial=COOKIECUTTER_FIELD_DEFAULTS["project_description"],
@@ -143,6 +144,17 @@ class ProjectCreateForm(forms.ModelForm):
         normalized = slugify(value).replace("-", "_")
         if not normalized:
             raise forms.ValidationError("Project slug must contain letters or numbers.")
+        return normalized
+
+    def clean_caprover_app_name(self):
+        value = (self.cleaned_data.get("caprover_app_name") or "").strip()
+        default_value = COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
+        if not value or value == default_value:
+            return default_value
+
+        normalized = slugify(value)
+        if not normalized:
+            raise forms.ValidationError("CapRover app name must contain letters or numbers.")
         return normalized
 
     def clean_author_email(self):

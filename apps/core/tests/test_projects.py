@@ -11,6 +11,7 @@ def _valid_project_post_data(**overrides):
         "name": "My project card",
         "project_name": "My SaaS",
         "project_slug": "my_saas",
+        "caprover_app_name": "my-saas",
         "repo_url": "https://github.com/gregagi/my-saas",
         "project_description": "test",
         "author_name": "Rasul",
@@ -31,6 +32,7 @@ def _valid_project_post_data(**overrides):
         "use_healthchecks": "y",
         "use_mcp": "n",
         "use_ci": "y",
+        "use_digitalocean": "n",
     }
     data.update(overrides)
     return data
@@ -53,6 +55,7 @@ class TestProjectFlow:
                 "name": "My project card",
                 "project_name": "My SaaS",
                 "project_slug": "my_saas",
+                "caprover_app_name": "my-saas",
                 "repo_url": "https://github.com/gregagi/my-saas",
                 "project_description": "test",
                 "author_name": "Rasul",
@@ -73,6 +76,7 @@ class TestProjectFlow:
                 "use_healthchecks": "y",
                 "use_mcp": "n",
                 "use_ci": "y",
+                "use_digitalocean": "n",
             },
             follow=True,
         )
@@ -107,6 +111,7 @@ class TestProjectFlow:
                 "name": "My project card",
                 "project_name": "My SaaS",
                 "project_slug": "my_saas",
+                "caprover_app_name": "my-saas",
                 "repo_url": "https://github.com/gregagi/my-saas",
                 "project_description": "test",
                 "author_name": "Rasul",
@@ -127,6 +132,7 @@ class TestProjectFlow:
                 "use_healthchecks": "y",
                 "use_mcp": "n",
                 "use_ci": "y",
+                "use_digitalocean": "n",
             },
         )
 
