@@ -122,14 +122,16 @@
                 <th>Project</th>
                 <th>Status</th>
                 <th>Created</th>
-                <th>Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for project in projects %}
                 <tr>
                   <td>
-                    <p class="font-semibold text-[var(--dj-heading)]">{{ project.name }}</p>
+                    <p class="font-semibold text-[var(--dj-heading)]">
+                      <a href="{% url 'project_detail' project.id %}" class="hover:underline">{{ project.name }}</a>
+                    </p>
                     <p class="mt-1 font-mono text-xs">{{ project.slug }}</p>
                   </td>
                   <td>
@@ -146,9 +148,13 @@
                   <td>{{ project.created_at }}</td>
                   <td>
                     {% if project.status == "ready" and project.artifact %}
-                      <a href="{% url 'project_download' project.id %}" class="dj-button dj-button-secondary">Download ZIP</a>
+                      <div class="flex flex-wrap gap-2">
+                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
+                        <a href="{% url 'project_download' project.id %}" class="dj-button dj-button-secondary">Download ZIP</a>
+                      </div>
                     {% elif project.status == "failed" %}
                       <div class="space-y-3">
+                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
                         <p class="max-w-md text-sm text-[var(--dj-muted)]">We've been notified of the error and are working on it.</p>
                         {% if project.error_message %}
                           <p class="max-w-md font-mono text-xs text-[var(--dj-danger)]">{{ project.error_message }}</p>
@@ -161,7 +167,10 @@
                         {% endif %}
                       </div>
                     {% else %}
-                      <span class="font-mono text-sm text-[var(--dj-soft)]">Generating...</span>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
+                        <span class="font-mono text-sm text-[var(--dj-soft)]">Generating...</span>
+                      </div>
                     {% endif %}
                   </td>
                 </tr>

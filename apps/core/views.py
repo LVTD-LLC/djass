@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlencode
 
 import stripe
@@ -26,7 +27,7 @@ from django.utils.text import slugify
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.views.generic import TemplateView, UpdateView
+from django.views.generic import DetailView, TemplateView, UpdateView
 from django_q.tasks import async_task
 
 from apps.core.agent_prompts import (
@@ -37,6 +38,7 @@ from apps.core.agent_prompts import (
     build_djass_agent_skill_md,
 )
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
+from apps.core.generator_options import get_generator_option_catalog
 from apps.core.models import Profile, Project, ProjectStatus
 from apps.core.project_limits import project_create_quota
 from apps.core.stripe_webhooks import EVENT_HANDLERS
@@ -94,6 +96,126 @@ def _queue_profile_event(profile, event_name, properties, source_function):
     )
 
 
+def _format_project_payload_value(value):
+    if isinstance(value, str):
+        normalized_value = value.strip()
+        lowered_value = normalized_value.lower()
+        if lowered_value == "y":
+            return {
+                "display_value": "Yes",
+                "pill_class": "dj-pill dj-pill-success",
+            }
+        if lowered_value == "n":
+            return {
+                "display_value": "No",
+                "pill_class": "dj-pill",
+            }
+        if not normalized_value:
+            return {
+                "display_value": "Not set",
+                "pill_class": "dj-pill",
+            }
+        return {
+            "display_value": normalized_value,
+            "pill_class": "",
+        }
+
+    if value is True:
+        return {
+            "display_value": "Yes",
+            "pill_class": "dj-pill dj-pill-success",
+        }
+    if value is False:
+        return {
+            "display_value": "No",
+            "pill_class": "dj-pill",
+        }
+    if value is None:
+        return {
+            "display_value": "Not set",
+            "pill_class": "dj-pill",
+        }
+    if isinstance(value, (dict, list)):
+        return {
+            "display_value": json.dumps(value, sort_keys=True, default=str),
+            "pill_class": "",
+        }
+
+    return {
+        "display_value": str(value),
+        "pill_class": "",
+    }
+
+
+def _build_project_payload_option(key, label, value):
+    return {
+        "key": key,
+        "label": label,
+        **_format_project_payload_value(value),
+    }
+
+
+def _build_project_payload_sections(payload):
+    if not isinstance(payload, dict):
+        return []
+
+    catalog = get_generator_option_catalog()
+    known_keys = {field.key for field in catalog.fields}
+    sections = []
+    project_settings = []
+    option_groups = {
+        category.key: {
+            "key": category.key,
+            "label": category.label,
+            "description": "",
+            "options": [],
+        }
+        for category in catalog.categories
+    }
+
+    for field in catalog.fields:
+        if field.key not in payload:
+            continue
+
+        option = _build_project_payload_option(field.key, field.label, payload[field.key])
+        if field.is_feature_flag:
+            option_groups[field.category or "other"]["options"].append(option)
+        else:
+            project_settings.append(option)
+
+    if project_settings:
+        sections.append(
+            {
+                "key": "project-settings",
+                "label": "Project settings",
+                "description": "Core values sent to the generator for this build.",
+                "options": project_settings,
+            }
+        )
+
+    sections.extend(group for group in option_groups.values() if group["options"])
+
+    legacy_options = [
+        _build_project_payload_option(key, key.replace("_", " ").title(), value)
+        for key, value in payload.items()
+        if key not in known_keys
+    ]
+    if legacy_options:
+        sections.append(
+            {
+                "key": "legacy-options",
+                "label": "Legacy options",
+                "description": (
+                    "Stored with this project but no longer listed in the "
+                    "current generator catalog."
+                ),
+                "options": legacy_options,
+            }
+        )
+
+    return sections
+
+
 class HomeView(LoginRequiredMixin, TemplateView):
     login_url = "account_login"
     template_name = "pages/home.html"
@@ -120,6 +242,27 @@ class HomeView(LoginRequiredMixin, TemplateView):
             )
             context["agent_prompt_available"] = True
 
+        return context
+
+
+class ProjectDetailView(LoginRequiredMixin, DetailView):
+    login_url = "account_login"
+    model = Project
+    pk_url_kwarg = "project_id"
+    template_name = "pages/project-detail.html"
+    context_object_name = "project"
+
+    def get_queryset(self):
+        return Project.objects.filter(user=self.request.user).select_related("artifact")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        can_create_projects = _user_can_create_projects(self.request.user)
+        project_limit_reached = can_create_projects and _project_limit_reached(self.request.user)
+        context["can_generate"] = can_create_projects and not project_limit_reached
+        context["artifact"] = getattr(self.object, "artifact", None)
+        context["option_sections"] = _build_project_payload_sections(self.object.input_payload)
         return context
 
 

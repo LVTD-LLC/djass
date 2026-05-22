@@ -339,7 +339,7 @@ class TestProjectFlow:
         assert response.status_code == 404
 
     def test_home_lists_projects(self, auth_client, user):
-        Project.objects.create(
+        project = Project.objects.create(
             user=user,
             name="History Project",
             slug="history_project",
@@ -349,4 +349,56 @@ class TestProjectFlow:
 
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
-        assert "History Project" in response.content.decode()
+        content = response.content.decode()
+        assert "History Project" in content
+        assert reverse("project_detail", args=[project.id]) in content
+
+    def test_project_detail_shows_stored_generator_options(self, auth_client, user):
+        input_payload = _valid_project_post_data(
+            project_name="History Project",
+            project_slug="history_project",
+            repo_url="https://github.com/example/history-project",
+            use_chatwoot="n",
+            use_mcp="y",
+            retired_option="legacy-value",
+        )
+        input_payload.pop("name")
+        project = Project.objects.create(
+            user=user,
+            name="History Project",
+            slug="history_project",
+            input_payload=input_payload,
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_detail", args=[project.id]))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "History Project" in content
+        assert "Generator options" in content
+        assert "Project settings" in content
+        assert "https://github.com/example/history-project" in content
+        assert "Use Chatwoot" in content
+        assert "Use MCP" in content
+        assert "Legacy options" in content
+        assert "retired_option" in content
+        assert "legacy-value" in content
+
+    def test_project_detail_denies_other_users_project(self, auth_client, django_user_model):
+        other_user = django_user_model.objects.create_user(
+            username="project-owner",
+            email="project-owner@example.com",
+            password="password123",
+        )
+        project = Project.objects.create(
+            user=other_user,
+            name="Private Project",
+            slug="private_project",
+            input_payload=_valid_project_post_data(project_name="Private Project"),
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_detail", args=[project.id]))
+
+        assert response.status_code == 404

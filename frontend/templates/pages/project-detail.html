@@ -1,0 +1,170 @@
+{% extends "base_app.html" %}
+{% block meta %}
+    <title>{{ project.name }} | Djass</title>
+    <meta name="description"
+          content="Generated project details and stored generator options for {{ project.name }}." />
+{% endblock meta %}
+{% block content %}
+    <section class="pb-16 pt-8">
+        <div class="dj-container-wide">
+            <div class="dj-panel p-6 sm:p-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <p class="dj-kicker">Project details</p>
+                        <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">{{ project.name }}</h1>
+                        <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
+                            Review the stored generation payload, build status, and artifact metadata for this project.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="{% url 'home' %}" class="dj-button dj-button-secondary">Back to dashboard</a>
+                        {% if project.status == "ready" and artifact %}
+                            <a href="{% url 'project_download' project.id %}"
+                               class="dj-button dj-button-primary">Download ZIP</a>
+                        {% endif %}
+                        {% if project.status == "failed" and can_generate %}
+                            <form method="post" action="{% url 'project_retry' project.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dj-button dj-button-secondary">Retry generation</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem]">
+                <section class="dj-panel overflow-hidden">
+                    <div class="border-b border-[var(--dj-border)] p-5 sm:p-6">
+                        <h2 class="text-xl font-semibold text-[var(--dj-heading)]">Generator options</h2>
+                        <p class="mt-1 text-sm text-[var(--dj-muted)]">Values stored when this project was requested.</p>
+                    </div>
+                    <div class="p-5 sm:p-6">
+                        {% if option_sections %}
+                            <div class="space-y-8">
+                                {% for section in option_sections %}
+                                    <section>
+                                        <div>
+                                            <h3 class="text-base font-semibold text-[var(--dj-heading)]">{{ section.label }}</h3>
+                                            {% if section.description %}
+                                                <p class="mt-1 text-sm leading-6 text-[var(--dj-muted)]">{{ section.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-4 divide-y divide-[var(--dj-border)] border-y border-[var(--dj-border)]">
+                                            {% for option in section.options %}
+                                                <div class="grid gap-2 px-1 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.8fr)] sm:items-center">
+                                                    <div>
+                                                        <p class="text-sm font-semibold text-[var(--dj-heading)]">{{ option.label }}</p>
+                                                        <p class="mt-1 break-all font-mono text-xs text-[var(--dj-soft)]">{{ option.key }}</p>
+                                                    </div>
+                                                    <div class="sm:text-right">
+                                                        {% if option.pill_class %}
+                                                            <span class="{{ option.pill_class }}">{{ option.display_value }}</span>
+                                                        {% else %}
+                                                            <span class="break-all font-mono text-xs text-[var(--dj-muted)]">{{ option.display_value }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </section>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="border-y border-[var(--dj-border)] py-10 text-center">
+                                <p class="font-semibold text-[var(--dj-heading)]">No stored options.</p>
+                                <p class="mt-2 text-sm text-[var(--dj-muted)]">
+                                    This project was created before Djass started retaining generator payload details.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+                <aside class="space-y-4">
+                    <section class="dj-panel p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h2 class="text-base font-semibold text-[var(--dj-heading)]">Build status</h2>
+                                <p class="mt-1 text-sm text-[var(--dj-muted)]">Current generation state.</p>
+                            </div>
+                            {% if project.status == "ready" %}<span class="dj-pill dj-pill-success">Ready</span>{% endif %}
+                            {% if project.status == "queued" or project.status == "generating" %}
+                                <span class="dj-pill dj-pill-warning">Generating...</span>
+                            {% endif %}
+                            {% if project.status == "failed" %}<span class="dj-pill dj-pill-danger">Failed</span>{% endif %}
+                        </div>
+                        <dl class="mt-5 space-y-4 text-sm">
+                            <div>
+                                <dt class="font-semibold text-[var(--dj-heading)]">Slug</dt>
+                                <dd class="mt-1 break-all font-mono text-xs text-[var(--dj-muted)]">
+                                    {{ project.slug }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-[var(--dj-heading)]">Project ID</dt>
+                                <dd class="mt-1 font-mono text-xs text-[var(--dj-muted)]">
+                                    {{ project.id }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-[var(--dj-heading)]">Created</dt>
+                                <dd class="mt-1 text-[var(--dj-muted)]">
+                                    {{ project.created_at }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-[var(--dj-heading)]">Started</dt>
+                                <dd class="mt-1 text-[var(--dj-muted)]">
+                                    {{ project.started_at|default:"Not started" }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-[var(--dj-heading)]">Finished</dt>
+                                <dd class="mt-1 text-[var(--dj-muted)]">
+                                    {{ project.finished_at|default:"Not finished" }}
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+                    <section class="dj-panel p-5">
+                        <h2 class="text-base font-semibold text-[var(--dj-heading)]">Artifact</h2>
+                        {% if artifact %}
+                            <dl class="mt-5 space-y-4 text-sm">
+                                <div>
+                                    <dt class="font-semibold text-[var(--dj-heading)]">ZIP file</dt>
+                                    <dd class="mt-1 break-all font-mono text-xs text-[var(--dj-muted)]">
+                                        {{ artifact.zip_file.name|default:"Stored without file path" }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="font-semibold text-[var(--dj-heading)]">Size</dt>
+                                    <dd class="mt-1 font-mono text-xs text-[var(--dj-muted)]">
+                                        {{ artifact.size_bytes }} bytes
+                                    </dd>
+                                </div>
+                                {% if artifact.sha256 %}
+                                    <div>
+                                        <dt class="font-semibold text-[var(--dj-heading)]">SHA-256</dt>
+                                        <dd class="mt-1 break-all font-mono text-xs text-[var(--dj-muted)]">
+                                            {{ artifact.sha256 }}
+                                        </dd>
+                                    </div>
+                                {% endif %}
+                            </dl>
+                        {% else %}
+                            <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">ZIP artifact metadata is not available yet.</p>
+                        {% endif %}
+                    </section>
+                    {% if project.status == "failed" %}
+                        <section class="dj-panel p-5">
+                            <h2 class="text-base font-semibold text-[var(--dj-heading)]">Failure details</h2>
+                            {% if project.error_message %}
+                                <p class="mt-3 break-all font-mono text-xs leading-5 text-[var(--dj-danger)]">{{ project.error_message }}</p>
+                            {% else %}
+                                <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">No error message was stored for this failed generation.</p>
+                            {% endif %}
+                        </section>
+                    {% endif %}
+                </aside>
+            </div>
+        </div>
+    </section>
+{% endblock content %}
