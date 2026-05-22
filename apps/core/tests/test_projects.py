@@ -3,7 +3,13 @@ from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from apps.core.choices import ProfileStates
+from apps.core.generator_options import (
+    GeneratorField,
+    GeneratorOptionCatalog,
+    GeneratorOptionCategory,
+)
 from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
+from apps.core.views import _build_project_payload_sections
 
 
 def _valid_project_post_data(**overrides):
@@ -339,7 +345,7 @@ class TestProjectFlow:
         assert response.status_code == 404
 
     def test_home_lists_projects(self, auth_client, user):
-        Project.objects.create(
+        project = Project.objects.create(
             user=user,
             name="History Project",
             slug="history_project",
@@ -349,4 +355,81 @@ class TestProjectFlow:
 
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
-        assert "History Project" in response.content.decode()
+        content = response.content.decode()
+        assert "History Project" in content
+        assert reverse("project_detail", args=[project.id]) in content
+
+    def test_project_detail_shows_stored_generator_options(self, auth_client, user):
+        input_payload = _valid_project_post_data(
+            project_name="History Project",
+            project_slug="history_project",
+            repo_url="https://github.com/example/history-project",
+            use_chatwoot="n",
+            use_mcp="y",
+            retired_option="legacy-value",
+        )
+        input_payload.pop("name")
+        project = Project.objects.create(
+            user=user,
+            name="History Project",
+            slug="history_project",
+            input_payload=input_payload,
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_detail", args=[project.id]))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "History Project" in content
+        assert "Generator options" in content
+        assert "Project settings" in content
+        assert "https://github.com/example/history-project" in content
+        assert "Use Chatwoot" in content
+        assert "Use MCP" in content
+        assert "Legacy options" in content
+        assert "retired_option" in content
+        assert "legacy-value" in content
+
+    def test_project_detail_denies_other_users_project(self, auth_client, django_user_model):
+        other_user = django_user_model.objects.create_user(
+            username="project-owner",
+            email="project-owner@example.com",
+            password="password123",
+        )
+        project = Project.objects.create(
+            user=other_user,
+            name="Private Project",
+            slug="private_project",
+            input_payload=_valid_project_post_data(project_name="Private Project"),
+            status=ProjectStatus.READY,
+        )
+
+        response = auth_client.get(reverse("project_detail", args=[project.id]))
+
+        assert response.status_code == 404
+
+    def test_project_detail_falls_back_for_unknown_catalog_category(self, monkeypatch):
+        catalog = GeneratorOptionCatalog(
+            fields=(
+                GeneratorField("project_name", "My Project", "Project Name"),
+                GeneratorField("use_new_vendor", "n", "Use New Vendor", "future", True),
+            ),
+            categories=(GeneratorOptionCategory("monitoring", "Monitoring"),),
+        )
+        monkeypatch.setattr("apps.core.views.get_generator_option_catalog", lambda: catalog)
+
+        sections = _build_project_payload_sections(
+            {"project_name": "History Project", "use_new_vendor": "y"}
+        )
+
+        other_section = next(section for section in sections if section["key"] == "other")
+        assert other_section["label"] == "Other"
+        assert other_section["options"] == [
+            {
+                "key": "use_new_vendor",
+                "label": "Use New Vendor",
+                "display_value": "Yes",
+                "pill_class": "dj-pill dj-pill-success",
+            }
+        ]

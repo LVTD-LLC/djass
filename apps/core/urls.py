@@ -12,6 +12,7 @@ urlpatterns = [
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     path("projects/new", views.ProjectCreateView.as_view(), name="project_new"),
     path("projects/create", views.create_project, name="project_create"),
+    path("projects/<int:project_id>", views.ProjectDetailView.as_view(), name="project_detail"),
     path(
         "projects/<int:project_id>/download",
         views.download_project_artifact,
