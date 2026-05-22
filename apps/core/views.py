@@ -155,6 +155,15 @@ def _build_project_payload_option(key, label, value):
     }
 
 
+def _build_project_payload_option_group(key, label):
+    return {
+        "key": key,
+        "label": label,
+        "description": "",
+        "options": [],
+    }
+
+
 def _build_project_payload_sections(payload):
     if not isinstance(payload, dict):
         return []
@@ -164,12 +173,7 @@ def _build_project_payload_sections(payload):
     sections = []
     project_settings = []
     option_groups = {
-        category.key: {
-            "key": category.key,
-            "label": category.label,
-            "description": "",
-            "options": [],
-        }
+        category.key: _build_project_payload_option_group(category.key, category.label)
         for category in catalog.categories
     }
 
@@ -179,7 +183,14 @@ def _build_project_payload_sections(payload):
 
         option = _build_project_payload_option(field.key, field.label, payload[field.key])
         if field.is_feature_flag:
-            option_groups[field.category or "other"]["options"].append(option)
+            group_key = field.category or "other"
+            option_group = option_groups.get(group_key)
+            if option_group is None:
+                option_group = option_groups.setdefault(
+                    "other",
+                    _build_project_payload_option_group("other", "Other"),
+                )
+            option_group["options"].append(option)
         else:
             project_settings.append(option)
 

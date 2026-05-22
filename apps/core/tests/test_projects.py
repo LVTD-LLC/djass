@@ -3,7 +3,13 @@ from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from apps.core.choices import ProfileStates
+from apps.core.generator_options import (
+    GeneratorField,
+    GeneratorOptionCatalog,
+    GeneratorOptionCategory,
+)
 from apps.core.models import Profile, Project, ProjectArtifact, ProjectStatus
+from apps.core.views import _build_project_payload_sections
 
 
 def _valid_project_post_data(**overrides):
@@ -402,3 +408,28 @@ class TestProjectFlow:
         response = auth_client.get(reverse("project_detail", args=[project.id]))
 
         assert response.status_code == 404
+
+    def test_project_detail_falls_back_for_unknown_catalog_category(self, monkeypatch):
+        catalog = GeneratorOptionCatalog(
+            fields=(
+                GeneratorField("project_name", "My Project", "Project Name"),
+                GeneratorField("use_new_vendor", "n", "Use New Vendor", "future", True),
+            ),
+            categories=(GeneratorOptionCategory("monitoring", "Monitoring"),),
+        )
+        monkeypatch.setattr("apps.core.views.get_generator_option_catalog", lambda: catalog)
+
+        sections = _build_project_payload_sections(
+            {"project_name": "History Project", "use_new_vendor": "y"}
+        )
+
+        other_section = next(section for section in sections if section["key"] == "other")
+        assert other_section["label"] == "Other"
+        assert other_section["options"] == [
+            {
+                "key": "use_new_vendor",
+                "label": "Use New Vendor",
+                "display_value": "Yes",
+                "pill_class": "dj-pill dj-pill-success",
+            }
+        ]
