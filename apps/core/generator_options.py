@@ -13,6 +13,7 @@ PROJECT_SLUG_DEFAULT = (
     "|replace('.', '_')"
     "|trim() }}"
 )
+CAPROVER_APP_NAME_DEFAULT = "{{ cookiecutter.project_slug|replace('_', '-') }}"
 
 
 @dataclass(frozen=True)
@@ -121,7 +122,12 @@ class GeneratorOptionCatalog:
         return self.as_api_payload()
 
     def drift_from_cookiecutter(self, cookiecutter_defaults: dict[str, Any]) -> CookiecutterDrift:
-        local_defaults = self.defaults
+        local_defaults = OrderedDict(
+            (key, value) for key, value in self.defaults.items() if not key.startswith("_")
+        )
+        cookiecutter_defaults = OrderedDict(
+            (key, value) for key, value in cookiecutter_defaults.items() if not key.startswith("_")
+        )
         local_keys = set(local_defaults)
         source_keys = set(cookiecutter_defaults)
         return CookiecutterDrift(
@@ -144,6 +150,11 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
             "project_slug",
             PROJECT_SLUG_DEFAULT,
             "Project Slug",
+        ),
+        GeneratorField(
+            "caprover_app_name",
+            CAPROVER_APP_NAME_DEFAULT,
+            "CapRover App Name",
         ),
         GeneratorField("repo_url", "https://github.com/cookiecutter/cookiecutter", "Repo URL"),
         GeneratorField(
@@ -169,6 +180,7 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("use_healthchecks", "y", "Use Healthchecks", "monitoring", True),
         GeneratorField("use_mcp", "n", "Use MCP", "ai", True),
         GeneratorField("use_ci", "y", "Use CI", "delivery", True),
+        GeneratorField("use_digitalocean", "n", "Use DigitalOcean", "delivery", True),
     ),
     categories=(
         GeneratorOptionCategory("monitoring", "Monitoring"),

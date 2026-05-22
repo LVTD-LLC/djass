@@ -47,6 +47,11 @@
           </div>
 
           <div class="md:col-span-2">
+            <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.caprover_app_name.id_for_label }}">CapRover App Name</label>
+            {{ project_form.caprover_app_name }}
+          </div>
+
+          <div class="md:col-span-2">
             <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.repo_url.id_for_label }}">Repo URL</label>
             {{ project_form.repo_url }}
           </div>

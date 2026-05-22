@@ -192,6 +192,7 @@ def build_djass_agent_skill_md() -> str:
           --data '{
             "project_name": "Acme CRM",
             "project_slug": "acme_crm",
+            "caprover_app_name": "acme-crm",
             "project_description": "Internal CRM for support and sales",
             "repo_url": "https://github.com/acme/acme-crm",
             "author_name": "Acme",
@@ -211,7 +212,8 @@ def build_djass_agent_skill_md() -> str:
             "use_logfire": "y",
             "use_healthchecks": "y",
             "use_mcp": "y",
-            "use_ci": "y"
+            "use_ci": "y",
+            "use_digitalocean": "n"
           }'
 
         PROJECT_ID="123"

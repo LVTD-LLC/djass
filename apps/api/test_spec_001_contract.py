@@ -21,6 +21,7 @@ def _disable_async_task_side_effects(monkeypatch):
 CREATE_PAYLOAD = {
     "project_name": "Spec One API",
     "project_slug": "spec_one_api",
+    "caprover_app_name": "spec-one-api",
     "project_description": "Contract test payload",
     "repo_url": "https://github.com/example/spec-one-api",
     "author_name": "Spec Bot",
@@ -41,6 +42,7 @@ CREATE_PAYLOAD = {
     "use_healthchecks": "y",
     "use_mcp": "n",
     "use_ci": "y",
+    "use_digitalocean": "n",
 }
 
 
@@ -77,6 +79,7 @@ def test_project_options_endpoint_contract(client):
     body = response.json()
     assert body["defaults"]["use_chatwoot"] == "n"
     assert body["defaults"]["use_mcp"] == "n"
+    assert body["defaults"]["use_digitalocean"] == "n"
 
     groups = {group["key"]: group for group in body["groups"]}
     assert {option["key"] for option in groups["monitoring"]["options"]} >= {
@@ -91,6 +94,10 @@ def test_project_options_endpoint_contract(client):
         "use_mjml",
     }
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
+    assert {option["key"] for option in groups["delivery"]["options"]} >= {
+        "use_ci",
+        "use_digitalocean",
+    }
 
 
 @pytest.mark.django_db

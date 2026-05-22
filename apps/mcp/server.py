@@ -13,10 +13,12 @@ if not django_apps.ready:
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS
 from apps.mcp import services
 from apps.mcp.services import MCPServiceError
 
 YNFlag = Literal["y", "n"]
+CAPROVER_APP_NAME_DEFAULT = COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
 
 mcp = FastMCP("Djass")
 
@@ -29,6 +31,7 @@ def _payload_from_args(
     *,
     project_name: str,
     project_slug: str,
+    caprover_app_name: str,
     project_description: str,
     repo_url: str,
     author_name: str,
@@ -49,11 +52,13 @@ def _payload_from_args(
     use_healthchecks: YNFlag,
     use_mcp: YNFlag,
     use_ci: YNFlag,
+    use_digitalocean: YNFlag,
     extra_context: dict[str, Any] | None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "project_name": project_name,
         "project_slug": project_slug,
+        "caprover_app_name": caprover_app_name or CAPROVER_APP_NAME_DEFAULT,
         "project_description": project_description,
         "repo_url": repo_url,
         "author_name": author_name,
@@ -74,6 +79,7 @@ def _payload_from_args(
         "use_healthchecks": use_healthchecks,
         "use_mcp": use_mcp,
         "use_ci": use_ci,
+        "use_digitalocean": use_digitalocean,
     }
     if extra_context:
         payload.update(extra_context)
@@ -91,6 +97,7 @@ def get_generator_options() -> dict[str, Any]:
 def create_project(
     project_name: str,
     project_slug: str,
+    caprover_app_name: str = "",
     project_description: str = "",
     repo_url: str = "",
     author_name: str = "",
@@ -111,6 +118,7 @@ def create_project(
     use_healthchecks: YNFlag = "y",
     use_mcp: YNFlag = "n",
     use_ci: YNFlag = "y",
+    use_digitalocean: YNFlag = "n",
     user_email: str | None = None,
     username: str | None = None,
     create_user: bool = True,
@@ -122,6 +130,7 @@ def create_project(
     payload = _payload_from_args(
         project_name=project_name,
         project_slug=project_slug,
+        caprover_app_name=caprover_app_name,
         project_description=project_description,
         repo_url=repo_url,
         author_name=author_name,
@@ -142,6 +151,7 @@ def create_project(
         use_healthchecks=use_healthchecks,
         use_mcp=use_mcp,
         use_ci=use_ci,
+        use_digitalocean=use_digitalocean,
         extra_context=extra_context,
     )
     try:
@@ -161,6 +171,7 @@ def create_project(
 def generate_project(
     project_name: str,
     project_slug: str,
+    caprover_app_name: str = "",
     project_description: str = "",
     repo_url: str = "",
     author_name: str = "",
@@ -181,6 +192,7 @@ def generate_project(
     use_healthchecks: YNFlag = "y",
     use_mcp: YNFlag = "n",
     use_ci: YNFlag = "y",
+    use_digitalocean: YNFlag = "n",
     user_email: str | None = None,
     username: str | None = None,
     create_user: bool = True,
@@ -195,6 +207,7 @@ def generate_project(
     payload = _payload_from_args(
         project_name=project_name,
         project_slug=project_slug,
+        caprover_app_name=caprover_app_name,
         project_description=project_description,
         repo_url=repo_url,
         author_name=author_name,
@@ -215,6 +228,7 @@ def generate_project(
         use_healthchecks=use_healthchecks,
         use_mcp=use_mcp,
         use_ci=use_ci,
+        use_digitalocean=use_digitalocean,
         extra_context=extra_context,
     )
     try:

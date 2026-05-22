@@ -1,4 +1,5 @@
 import json
+
 from django.core.cache import cache
 from django.db import connection
 from django.http import FileResponse, HttpRequest
@@ -175,6 +176,8 @@ def _validate_project_create_payload(
     payload = _project_create_payload(request, data)
     if not payload.get("author_email"):
         payload["author_email"] = profile.user.email or ""
+    if not payload.get("caprover_app_name"):
+        payload["caprover_app_name"] = COOKIECUTTER_FIELD_DEFAULTS["caprover_app_name"]
 
     option_errors = _invalid_cookiecutter_options(payload)
     if option_errors["unknown"] or option_errors["invalid_flags"]:
