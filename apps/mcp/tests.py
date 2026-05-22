@@ -9,6 +9,7 @@ from django.utils import timezone
 from mcp.server.fastmcp.exceptions import ToolError
 
 from apps.core.choices import ProfileStates
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 from apps.core.models import Project, ProjectArtifact, ProjectStatus
 from apps.mcp.services import (
     MCPServiceError,
@@ -319,15 +320,29 @@ def test_generator_options_exposes_defaults_and_flags(settings):
     assert "use_stripe" in options["module_flags"]
 
 
-def test_mcp_tools_accept_chatwoot_flag():
+def test_mcp_tools_expose_current_generator_fields_and_defaults():
     from inspect import signature
 
     from apps.mcp.server import _payload_from_args, create_project, generate_project
 
-    assert "use_chatwoot" in signature(create_project).parameters
-    assert "use_chatwoot" in signature(generate_project).parameters
-    assert "use_mcp" in signature(create_project).parameters
-    assert "use_mcp" in signature(generate_project).parameters
+    create_parameters = signature(create_project).parameters
+    generate_parameters = signature(generate_project).parameters
+    for field_name in COOKIECUTTER_FIELD_DEFAULTS:
+        assert field_name in create_parameters
+        assert field_name in generate_parameters
+
+    expected_mcp_defaults = {
+        "project_description": "",
+        "repo_url": "",
+        "author_name": "",
+        "author_email": "",
+        "author_url": "",
+        "project_main_color": COOKIECUTTER_FIELD_DEFAULTS["project_main_color"],
+        **{field_name: COOKIECUTTER_FIELD_DEFAULTS[field_name] for field_name in MODULE_FLAG_KEYS},
+    }
+    for field_name, expected_default in expected_mcp_defaults.items():
+        assert create_parameters[field_name].default == expected_default
+        assert generate_parameters[field_name].default == expected_default
 
     payload = _payload_from_args(
         project_name="Support CRM",
