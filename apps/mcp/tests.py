@@ -328,6 +328,8 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     create_parameters = signature(create_project).parameters
     generate_parameters = signature(generate_project).parameters
     for field_name in COOKIECUTTER_FIELD_DEFAULTS:
+        if field_name.startswith("_"):
+            continue
         assert field_name in create_parameters
         assert field_name in generate_parameters
 

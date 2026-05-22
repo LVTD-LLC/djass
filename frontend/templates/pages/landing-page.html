@@ -1,6 +1,6 @@
 {% extends "base_landing.html" %}
 {% block content %}
-  <section class="relative overflow-hidden pb-16 pt-10 sm:pb-24 sm:pt-16">
+  <section class="pb-14 pt-8 sm:pb-20 sm:pt-12">
     <div class="dj-container">
       {% if request.GET.account_deleted %}
         <div class="dj-alert dj-alert-success mb-8 text-sm">
@@ -8,88 +8,145 @@
         </div>
       {% endif %}
 
-      <div class="mx-auto max-w-5xl text-center">
-        <p class="dj-pill dj-pill-accent mx-auto">Django SaaS starter, without setup drag</p>
-        <h1 class="dj-hero-title mt-7">
-          Generate a <span class="text-[var(--dj-accent-strong)]">production-ready</span> Django SaaS starter for humans and AI agents.
-        </h1>
-        <p class="dj-hero-copy mx-auto mt-7 max-w-3xl">
-          Djass is the hosted workflow for <strong>django-saas-starter</strong>. Founders, product teams, and solo builders configure a project once, run generation in the background, and download a clean codebase ZIP ready for real product work.
-        </p>
+      <div class="grid items-stretch gap-[clamp(1.5rem,4vw,3rem)] border-b border-[var(--dj-border)] pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <p class="dj-kicker">Django SaaS starter, without setup drag</p>
+          <h1 class="dj-hero-title mt-5">
+            Generate a <span class="text-[var(--dj-accent-strong)]">production-ready</span> Django SaaS repo.
+          </h1>
+          <p class="dj-hero-copy mt-6 max-w-3xl">
+            Djass is the hosted workflow for <strong>django-saas-starter</strong>. Founders, product teams, and solo builders configure a project once, generate it in the background, and download a clean codebase ZIP.
+          </p>
 
-        <div class="mt-9 grid gap-3 sm:mx-auto sm:max-w-2xl sm:grid-cols-2">
-          <div>
-            {% if user.is_authenticated %}
-              <a href="{% url 'home' %}" class="dj-button dj-button-primary w-full">Open your dashboard</a>
-              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Jump back into your saved projects and generation history.</p>
-            {% else %}
-              <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary w-full">Create your Djass account</a>
-              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Create an account to configure your starter, run generation, and track project history.</p>
-            {% endif %}
+          <div class="mt-8 grid gap-3 sm:max-w-2xl sm:grid-cols-2">
+            <div>
+              {% if user.is_authenticated %}
+                <a href="{% url 'home' %}" class="dj-button dj-button-primary w-full">Open your dashboard</a>
+                <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Jump back into your saved projects and generation history.</p>
+              {% else %}
+                <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary w-full">Create your Djass account</a>
+                <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Create an account to configure your starter, run generation, and track project history.</p>
+              {% endif %}
+            </div>
+            <div>
+              {% if user.is_authenticated %}
+                <a href="{% url 'pricing' %}" class="dj-button dj-button-secondary w-full">See pricing and what's included</a>
+                <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Review the crossed-out lifetime price and the current free-for-now window.</p>
+              {% else %}
+                <a href="{% url 'account_login' %}" class="dj-button dj-button-secondary w-full">Sign in to your dashboard</a>
+                <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Go to your existing Djass account and continue from your project dashboard.</p>
+              {% endif %}
+            </div>
           </div>
-          <div>
-            {% if user.is_authenticated %}
-              <a href="{% url 'pricing' %}" class="dj-button dj-button-secondary w-full">See pricing and what's included</a>
-              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Review the crossed-out lifetime price and the current free-for-now window.</p>
-            {% else %}
-              <a href="{% url 'account_login' %}" class="dj-button dj-button-secondary w-full">Sign in to your dashboard</a>
-              <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">Go to your existing Djass account and continue from your project dashboard.</p>
-            {% endif %}
+
+          <div class="mt-8 grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] sm:grid-cols-3">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">01 Input</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">UI, API, or MCP</p>
+            </div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">02 Build</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Background generation</p>
+            </div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">03 Output</p>
+              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Downloadable repo ZIP</p>
+            </div>
           </div>
+        </div>
+
+        <aside class="grid min-h-[24rem] gap-px self-stretch border border-[var(--dj-border)] bg-[var(--dj-border)] lg:col-span-5 lg:grid-cols-2" aria-label="Djass generation flow">
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
+            <p class="dj-kicker">UI flow</p>
+            <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Click through the form.</h2>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Choose options, submit the job, and return to the dashboard for status.</p>
+          </div>
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
+            <p class="dj-kicker">API flow</p>
+            <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Send the same spec.</h2>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Use the Projects API for scripts, internal tools, and repeatable setup.</p>
+          </div>
+          <div class="grid content-start gap-3 bg-[var(--dj-panel-solid)] p-4">
+            <p class="dj-kicker">Agent flow</p>
+            <h2 class="text-2xl font-semibold text-[var(--dj-heading)]">Point agents at <span class="font-mono">/skill.md</span>.</h2>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Let coding agents use Djass MCP tools first, then fall back to HTTP.</p>
+          </div>
+          <div class="grid content-start gap-3 bg-[var(--dj-accent)] p-4 text-[var(--dj-on-accent)] [&_*]:text-[var(--dj-on-accent)]">
+            <p class="dj-kicker">Generated artifact</p>
+            <h2 class="text-2xl font-semibold">codebase.zip</h2>
+            <p class="font-mono text-sm">ready for git init</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-14 sm:py-18">
+    <div class="dj-container">
+      <div class="grid gap-8 lg:grid-cols-[0.32fr_0.68fr]">
+        <div>
+          <p class="dj-kicker">How it works</p>
+          <h2 class="dj-section-title mt-3">One output, three ways in.</h2>
+          <p class="dj-section-copy mt-4">
+            Start in the web app, call the Projects API, or teach your coding agent with the plain Djass skill so it can use MCP first.
+          </p>
+        </div>
+
+        <div class="grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] lg:grid-cols-3">
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
+            <p class="dj-method-number">01</p>
+            <div>
+              <p class="dj-kicker">UI flow</p>
+              <h3 class="mt-2 text-xl font-semibold text-[var(--dj-heading)]">Click Create Project</h3>
+            </div>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Best when a founder or teammate wants to configure a project manually.</p>
+            <a href="{% if user.is_authenticated %}{% url 'project_new' %}{% else %}{% url 'account_signup' %}{% endif %}" class="dj-button dj-button-secondary mt-auto w-full">Start in UI</a>
+          </article>
+
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
+            <p class="dj-method-number">02</p>
+            <div>
+              <p class="dj-kicker">API flow</p>
+              <h3 class="mt-2 text-xl font-semibold text-[var(--dj-heading)]">Post a project spec</h3>
+            </div>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Best for scripts, internal tools, and agent workflows that need repeatable setup.</p>
+            <a href="{{ djass_openapi_docs_url }}" class="dj-button dj-button-secondary mt-auto w-full">OpenAPI docs</a>
+          </article>
+
+          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
+            <p class="dj-method-number">03</p>
+            <div>
+              <p class="dj-kicker">Agent flow</p>
+              <h3 class="mt-2 text-xl font-semibold text-[var(--dj-heading)]">Use MCP first</h3>
+            </div>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">Best when an AI agent should generate the repo, export it, and continue from inside the codebase.</p>
+            <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary mt-auto w-full">Skill.md</a>
+          </article>
         </div>
       </div>
 
       <div class="dj-product-surface mt-8">
         <div class="dj-product-bar">
-          <span class="dj-dot"></span>
-          <span class="dj-dot"></span>
-          <span class="dj-dot"></span>
-          <span class="ml-2 font-mono">djass/project-spec.yml</span>
+          <span class="font-mono">djass/project-spec.yml</span>
         </div>
-        <div class="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
+        <div class="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">
           <div class="border-b border-[var(--dj-border)] p-5 lg:border-b-0 lg:border-r">
-            <p class="dj-kicker">Starter spec</p>
-            <h2 class="mt-3 text-2xl font-semibold text-[var(--dj-heading)]">A structured request agents can understand.</h2>
-            <div class="mt-6 space-y-3">
-              <div class="flex items-center justify-between border-b border-[var(--dj-border)] pb-3">
-                <span class="text-sm text-[var(--dj-muted)]">Framework</span>
-                <span class="font-mono text-sm text-[var(--dj-heading)]">Django 6</span>
-              </div>
-              <div class="flex items-center justify-between border-b border-[var(--dj-border)] pb-3">
-                <span class="text-sm text-[var(--dj-muted)]">Database</span>
-                <span class="font-mono text-sm text-[var(--dj-heading)]">Postgres + pgvector</span>
-              </div>
-              <div class="flex items-center justify-between border-b border-[var(--dj-border)] pb-3">
-                <span class="text-sm text-[var(--dj-muted)]">Interface</span>
-                <span class="font-mono text-sm text-[var(--dj-heading)]">UI + API</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-[var(--dj-muted)]">Output</span>
-                <span class="font-mono text-sm text-[var(--dj-heading)]">clean ZIP artifact</span>
-              </div>
-            </div>
+            <p class="dj-kicker">Step 2</p>
+            <h3 class="mt-3 text-2xl font-semibold text-[var(--dj-heading)]">Djass generates in the background.</h3>
+            <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">The same project spec feeds the UI, API, and MCP paths, so the result is consistent no matter how the request starts.</p>
           </div>
-          <div class="p-5">
-            <div class="rounded-lg border border-[var(--dj-border)] bg-[#0c0f17] p-5 text-left shadow-2xl">
-              <div class="dj-code-line"><span>01</span><code class="text-cyan-200">project_name: launch_control</code></div>
-              <div class="dj-code-line"><span>02</span><code class="text-violet-200">use_django_ninja: y</code></div>
-              <div class="dj-code-line"><span>03</span><code class="text-emerald-200">use_mcp: y</code></div>
-              <div class="dj-code-line"><span>04</span><code class="text-slate-300">auth: allauth_email</code></div>
-              <div class="dj-code-line"><span>05</span><code class="text-slate-300">jobs: django_q2</code></div>
-              <div class="mt-5 grid gap-3 sm:grid-cols-3">
-                <div class="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p class="text-xs text-slate-400">Queued</p>
-                  <p class="mt-1 font-mono text-sm text-white">00:00</p>
-                </div>
-                <div class="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p class="text-xs text-slate-400">Generated</p>
-                  <p class="mt-1 font-mono text-sm text-white">codebase.zip</p>
-                </div>
-                <div class="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p class="text-xs text-slate-400">Ready for</p>
-                  <p class="mt-1 font-mono text-sm text-white">git init</p>
-                </div>
-              </div>
+          <div class="grid gap-1 p-1 sm:grid-cols-3">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Queued</p>
+              <p class="mt-2 font-mono text-sm text-[var(--dj-heading)]">00:00</p>
+            </div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Built</p>
+              <p class="mt-2 font-mono text-sm text-[var(--dj-heading)]">repo files</p>
+            </div>
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Ready</p>
+              <p class="mt-2 font-mono text-sm text-[var(--dj-heading)]">download ZIP</p>
             </div>
           </div>
         </div>
@@ -97,121 +154,112 @@
     </div>
   </section>
 
-  <section class="py-16 sm:py-20">
+  <section class="py-14 sm:py-20">
     <div class="dj-container">
-      <div class="max-w-3xl">
-        <p class="dj-kicker">How it works</p>
-        <h2 class="dj-section-title mt-3">Pick your input path, then let Djass generate the starter for you.</h2>
-        <p class="dj-section-copy mt-4">
-          Start in the web app, call the Projects API, or teach your coding agent with the plain Djass skill so it can use MCP first.
-        </p>
-      </div>
-      <div class="mt-8 grid gap-4 lg:grid-cols-[1.25fr_0.9fr_0.9fr]">
-        <article class="dj-panel p-5">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <p class="dj-pill dj-pill-accent">Step 1</p>
-            <span class="dj-pill">UI + API + MCP</span>
-          </div>
-          <h3 class="mt-4 text-lg font-semibold">Choose how you create the project</h3>
-          <p class="mt-2 text-sm leading-6">Use the path that matches your workflow while keeping the same generated ZIP output.</p>
-          <div class="mt-5 grid gap-3 sm:grid-cols-3">
-            <div class="border-t border-[var(--dj-border)] pt-4">
-              <p class="dj-kicker">UI flow</p>
-              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Click Create Project, follow the form, and download the ZIP.</p>
-              <p class="mt-2 text-sm leading-6">Best when a founder or teammate wants to configure a project manually.</p>
-              <a href="{% if user.is_authenticated %}{% url 'project_new' %}{% else %}{% url 'account_signup' %}{% endif %}" class="dj-button dj-button-secondary mt-4 w-full">Start in UI</a>
-            </div>
-            <div class="border-t border-[var(--dj-border)] pt-4">
-              <p class="dj-kicker">API flow</p>
-              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Send the same project spec from scripts or internal tools.</p>
-              <p class="mt-2 text-sm leading-6">Best when you want repeatable project setup inside scripts, internal platforms, or agent workflows.</p>
-              <a href="{{ djass_openapi_docs_url }}" class="dj-button dj-button-secondary mt-4 w-full">OpenAPI docs</a>
-            </div>
-            <div class="border-t border-[var(--dj-border)] pt-4">
-              <p class="dj-kicker">Agent flow</p>
-              <p class="mt-2 text-sm font-semibold text-[var(--dj-heading)]">Give your agent the prompt that points to <span class="font-mono">/skill.md</span>.</p>
-              <p class="mt-2 text-sm leading-6">Best when you want the agent to use Djass MCP tools and continue inside the generated repo.</p>
-              <a href="{% url 'agent_skill' %}" class="dj-button dj-button-secondary mt-4 w-full">Skill.md</a>
-            </div>
-          </div>
-        </article>
-        <article class="dj-panel p-5">
-          <p class="dj-pill dj-pill-accent">Step 2</p>
-          <h3 class="mt-4 text-lg font-semibold">Djass generates in the background</h3>
-          <p class="mt-2 text-sm leading-6">The build runs asynchronously, so you are not blocked on local setup, long commands, or template babysitting.</p>
-        </article>
-        <article class="dj-panel p-5">
-          <p class="dj-pill dj-pill-accent">Step 3</p>
-          <h3 class="mt-4 text-lg font-semibold">Download, inspect, and keep shipping</h3>
-          <p class="mt-2 text-sm leading-6">Grab the generated ZIP, review the project history, and hand the codebase to your team for the next iteration.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="py-16 sm:py-20">
-    <div class="dj-container">
-      <div class="mx-auto max-w-3xl text-center">
-        <p class="dj-kicker">Included baseline</p>
-        <h2 class="dj-section-title mt-3">What you get with Djass</h2>
-        <p class="dj-section-copy mt-4">A serious Django SaaS foundation with the defaults most teams need before they start adding product-specific logic.</p>
-      </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Core</p>
-          <h3 class="mt-3 text-lg font-semibold">Django 6 + Python 3.14</h3>
-          <p class="mt-2 text-sm leading-6">A modern baseline with predictable defaults and maintained dependencies.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Frontend</p>
-          <h3 class="mt-3 text-lg font-semibold">Tailwind + HTMX + Alpine</h3>
-          <p class="mt-2 text-sm leading-6">A flexible UI stack with dark mode and production build support out of the box.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Auth</p>
-          <h3 class="mt-3 text-lg font-semibold">django-allauth foundation</h3>
-          <p class="mt-2 text-sm leading-6">Email-based auth, confirmations, resets, and extension points for your flows.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Content</p>
-          <h3 class="mt-3 text-lg font-semibold">Marketing surfaces included</h3>
-          <p class="mt-2 text-sm leading-6">Landing, pricing, auth pages, docs, and blog support so you can ship the whole product faster.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">API</p>
-          <h3 class="mt-3 text-lg font-semibold">django-ninja starter API</h3>
-          <p class="mt-2 text-sm leading-6">Session and token auth options for internal tools and external integrations.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Data</p>
-          <h3 class="mt-3 text-lg font-semibold">Postgres 18 + pgvector</h3>
-          <p class="mt-2 text-sm leading-6">A sensible data baseline with vector support and useful extensions already enabled.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Email</p>
-          <h3 class="mt-3 text-lg font-semibold">Anymail + Mailgun + Mailhog</h3>
-          <p class="mt-2 text-sm leading-6">Production email integrations with local preview workflows.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">DX</p>
-          <h3 class="mt-3 text-lg font-semibold">pytest + ruff + djlint</h3>
-          <p class="mt-2 text-sm leading-6">Opinionated quality tooling so you can move fast without losing confidence in the baseline.</p>
-        </article>
-        <article class="dj-feature-card">
-          <p class="dj-kicker">Deploy</p>
-          <h3 class="mt-3 text-lg font-semibold">CapRover CI/CD path</h3>
-          <p class="mt-2 text-sm leading-6">Repeatable deploy flow from GitHub Actions to production.</p>
-        </article>
-      </div>
-
-      <div class="dj-panel mt-10 grid gap-6 p-6 text-center sm:p-8 lg:grid-cols-[1fr_auto] lg:text-left">
+      <div class="grid gap-8 lg:grid-cols-[0.34fr_0.66fr]">
         <div>
-          <h3 class="text-2xl font-semibold text-[var(--dj-heading)]">Start from a Django SaaS foundation that is ready for real work</h3>
-          <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">Skip repetitive setup, keep your stack consistent, and spend your time on the parts users will actually notice.</p>
+          <p class="dj-kicker">Pre-installed baseline</p>
+          <h2 class="dj-section-title mt-3">What the repo already has.</h2>
+          <p class="dj-section-copy mt-4">
+            The generated starter includes the boring parts first: auth, database, tasks, delivery, observability, and product surfaces you can edit immediately.
+          </p>
         </div>
-        <div class="self-center">
-          <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full sm:w-auto">See pricing and what's included</a>
-          <p class="mt-3 text-xs text-[var(--dj-muted)]">Opens pricing with the $999 lifetime price crossed out while Djass is free for now.</p>
+
+        <div class="grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)]">
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Core</p>
+              <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Runtime</h3>
+            </div>
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
+              <span class="dj-stack-tag">Django 6</span>
+              <span class="dj-stack-tag">Python 3.14</span>
+              <span class="dj-stack-tag">django-allauth</span>
+              <span class="dj-stack-tag">pytest</span>
+              <span class="dj-stack-tag">ruff</span>
+              <span class="dj-stack-tag">djlint</span>
+            </div>
+          </div>
+
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Interface</p>
+              <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Product pages</h3>
+            </div>
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
+              <span class="dj-stack-tag">Tailwind</span>
+              <span class="dj-stack-tag">HTMX</span>
+              <span class="dj-stack-tag">Alpine</span>
+              <span class="dj-stack-tag">dark mode</span>
+              <span class="dj-stack-tag">landing</span>
+              <span class="dj-stack-tag">pricing</span>
+              <span class="dj-stack-tag">docs</span>
+              <span class="dj-stack-tag">blog</span>
+            </div>
+          </div>
+
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Data</p>
+              <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Storage and jobs</h3>
+            </div>
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
+              <span class="dj-stack-tag">Postgres 18</span>
+              <span class="dj-stack-tag">pgvector</span>
+              <span class="dj-stack-tag">Redis</span>
+              <span class="dj-stack-tag">Django-Q2</span>
+              <span class="dj-stack-tag">S3 option</span>
+            </div>
+          </div>
+
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Integrations</p>
+              <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">Selectable modules</h3>
+            </div>
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
+              <span class="dj-stack-tag">Stripe</span>
+              <span class="dj-stack-tag">Sentry</span>
+              <span class="dj-stack-tag">PostHog</span>
+              <span class="dj-stack-tag">Logfire</span>
+              <span class="dj-stack-tag">Healthchecks</span>
+              <span class="dj-stack-tag">Anymail</span>
+              <span class="dj-stack-tag">Mailgun</span>
+              <span class="dj-stack-tag">Mailhog</span>
+              <span class="dj-stack-tag">Buttondown</span>
+              <span class="dj-stack-tag">Chatwoot</span>
+            </div>
+          </div>
+
+          <div class="grid gap-px bg-[var(--dj-border)] md:grid-cols-[minmax(9rem,0.38fr)_minmax(0,1fr)]">
+            <div class="bg-[var(--dj-panel-solid)] p-4">
+              <p class="dj-kicker">Automation</p>
+              <h3 class="mt-2 font-semibold text-[var(--dj-heading)]">API and agents</h3>
+            </div>
+            <div class="dj-tag-list bg-[var(--dj-panel-solid)] p-4">
+              <span class="dj-stack-tag">django-ninja</span>
+              <span class="dj-stack-tag">OpenAPI</span>
+              <span class="dj-stack-tag">token auth</span>
+              <span class="dj-stack-tag">MCP option</span>
+              <span class="dj-stack-tag">GitHub Actions</span>
+              <span class="dj-stack-tag">CapRover path</span>
+              <span class="dj-stack-tag">DigitalOcean option</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dj-panel mt-10 grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <h3 class="text-2xl font-semibold text-[var(--dj-heading)]">Generate the repo, then start changing product code.</h3>
+          <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">Djass handles the starter assembly so the first real commit can be about your app, not setup.</p>
+        </div>
+        <div>
+          {% if user.is_authenticated %}
+            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary w-full sm:w-auto">Create Project</a>
+          {% else %}
+            <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full sm:w-auto">See pricing and what's included</a>
+          {% endif %}
         </div>
       </div>
     </div>
