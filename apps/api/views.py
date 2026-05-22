@@ -147,7 +147,7 @@ def _project_create_payload(request: HttpRequest, data: ProjectCreateIn) -> dict
 
     try:
         raw_payload = json.loads(request.body.decode("utf-8") or "{}")
-    except UnicodeDecodeError, json.JSONDecodeError:
+    except (UnicodeDecodeError, json.JSONDecodeError):
         raw_payload = {}
 
     if isinstance(raw_payload, dict):
