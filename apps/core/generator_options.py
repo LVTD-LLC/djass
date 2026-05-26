@@ -178,6 +178,7 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("use_ai", "y", "Use AI", "ai", True),
         GeneratorField("use_logfire", "y", "Use Logfire", "monitoring", True),
         GeneratorField("use_healthchecks", "y", "Use Healthchecks", "monitoring", True),
+        GeneratorField("use_apprise", "n", "Use Apprise", "monitoring", True),
         GeneratorField("use_mcp", "n", "Use MCP", "ai", True),
         GeneratorField("use_ci", "y", "Use CI", "delivery", True),
         GeneratorField("use_digitalocean", "n", "Use DigitalOcean", "delivery", True),

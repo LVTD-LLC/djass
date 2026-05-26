@@ -87,6 +87,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
     "repo_url": "https://github.com/cookiecutter/cookiecutter",
     "use_posthog": "y",
     "use_chatwoot": "n",
+    "use_apprise": "n",
     "use_mcp": "n",
     "use_digitalocean": "n"
   },
@@ -142,6 +143,7 @@ Notes:
   "use_ai": "y",
   "use_logfire": "y",
   "use_healthchecks": "y",
+  "use_apprise": "n",
   "use_mcp": "n",
   "use_ci": "y",
   "use_digitalocean": "n"
@@ -191,6 +193,7 @@ Notes:
       "use_ai": "y",
       "use_logfire": "y",
       "use_healthchecks": "y",
+      "use_apprise": "n",
       "use_mcp": "n",
       "use_ci": "y",
       "use_digitalocean": "n"
@@ -359,6 +362,7 @@ curl -sS -X POST "$DJASS_BASE_URL/projects" \
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
+    "use_apprise": "n",
     "use_mcp": "n",
     "use_ci": "y",
     "use_digitalocean": "n"
