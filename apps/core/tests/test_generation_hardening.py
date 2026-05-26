@@ -93,7 +93,6 @@ def _read_artifact_zip(project):
             project_slug="lean_build",
             use_posthog="n",
             use_chatwoot="n",
-            use_buttondown="n",
             use_s3="n",
             use_stripe="n",
             use_sentry="n",

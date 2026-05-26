@@ -201,7 +201,6 @@ def build_djass_agent_skill_md() -> str:
             "project_main_color": "green",
             "use_posthog": "y",
             "use_chatwoot": "n",
-            "use_buttondown": "y",
             "use_s3": "y",
             "use_stripe": "y",
             "use_sentry": "y",
