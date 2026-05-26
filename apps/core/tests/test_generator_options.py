@@ -26,6 +26,7 @@ def test_generator_options_are_grouped_by_category():
         "use_sentry",
         "use_logfire",
         "use_healthchecks",
+        "use_apprise",
     }
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",

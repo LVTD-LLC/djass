@@ -36,6 +36,7 @@ def _valid_project_post_data(**overrides):
         "use_ai": "y",
         "use_logfire": "y",
         "use_healthchecks": "y",
+        "use_apprise": "n",
         "use_mcp": "n",
         "use_ci": "y",
         "use_digitalocean": "n",
@@ -91,6 +92,7 @@ class TestProjectFlow:
         project = Project.objects.get(user=response.wsgi_request.user)
         assert project.status == ProjectStatus.QUEUED
         assert project.input_payload["use_chatwoot"] == "n"
+        assert project.input_payload["use_apprise"] == "n"
         assert project.input_payload["use_mcp"] == "n"
         generation_call = next(
             call for call in calls if call[0][0] == "apps.core.tasks.generate_project_artifact"

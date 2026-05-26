@@ -39,6 +39,7 @@ not block unrelated PRs.
 - **Use Sentry**: error monitoring setup.
 - **Use Logfire**: observability configuration for Logfire.
 - **Use Healthchecks**: health-check related setup when enabled.
+- **Use Apprise**: Apprise-backed admin notification helper, config, deployment docs, and tests.
 
 ### CX
 

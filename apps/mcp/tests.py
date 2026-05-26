@@ -369,12 +369,14 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_ai="y",
         use_logfire="y",
         use_healthchecks="y",
+        use_apprise="n",
         use_mcp="y",
         use_ci="y",
         use_digitalocean="n",
         extra_context=None,
     )
     assert payload["use_chatwoot"] == "y"
+    assert payload["use_apprise"] == "n"
     assert payload["use_mcp"] == "y"
     assert payload["use_digitalocean"] == "n"
 
@@ -400,6 +402,7 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_ai="y",
         use_logfire="y",
         use_healthchecks="y",
+        use_apprise="n",
         use_mcp="y",
         use_ci="y",
         use_digitalocean="n",

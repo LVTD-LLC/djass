@@ -38,8 +38,7 @@ class TestHomeView:
         assert "Skill page" not in content
         assert 'href="/uses"' not in content
         assert (
-            'href="/projects/new" class="dj-button dj-button-secondary">Create</a>'
-            not in content
+            'href="/projects/new" class="dj-button dj-button-secondary">Create</a>' not in content
         )
 
     def test_home_shows_short_copyable_agent_prompt(self, auth_client, user):
@@ -63,7 +62,10 @@ class TestHomeView:
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
         assert 'id="djass-agent-prompt"' in content
-        assert 'class="dj-input mt-3 h-64 w-full resize-y p-4 font-mono text-xs leading-5"' not in content
+        assert (
+            'class="dj-input mt-3 h-64 w-full resize-y p-4 font-mono text-xs leading-5"'
+            not in content
+        )
         assert "---BEGIN SKILL.md---" not in content
         assert "## API Fallback Workflow" not in content
 
@@ -142,6 +144,8 @@ class TestProjectCreateView:
         assert "AI" in content
         assert "Use Chatwoot" in content
         assert 'name="use_chatwoot"' in content
+        assert "Use Apprise" in content
+        assert 'name="use_apprise"' in content
         assert "Use MCP" in content
         assert 'name="use_mcp"' in content
 

@@ -82,6 +82,7 @@ repository into `output_dir/<project_slug>/`.
 Set `overwrite=true` only when replacing an existing generated zip or extract
 directory is intentional.
 
-`use_mcp` is available as a normal `"y"|"n"` generator flag on `create_project`
-and `generate_project`. It controls whether the generated repository includes
-MCP scaffolding; it does not control whether the Djass MCP server itself is used.
+`use_apprise` and `use_mcp` are available as normal `"y"|"n"` generator flags on `create_project`
+and `generate_project`. `use_apprise` controls the generated admin notification helper and docs;
+`use_mcp` controls whether the generated repository includes MCP scaffolding and does not control
+whether the Djass MCP server itself is used.

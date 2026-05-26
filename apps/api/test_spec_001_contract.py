@@ -40,6 +40,7 @@ CREATE_PAYLOAD = {
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
+    "use_apprise": "n",
     "use_mcp": "n",
     "use_ci": "y",
     "use_digitalocean": "n",
@@ -78,6 +79,7 @@ def test_project_options_endpoint_contract(client):
     assert response.status_code == 200
     body = response.json()
     assert body["defaults"]["use_chatwoot"] == "n"
+    assert body["defaults"]["use_apprise"] == "n"
     assert body["defaults"]["use_mcp"] == "n"
     assert body["defaults"]["use_digitalocean"] == "n"
 
@@ -87,6 +89,7 @@ def test_project_options_endpoint_contract(client):
         "use_sentry",
         "use_logfire",
         "use_healthchecks",
+        "use_apprise",
     }
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",
@@ -144,6 +147,7 @@ class TestSpec001Contract:
         assert isinstance(project["input_payload"], dict)
         assert project["input_payload"]["project_name"] == CREATE_PAYLOAD["project_name"]
         assert project["input_payload"]["use_chatwoot"] == "n"
+        assert project["input_payload"]["use_apprise"] == "n"
         assert project["input_payload"]["use_mcp"] == "n"
 
         created = Project.objects.get(id=project["id"])

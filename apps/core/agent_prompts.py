@@ -211,6 +211,7 @@ def build_djass_agent_skill_md() -> str:
             "use_ai": "y",
             "use_logfire": "y",
             "use_healthchecks": "y",
+            "use_apprise": "n",
             "use_mcp": "y",
             "use_ci": "y",
             "use_digitalocean": "n"

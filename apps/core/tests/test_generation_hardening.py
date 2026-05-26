@@ -37,9 +37,7 @@ def fake_cookiecutter(monkeypatch):
         (project_dir / "README.md").write_text(
             f"# {extra_context['project_name']}\n", encoding="utf-8"
         )
-        (project_dir / "pyproject.toml").write_text(
-            "[project]\nname='demo'\n", encoding="utf-8"
-        )
+        (project_dir / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
 
         if extra_context.get("generate_blog") == "y":
             (project_dir / "apps" / "blog").mkdir(parents=True, exist_ok=True)
@@ -105,6 +103,7 @@ def _read_artifact_zip(project):
             use_ai="n",
             use_logfire="n",
             use_healthchecks="n",
+            use_apprise="n",
             use_mcp="n",
             use_ci="n",
         ),
