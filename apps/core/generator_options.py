@@ -168,7 +168,6 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("project_main_color", "green", "Project Main Color"),
         GeneratorField("use_posthog", "y", "Use PostHog", "monitoring", True),
         GeneratorField("use_chatwoot", "n", "Use Chatwoot", "cx", True),
-        GeneratorField("use_buttondown", "y", "Use Buttondown", "cx", True),
         GeneratorField("use_s3", "y", "Use S3", "storage", True),
         GeneratorField("use_stripe", "y", "Use Stripe", "commerce", True),
         GeneratorField("use_sentry", "y", "Use Sentry", "monitoring", True),

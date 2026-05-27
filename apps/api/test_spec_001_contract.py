@@ -30,7 +30,6 @@ CREATE_PAYLOAD = {
     "project_main_color": "green",
     "use_posthog": "y",
     "use_chatwoot": "n",
-    "use_buttondown": "y",
     "use_s3": "y",
     "use_stripe": "y",
     "use_sentry": "y",
@@ -93,7 +92,6 @@ def test_project_options_endpoint_contract(client):
     }
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",
-        "use_buttondown",
         "use_mjml",
     }
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}

@@ -44,7 +44,6 @@ not block unrelated PRs.
 ### CX
 
 - **Use Chatwoot**: customer support/chat integration scaffolding.
-- **Use Buttondown**: newsletter integration scaffolding.
 - **Use MJML**: email templating/rendering support.
 
 ### Commerce
