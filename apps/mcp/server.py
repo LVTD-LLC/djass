@@ -168,86 +168,6 @@ def create_project(
 
 
 @mcp.tool()
-def generate_project(
-    project_name: str,
-    project_slug: str,
-    caprover_app_name: str = "",
-    project_description: str = "",
-    repo_url: str = "",
-    author_name: str = "",
-    author_email: str = "",
-    author_url: str = "",
-    project_main_color: str = "green",
-    use_posthog: YNFlag = "y",
-    use_chatwoot: YNFlag = "n",
-    use_s3: YNFlag = "y",
-    use_stripe: YNFlag = "y",
-    use_sentry: YNFlag = "y",
-    generate_blog: YNFlag = "y",
-    generate_docs: YNFlag = "y",
-    use_mjml: YNFlag = "y",
-    use_ai: YNFlag = "y",
-    use_logfire: YNFlag = "y",
-    use_healthchecks: YNFlag = "y",
-    use_apprise: YNFlag = "n",
-    use_mcp: YNFlag = "n",
-    use_ci: YNFlag = "y",
-    use_digitalocean: YNFlag = "n",
-    user_email: str | None = None,
-    username: str | None = None,
-    create_user: bool = True,
-    grant_project_access: bool = True,
-    extra_context: dict[str, Any] | None = None,
-    output_dir: str | None = None,
-    extract: bool = True,
-    overwrite: bool = False,
-) -> dict[str, Any]:
-    """Create a Djass project, run Cookiecutter synchronously, and optionally export the zip."""
-
-    payload = _payload_from_args(
-        project_name=project_name,
-        project_slug=project_slug,
-        caprover_app_name=caprover_app_name,
-        project_description=project_description,
-        repo_url=repo_url,
-        author_name=author_name,
-        author_email=author_email,
-        author_url=author_url,
-        project_main_color=project_main_color,
-        use_posthog=use_posthog,
-        use_chatwoot=use_chatwoot,
-        use_s3=use_s3,
-        use_stripe=use_stripe,
-        use_sentry=use_sentry,
-        generate_blog=generate_blog,
-        generate_docs=generate_docs,
-        use_mjml=use_mjml,
-        use_ai=use_ai,
-        use_logfire=use_logfire,
-        use_healthchecks=use_healthchecks,
-        use_apprise=use_apprise,
-        use_mcp=use_mcp,
-        use_ci=use_ci,
-        use_digitalocean=use_digitalocean,
-        extra_context=extra_context,
-    )
-    try:
-        return services.generate_project_now(
-            payload,
-            user_email=user_email,
-            username=username,
-            create_user=create_user,
-            grant_project_access=grant_project_access,
-            extra_context=extra_context,
-            output_dir=output_dir,
-            extract=extract,
-            overwrite=overwrite,
-        )
-    except MCPServiceError as exc:
-        raise _tool_error(exc) from exc
-
-
-@mcp.tool()
 def get_project(project_id: int, user_email: str | None = None) -> dict[str, Any]:
     """Fetch one Djass project by id, optionally scoped to a user email."""
 
@@ -285,7 +205,7 @@ def export_project_artifact(
     extract: bool = True,
     overwrite: bool = False,
 ) -> dict[str, Any]:
-    """Write a ready project artifact zip to disk and optionally extract it."""
+    """Write a ready artifact to the MCP server filesystem for local/shared workflows."""
 
     try:
         return services.export_project_artifact(
@@ -341,10 +261,14 @@ def generate_djass_project_prompt(app_idea: str) -> str:
     """Prompt an agent to transform an app idea into a Djass generation call."""
 
     return (
-        "Create a concise Djass project generation payload for this app idea, then call "
-        "`generate_project` with an explicit `project_name`, Python-safe `project_slug`, "
-        "short `project_description`, repository URL if known, author fields if known, and "
-        "only the feature flags that should differ from their defaults.\n\n"
+        "Use the Djass MCP server to create a queued project generation. First call "
+        "`get_generator_options`, then ask the user to confirm which optional features "
+        "and generator options they need and will use. Do not infer optional feature "
+        "flags from a vague app idea. After the user confirms, call `create_project` "
+        "with an explicit `project_name`, Python-safe `project_slug`, short "
+        "`project_description`, repository URL if known, author fields if known, and "
+        "explicit feature flags as `\"y\"` or `\"n\"`. Poll `get_project` until the "
+        "artifact is ready, then retrieve the ZIP from the artifact resource or URL.\n\n"
         f"App idea:\n{app_idea}"
     )
 

@@ -14,7 +14,7 @@ from django_q.tasks import async_task
 from apps.core.choices import ProfileStates
 from apps.core.forms import ProjectCreateForm
 from apps.core.models import Profile, Project, ProjectStatus
-from apps.core.tasks import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS, generate_project_artifact
+from apps.core.tasks import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 
 DEFAULT_MCP_USER_EMAIL = "djass-agent@example.local"
 DEFAULT_MCP_USERNAME = "djass-agent"
@@ -252,58 +252,6 @@ def queue_project_generation(
         "project": serialize_project(project),
         "queued": True,
     }
-
-
-def generate_project_now(
-    raw_payload: dict[str, Any],
-    *,
-    user_email: str | None = None,
-    username: str | None = None,
-    create_user: bool = True,
-    grant_project_access: bool = True,
-    extra_context: dict[str, Any] | None = None,
-    output_dir: str | None = None,
-    extract: bool = True,
-    overwrite: bool = False,
-) -> dict[str, Any]:
-    user = ensure_mcp_user(
-        user_email=user_email,
-        username=username,
-        create_if_missing=create_user,
-        grant_project_access=grant_project_access,
-    )
-    payload = build_project_payload(raw_payload, user=user, extra_context=extra_context)
-    project = _create_project(user, payload)
-
-    try:
-        generate_project_artifact(project.id)
-    except Exception as exc:
-        project.refresh_from_db()
-        raise MCPServiceError(
-            "generation_failed",
-            f"Project generation failed: {exc}",
-            {
-                "project_id": project.id,
-                "status": project.status,
-                "error_message": project.error_message,
-            },
-        ) from exc
-    project = Project.objects.select_related("user", "artifact").get(id=project.id)
-
-    result = {
-        "project": serialize_project(project),
-        "queued": False,
-        "generated": project.status == ProjectStatus.READY,
-    }
-    if output_dir:
-        result["export"] = export_project_artifact(
-            project.id,
-            output_dir=output_dir,
-            user_email=user.email,
-            extract=extract,
-            overwrite=overwrite,
-        )
-    return result
 
 
 def _project_queryset(user_email: str | None = None):

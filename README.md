@@ -80,7 +80,8 @@ uv run python -m apps.mcp.server
 ```
 
 The server exposes tools for generator options, queued project creation,
-synchronous project generation, project lookup/listing, and artifact export.
+project lookup/listing, artifact resources, and artifact export for local
+shared-filesystem workflows.
 By default it uses `DJASS_MCP_USER_EMAIL` or creates an automation user at
 `djass-agent@example.local`.
 

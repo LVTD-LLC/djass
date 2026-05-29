@@ -13,6 +13,9 @@ def test_agent_skill_uses_canonical_api_base_url():
     assert "## Preferred MCP Workflow" in skill_md
     assert "## API Fallback Workflow" in skill_md
     assert "OpenAPI docs: https://djass.dev/api/docs" in skill_md
+    assert "- `generate_project`" not in skill_md
+    assert "which optional features and generator options they need" in skill_md
+    assert "do not assume the server can write into the" in skill_md
     assert "__DJASS_API_BASE_URL__" not in skill_md
     assert "__DJASS_OPENAPI_DOCS_URL__" not in skill_md
     assert "__DJASS_MCP_DOCS_URL__" not in skill_md
@@ -30,5 +33,8 @@ def test_agent_prompt_references_plain_skill_markdown_without_embedding_skill():
     assert "agent-skill" not in prompt
     assert "http://testserver/skill.md" in prompt
     assert "Preferred path: use Djass MCP tools" in prompt
+    assert "call `create_project`" in prompt
+    assert "which optional features" in prompt
+    assert "`generate_project`" not in prompt
     assert "---BEGIN SKILL.md---" not in prompt
     assert "## API Fallback Workflow" not in prompt
