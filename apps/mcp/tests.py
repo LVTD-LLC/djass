@@ -14,7 +14,6 @@ from apps.core.models import Project, ProjectArtifact, ProjectStatus
 from apps.mcp.services import (
     MCPServiceError,
     export_project_artifact,
-    generate_project_now,
     get_generator_options,
     list_projects,
     queue_project_generation,
@@ -36,20 +35,6 @@ def isolate_mcp_tests(monkeypatch, settings, tmp_path):
     )
 
 
-@pytest.fixture
-def fake_cookiecutter(monkeypatch):
-    def _fake_cookiecutter(template_path, no_input, output_dir, extra_context):
-        project_dir = Path(output_dir) / extra_context["project_slug"]
-        project_dir.mkdir(parents=True, exist_ok=True)
-        (project_dir / "README.md").write_text(
-            f"# {extra_context['project_name']}\n", encoding="utf-8"
-        )
-        (project_dir / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
-        return str(project_dir)
-
-    monkeypatch.setattr("apps.core.tasks.cookiecutter", _fake_cookiecutter)
-
-
 def _payload(**overrides):
     payload = {
         "project_name": "MCP CRM",
@@ -60,55 +45,6 @@ def _payload(**overrides):
     }
     payload.update(overrides)
     return payload
-
-
-@pytest.mark.django_db
-def test_generate_project_now_creates_artifact_and_exports(fake_cookiecutter, tmp_path):
-    output_dir = tmp_path / "export"
-
-    result = generate_project_now(
-        _payload(project_slug="mcp crm"),
-        user_email="agent@example.local",
-        output_dir=str(output_dir),
-        extract=True,
-    )
-
-    project = Project.objects.get(id=result["project"]["id"])
-    assert project.user.email == "agent@example.local"
-    assert project.user.profile.state == ProfileStates.SUBSCRIBED
-    assert project.slug == "mcp_crm"
-    assert project.status == ProjectStatus.READY
-    assert project.artifact.sha256
-
-    assert result["generated"] is True
-    assert Path(result["export"]["zip_path"]).exists()
-    assert Path(result["export"]["extract_path"], "README.md").read_text() == "# MCP CRM\n"
-
-
-@pytest.mark.django_db
-def test_generate_project_now_wraps_generation_failure(monkeypatch):
-    def _explode(*args, **kwargs):
-        raise RuntimeError("missing required key: project_slug")
-
-    class _FailedProcess:
-        returncode = 2
-        stderr = "missing required key: project_slug"
-
-    monkeypatch.setattr("apps.core.tasks.cookiecutter", _explode)
-    monkeypatch.setattr("apps.core.tasks.subprocess.run", lambda *args, **kwargs: _FailedProcess())
-
-    with pytest.raises(MCPServiceError) as exc_info:
-        generate_project_now(
-            _payload(project_slug="broken_generation"),
-            user_email="failure@example.local",
-        )
-
-    error = exc_info.value
-    assert error.code == "generation_failed"
-    assert "Project generation failed" in error.message
-    assert error.details["project_id"]
-    assert error.details["status"] == ProjectStatus.FAILED
-    assert "missing required key: project_slug" in error.details["error_message"]
 
 
 @pytest.mark.django_db
@@ -323,15 +259,15 @@ def test_generator_options_exposes_defaults_and_flags(settings):
 def test_mcp_tools_expose_current_generator_fields_and_defaults():
     from inspect import signature
 
-    from apps.mcp.server import _payload_from_args, create_project, generate_project
+    from apps.mcp import server
+    from apps.mcp.server import _payload_from_args, create_project
 
     create_parameters = signature(create_project).parameters
-    generate_parameters = signature(generate_project).parameters
+    assert not hasattr(server, "generate_project")
     for field_name in COOKIECUTTER_FIELD_DEFAULTS:
         if field_name.startswith("_"):
             continue
         assert field_name in create_parameters
-        assert field_name in generate_parameters
 
     expected_mcp_defaults = {
         "caprover_app_name": "",
@@ -345,7 +281,6 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     }
     for field_name, expected_default in expected_mcp_defaults.items():
         assert create_parameters[field_name].default == expected_default
-        assert generate_parameters[field_name].default == expected_default
 
     payload = _payload_from_args(
         project_name="Support CRM",

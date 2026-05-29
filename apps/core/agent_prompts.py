@@ -24,7 +24,6 @@ def build_djass_agent_skill_md() -> str:
         Prefer a configured Djass MCP server. Expected tool names:
 
         - `get_generator_options`
-        - `generate_project`
         - `create_project`
         - `get_project`
         - `list_projects`
@@ -55,26 +54,32 @@ def build_djass_agent_skill_md() -> str:
            - `groups` or `module_flags`: feature flags grouped for UI, API, and
              MCP clients.
 
-        2. Ask only for missing product-specific values:
+        2. Ask the user for missing product-specific values:
            - `project_name`
            - `project_slug`
            - `project_description`
            - `repo_url`
            - author fields, if they matter for the generated repository
 
-        3. Prefer `generate_project` when the user wants the repository available
-           in the current workspace. Pass:
-           - explicit project fields,
-           - feature flags as `"y"` or `"n"`,
-           - `output_dir` for the generated ZIP/extract location,
-           - `extract=true`.
+        3. Ask the user which optional features and generator options they need
+           and will use. Do not silently choose optional services from the app
+           idea alone. In particular, ask the user to confirm enabled/disabled
+           values for feature flags such as analytics, support chat, storage,
+           payments, error monitoring, admin notifications, blog/docs, MJML, AI,
+           Logfire, health checks, MCP scaffolding, CI, and deployment provider support.
+           If the user says to use Djass defaults, treat that as confirmation.
 
-        4. Use `create_project` when the user specifically wants the hosted
-           background queue. Then use `get_project` or `list_projects` until the
+        4. Call `create_project` with explicit project fields and feature flags
+           as `"y"` or `"n"`. Then use `get_project` or `list_projects` until the
            status is `ready` or `failed`.
 
-        5. When a queued project is ready, call `export_project_artifact` with
-           `extract=true` to write and unpack the ZIP.
+        5. Retrieve the artifact after `artifact_ready: true`.
+           - For hosted MCP servers, do not assume the server can write into the
+             agent's local workspace. Read `djass://projects/{project_id}/artifact.zip`
+             or use the artifact URL from `get_project`, then save and unzip it
+             in the client workspace.
+           - Use `export_project_artifact` only when the MCP server shares a
+             filesystem with the agent, such as a local stdio MCP server.
 
         6. Inspect the generated repo:
            - `djass-manifest.json`
@@ -98,7 +103,8 @@ def build_djass_agent_skill_md() -> str:
         future agent workflows.
 
         Set `use_mcp` to `"y"` when the resulting repository should include MCP
-        server/tooling scaffolding. Otherwise keep the discovered default.
+        server/tooling scaffolding. Otherwise keep the discovered default only
+        after the user confirms they want defaults.
 
         ## API Fallback Authentication
 
@@ -121,7 +127,12 @@ def build_djass_agent_skill_md() -> str:
            - `defaults`: every supported cookiecutter field and default value.
            - `groups`: feature flag options grouped for UI, API, and MCP clients.
 
-        2. Create a project:
+        2. Ask the user which optional feature flags and generator options they
+           need and will use. Do not infer optional services from the app idea
+           alone. If the user says to use Djass defaults, treat that as
+           confirmation.
+
+        3. Create a project:
            `POST {DJASS_BASE_URL}/projects`
 
            Send JSON with core fields:
@@ -137,19 +148,19 @@ def build_djass_agent_skill_md() -> str:
            Include feature flags discovered from `/project-options` as `"y"` or `"n"`.
            Unknown fields or non-`"y"`/`"n"` feature flag values can fail validation.
 
-        3. Poll generation:
+        4. Poll generation:
            `GET {DJASS_BASE_URL}/projects/{project_id}/status`
 
            Poll until `status` is `ready` or `failed`.
            Recommended cadence: start at 2 seconds, back off to at most 15 seconds.
 
-        4. Download the generated repo ZIP:
+        5. Download the generated repo ZIP:
            `GET {DJASS_BASE_URL}/projects/{project_id}/download`
 
            Save the response body as a `.zip` file. If the response is
            `409 artifact_not_ready`, keep polling `/status`.
 
-        5. Unpack and inspect:
+        6. Unpack and inspect:
            - unzip the artifact into the workspace,
            - inspect `djass-manifest.json`,
            - inspect `project-metadata.json`,
@@ -243,9 +254,11 @@ def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> 
         __DJASS_SKILL_URL__
 
         Preferred path: use Djass MCP tools if they are available in your tool
-        list. Call `get_generator_options`, then prefer `generate_project` with
-        `output_dir` and `extract=true` so the repo lands in the workspace. Use
-        the HTTP API only if Djass MCP is unavailable.
+        list. Call `get_generator_options`, ask the user which optional features
+        and generator options they need and will use, then call `create_project`
+        with explicit `"y"`/`"n"` feature flags. Poll with `get_project` or
+        `list_projects` until the artifact is ready. Use the HTTP API only if
+        Djass MCP is unavailable.
 
         HTTP fallback runtime:
 
@@ -256,10 +269,11 @@ def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> 
 
         Treat `DJASS_API_KEY` as a secret.
 
-        Use the skill workflow: fetch project options, ask only for missing
-        product-specific values, create or generate the project, export/download
-        the artifact, inspect `djass-manifest.json` and `project-metadata.json`,
-        then follow the generated repo's setup instructions.
+        Use the skill workflow: fetch project options, ask for missing
+        product-specific values, ask the user to confirm optional features and
+        generator options, create the queued project, retrieve/download the
+        artifact, inspect `djass-manifest.json` and `project-metadata.json`, then
+        follow the generated repo's setup instructions.
         """
     ).strip()
     return (
