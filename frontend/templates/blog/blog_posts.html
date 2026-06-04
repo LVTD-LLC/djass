@@ -2,32 +2,32 @@
 {% load static %}
 {% block meta %}
   <title>Djass Blog</title>
-  <meta name="description" content="Web app wrapper around django-saas-starter cookiecutter." />
+  <meta name="description" content="Build logs, product notes, and implementation details for Djass and django-saas-starter." />
   <meta name="keywords" content="" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://{{ request.get_host }}{% url 'blog_posts' %}" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Djass Blog" />
   <meta property="og:url" content="https://{{ request.get_host }}{% url 'blog_posts' %}" />
-  <meta property="og:description" content="Web app wrapper around django-saas-starter cookiecutter." />
-  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta property="og:description" content="Build logs, product notes, and implementation details for Djass and django-saas-starter." />
+  <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Build logs and product notes&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:creator" content="@rasulkireev" />
   <meta name="twitter:site" content="@rasulkireev" />
   <meta name="twitter:title" content="Djass Blog" />
-  <meta name="twitter:description" content="Web app wrapper around django-saas-starter cookiecutter." />
-  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+  <meta name="twitter:description" content="Build logs, product notes, and implementation details for Djass and django-saas-starter." />
+  <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Build logs and product notes&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
   <section class="py-12 sm:py-16">
     <div class="dj-container-narrow">
       <header class="dj-panel p-6 sm:p-8">
-        <p class="dj-pill dj-pill-accent">Djass Journal</p>
-        <h1 class="mt-5 text-4xl font-semibold text-[var(--dj-heading)]">Build logs, product notes, and implementation details</h1>
+        <p class="dj-pill dj-pill-accent">Djass journal</p>
+        <h1 class="mt-5 text-4xl font-semibold text-[var(--dj-heading)]">Build notes for Djass and django-saas-starter</h1>
         <p class="mt-4 text-base leading-7 text-[var(--dj-muted)]">
-          Practical writeups for teams shipping with django-saas-starter: architecture decisions, release notes, and lessons from production workflows.
+          Practical writeups on generator decisions, release notes, and lessons from building production Django SaaS workflows.
         </p>
       </header>
 
@@ -54,7 +54,7 @@
         </div>
       {% else %}
         <div class="dj-panel mt-4 border-dashed p-10 text-center">
-          <p class="text-[var(--dj-muted)]">No blog posts available yet.</p>
+          <p class="text-[var(--dj-muted)]">No posts yet.</p>
         </div>
       {% endif %}
     </div>
@@ -67,8 +67,8 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Djass Blog",
-      "description": "Web app wrapper around django-saas-starter cookiecutter.",
-      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Web app wrapper around django-saas-starter cookiecutter.&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
+      "description": "Build logs, product notes, and implementation details for Djass and django-saas-starter.",
+      "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass Blog&subtitle=Build logs and product notes&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
       "url": "https://{{ request.get_host }}{% url 'blog_posts' %}",
       "author": {
         "@type": "Person",

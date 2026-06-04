@@ -27,7 +27,7 @@ class TestHomeView:
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
         content = response.content.decode()
-        assert "Create Project" in content
+        assert "Create project" in content
         assert "Generation locked" not in content
 
     def test_authenticated_app_header_uses_account_menu(self, auth_client):
@@ -47,7 +47,7 @@ class TestHomeView:
         assert response.status_code == 200
         content = response.content.decode()
         assert "Agent project generator prompt" not in content
-        assert "Three ways to generate a project" in content
+        assert "Three ways to generate a repo" in content
         assert "Copy the prompt below" not in content
         assert "Copy this short prompt" not in content
         assert "Copy prompt" in content

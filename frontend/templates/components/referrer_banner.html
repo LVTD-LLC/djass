@@ -2,7 +2,7 @@
   <div class="fixed inset-x-0 top-0 z-[60] isolate flex items-center justify-center overflow-hidden {{ referrer_banner.background_color }} px-4 py-3 shadow-lg">
     <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center sm:text-left">
       <p class="text-sm font-semibold leading-6 {{ referrer_banner.text_color }}">
-        <strong>Welcome {{ referrer_banner.referrer_printable_name }} users!</strong>
+        <strong>Welcome, {{ referrer_banner.referrer_printable_name }} users.</strong>
         {% if referrer_banner.discount_amount > 0 %}
           <span class="hidden sm:inline">
             Get <strong>{{ referrer_banner.discount_percentage }}% off</strong>
@@ -16,7 +16,7 @@
         {% endif %}
       </p>
       <a href="{% url 'account_signup' %}" class="dj-button bg-white px-4 py-2 text-sm text-gray-900 shadow-sm hover:bg-gray-100">
-        Get Started
+        Create account
       </a>
     </div>
   </div>

@@ -2,7 +2,7 @@
 
 {% block meta %}
   <title>404 - Page not found | Djass</title>
-  <meta name="description" content="The page you are looking for could not be found." />
+  <meta name="description" content="The requested Djass page could not be found." />
   <meta name="robots" content="noindex, follow" />
 {% endblock meta %}
 
@@ -12,10 +12,10 @@
       <p class="dj-pill dj-pill-accent mx-auto">404</p>
       <h1 class="mt-5 text-5xl font-semibold text-[var(--dj-heading)] sm:text-6xl">Page not found</h1>
       <p class="mx-auto mt-5 max-w-lg text-base leading-7 text-[var(--dj-muted)]">
-        Sorry, we couldn't find the page you're looking for.
+        The page may have moved, or the link may be incorrect.
       </p>
       <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <a href="{% url 'landing' %}" class="dj-button dj-button-primary">Go back home</a>
+        <a href="{% url 'landing' %}" class="dj-button dj-button-primary">Go home</a>
         <a href="mailto:rasul@lvtd.dev" class="dj-button dj-button-secondary">Contact support</a>
       </div>
     </div>

@@ -3,7 +3,7 @@
     data-feedback-target="toggleButton"
     data-action="click->feedback#toggleFeedback"
     class="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-transparent bg-[var(--dj-accent-strong)] text-white shadow-lg transition-colors hover:bg-[var(--dj-accent)] md:h-14 md:w-14"
-    aria-label="Provide feedback"
+    aria-label="Send feedback"
   >
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -19,7 +19,7 @@
       data-feedback-target="formContainer"
       class="dj-panel-solid mx-4 w-full max-w-md scale-95 transform p-6 transition-transform duration-300"
     >
-      <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Share your feedback</h2>
+      <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Send feedback</h2>
 
       <form data-action="submit->feedback#submitFeedback" class="mt-5">
         <div>
@@ -27,7 +27,7 @@
             data-feedback-target="feedbackInput"
             class="dj-input w-full px-3 py-2"
             rows="4"
-            placeholder="What's on your mind?"
+            placeholder="What felt confusing, missing, or slow?"
             required
           ></textarea>
         </div>
@@ -37,7 +37,7 @@
             Cancel
           </button>
           <button type="submit" class="dj-button dj-button-primary">
-            Send Feedback
+            Send feedback
           </button>
         </div>
       </form>

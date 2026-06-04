@@ -6,11 +6,11 @@
     <div class="dj-auth-card">
       <div class="text-center">
         <p class="dj-pill dj-pill-accent mx-auto">Passkey</p>
-        <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Create your account with a passkey</h1>
+        <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Create your free account with a passkey</h1>
         <p class="mt-3 text-sm text-[var(--dj-muted)]">
-          Or
+          Already have an account?
           <a href="{% url 'account_login' %}" class="font-semibold text-[var(--dj-accent-strong)] hover:underline">
-            login if you have one already.
+            Sign in.
           </a>
         </p>
       </div>
@@ -34,10 +34,10 @@
         {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}
-        <button type="submit" class="dj-button dj-button-primary w-full">Continue with passkey</button>
+        <button type="submit" class="dj-button dj-button-primary w-full">Create account with passkey</button>
       </form>
       <a href="{% url 'account_signup' %}" class="dj-button dj-button-secondary mt-4 w-full">
-        Use password signup instead
+        Use email and password instead
       </a>
     </div>
   </div>

@@ -6,9 +6,9 @@
       <div class="grid items-stretch gap-[clamp(1.5rem,4vw,3rem)] rounded-[4px] border border-[var(--dj-border)] bg-[var(--dj-panel-solid)] p-[clamp(1.25rem,3vw,2rem)] lg:grid-cols-[minmax(0,0.8fr)_minmax(20rem,0.2fr)]">
         <div>
           <p class="dj-kicker">Generator</p>
-          <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Create project</h1>
+          <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Create a project</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
-            Name the repo, keep the modules you want, and submit one job. Djass returns a downloadable codebase ZIP when generation finishes.
+            Name the repo, choose the modules you want, and submit one generation job. Djass returns a downloadable repo ZIP when the build finishes.
           </p>
         </div>
         <div class="self-start">
@@ -22,7 +22,7 @@
         </div>
       {% elif project_limit_reached %}
         <div class="dj-alert dj-alert-warning mt-4 text-sm">
-          This account has reached the current project limit. Please contact support if you need more room.
+          This account has reached the current project limit. Contact support if you need more room.
         </div>
       {% else %}
         <div class="dj-alert dj-alert-warning mt-4 text-sm">
@@ -36,7 +36,7 @@
             <p class="dj-kicker">Output</p>
             <h2 class="mt-2 text-xl font-semibold text-[var(--dj-heading)]">Clean repo ZIP</h2>
             <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
-              The dashboard tracks the queued build. When it is ready, download the artifact and start from a normal Django project.
+              The dashboard tracks the queued build. When it is ready, download the artifact and start from a normal Django repo.
             </p>
           </section>
 
@@ -60,7 +60,7 @@
           <section class="dj-panel p-5">
             <p class="dj-kicker">Optional modules</p>
             <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
-              Monitoring, CX, commerce, storage, AI, MCP, content, and delivery switches all map to the same catalog used by the API and MCP tools.
+              Monitoring, support, commerce, storage, AI, MCP, content, and deployment switches all map to the same catalog used by the API and MCP tools.
             </p>
           </section>
         </aside>
@@ -74,14 +74,14 @@
               <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
                   <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.project_name.id_for_label }}">
-                    Project Name <span class="text-[var(--dj-danger)]">*</span>
+                    Project name <span class="text-[var(--dj-danger)]">*</span>
                   </label>
                   {{ project_form.project_name }}
                 </div>
 
                 <div>
                   <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.project_slug.id_for_label }}">
-                    Project Slug <span class="text-[var(--dj-danger)]">*</span>
+                    Project slug <span class="text-[var(--dj-danger)]">*</span>
                   </label>
                   {{ project_form.project_slug }}
                 </div>
@@ -92,13 +92,13 @@
                 </div>
 
                 <div class="md:col-span-2">
-                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.project_description.id_for_label }}">Project Description</label>
+                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.project_description.id_for_label }}">Project description</label>
                   {{ project_form.project_description }}
                 </div>
 
                 <div>
                   <label class="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.project_main_color.id_for_label }}">
-                    Project Main Color
+                    Project main color
                     <a href="https://tailwindcss.com/docs/colors" target="_blank" rel="noopener noreferrer" class="dj-pill px-2 py-0 text-[11px]" title="Tailwind color reference">?</a>
                   </label>
                   {{ project_form.project_main_color }}
@@ -110,12 +110,12 @@
               <legend class="dj-kicker">Ownership</legend>
               <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
                 <div>
-                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.author_name.id_for_label }}">Author Name</label>
+                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.author_name.id_for_label }}">Author name</label>
                   {{ project_form.author_name }}
                 </div>
 
                 <div>
-                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.author_email.id_for_label }}">Author Email</label>
+                  <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ project_form.author_email.id_for_label }}">Author email</label>
                   {{ project_form.author_email }}
                 </div>
 
@@ -142,7 +142,7 @@
 
             <div class="border-t border-[var(--dj-border)] pt-6">
               <button type="submit" class="dj-button dj-button-primary" {% if not can_generate %}disabled{% endif %}>
-                Create Project
+                Create project
               </button>
             </div>
           </form>
