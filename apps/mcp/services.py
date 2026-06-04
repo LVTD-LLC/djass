@@ -230,6 +230,27 @@ def serialize_project(project: Project) -> dict[str, Any]:
     }
 
 
+def queue_project_generation_for_user(
+    raw_payload: dict[str, Any],
+    *,
+    user,
+    extra_context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = build_project_payload(raw_payload, user=user, extra_context=extra_context)
+    project = _create_project(user, payload)
+
+    async_task(
+        "apps.core.tasks.generate_project_artifact",
+        project_id=project.id,
+        group="Generate Project",
+    )
+
+    return {
+        "project": serialize_project(project),
+        "queued": True,
+    }
+
+
 def queue_project_generation(
     raw_payload: dict[str, Any],
     *,
@@ -245,19 +266,11 @@ def queue_project_generation(
         create_if_missing=create_user,
         grant_project_access=grant_project_access,
     )
-    payload = build_project_payload(raw_payload, user=user, extra_context=extra_context)
-    project = _create_project(user, payload)
-
-    async_task(
-        "apps.core.tasks.generate_project_artifact",
-        project_id=project.id,
-        group="Generate Project",
+    return queue_project_generation_for_user(
+        raw_payload,
+        user=user,
+        extra_context=extra_context,
     )
-
-    return {
-        "project": serialize_project(project),
-        "queued": True,
-    }
 
 
 def _project_queryset(user_email: str | None = None):

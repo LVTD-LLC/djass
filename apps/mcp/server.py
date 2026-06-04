@@ -267,7 +267,7 @@ def generate_djass_project_prompt(app_idea: str) -> str:
         "flags from a vague app idea. After the user confirms, call `create_project` "
         "with an explicit `project_name`, Python-safe `project_slug`, short "
         "`project_description`, repository URL if known, author fields if known, and "
-        "explicit feature flags as `\"y\"` or `\"n\"`. Poll `get_project` until the "
+        'explicit feature flags as `"y"` or `"n"`. Poll `get_project` until the '
         "artifact is ready, then retrieve the ZIP from the artifact resource or URL.\n\n"
         f"App idea:\n{app_idea}"
     )

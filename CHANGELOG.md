@@ -31,6 +31,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Contract test suite for Spec 001 covering auth, happy path creation, pagination/filtering, and representative failure modes (`quota_exceeded`, `retryable_error`).
 - Versioned API contract documentation: `apps/docs/content/api/spec-001-agent-project-api-contract.md`.
 - Stable error taxonomy fields in API responses: `error.category` (`validation|auth|quota|retryable|internal`) and `error.retryable`.
+- Hosted FastMCP `/mcp` endpoint with authenticated tools for generation options, project creation, status polling, and generated ZIP download links.
 
 ### Fixed
 - Deployment workflows now use lowercase GHCR image names after the repository move to `LVTD-LLC`.

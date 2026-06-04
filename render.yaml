@@ -7,7 +7,7 @@ services:
       npm ci &&
       npm run build &&
       python manage.py collectstatic --noinput
-    startCommand: python manage.py migrate && gunicorn djass.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
+    startCommand: python manage.py migrate && uvicorn djass.asgi:application --host 0.0.0.0 --port $PORT --workers 2
     plan: free
     healthCheckPath: /
 
