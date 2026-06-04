@@ -46,27 +46,10 @@ your Djass API key in the `Authorization` header. If your agent supports setup
 prompts, open `https://djass.dev/mcp/prompt` and follow the generated client
 instructions.
 
-For local Djass, most coding agents that support MCP can use this server
-configuration:
-
-```json
-{
-  "mcpServers": {
-    "djass": {
-      "command": "uv",
-      "args": ["run", "python", "-m", "apps.mcp.server"],
-      "env": {
-        "DJANGO_SETTINGS_MODULE": "djass.settings",
-        "DJASS_MCP_USER_EMAIL": "agent@example.local"
-      }
-    }
-  }
-}
-```
-
-Add it to the MCP settings file or settings screen your agent uses. Keep the
-working directory pointed at the Djass repository root so `uv` can resolve the
-project.
+For local Djass, use the canonical local `stdio` configuration in
+[MCP Server](/docs/api/mcp-server/). Add that JSON to the MCP settings file or
+settings screen your agent uses. Keep the working directory pointed at the
+Djass repository root so `uv` can resolve the project.
 
 ## 4) Give your agent this prompt
 
@@ -110,7 +93,8 @@ directory.
 
 ## What the agent should not do
 
-- Do not skip `get_generator_options`.
+- Do not skip generator option discovery. Use `get_generator_options` locally
+  or `djass_generation_options` on hosted Djass.
 - Do not enable optional integrations without confirmation.
 - Do not treat `use_mcp` as the switch for using the Djass MCP server. It only
   controls whether the generated project includes MCP scaffolding.
