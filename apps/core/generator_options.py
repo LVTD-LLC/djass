@@ -23,11 +23,13 @@ class GeneratorField:
     label: str
     category: str | None = None
     is_feature_flag: bool = False
+    description: str = ""
 
     def as_option_payload(self) -> dict[str, str]:
         return {
             "key": self.key,
             "label": self.label,
+            "description": self.description,
             "default": str(self.default),
             "category": self.category or "other",
         }
@@ -89,6 +91,9 @@ class GeneratorOptionCatalog:
 
     def get_option_label(self, key: str) -> str:
         return self.get_field(key).label
+
+    def get_option_description(self, key: str) -> str:
+        return self.get_field(key).description
 
     def get_option_category_key(self, key: str) -> str:
         return self.get_field(key).category or "other"
@@ -166,21 +171,145 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorField("author_email", "janedoe@example.com", "Author Email"),
         GeneratorField("author_url", "", "Author URL"),
         GeneratorField("project_main_color", "green", "Project Main Color"),
-        GeneratorField("use_posthog", "y", "Use PostHog", "monitoring", True),
-        GeneratorField("use_chatwoot", "n", "Use Chatwoot", "cx", True),
-        GeneratorField("use_s3", "y", "Use S3", "storage", True),
-        GeneratorField("use_stripe", "y", "Use Stripe", "commerce", True),
-        GeneratorField("use_sentry", "y", "Use Sentry", "monitoring", True),
-        GeneratorField("generate_blog", "y", "Generate Blog", "content", True),
-        GeneratorField("generate_docs", "y", "Generate Docs", "content", True),
-        GeneratorField("use_mjml", "y", "Use MJML", "cx", True),
-        GeneratorField("use_ai", "y", "Use AI", "ai", True),
-        GeneratorField("use_logfire", "y", "Use Logfire", "monitoring", True),
-        GeneratorField("use_healthchecks", "y", "Use Healthchecks", "monitoring", True),
-        GeneratorField("use_apprise", "n", "Use Apprise", "monitoring", True),
-        GeneratorField("use_mcp", "n", "Use MCP", "ai", True),
-        GeneratorField("use_ci", "y", "Use CI", "delivery", True),
-        GeneratorField("use_digitalocean", "n", "Use DigitalOcean", "delivery", True),
+        GeneratorField(
+            "use_posthog",
+            "y",
+            "Use PostHog",
+            category="monitoring",
+            is_feature_flag=True,
+            description=(
+                "Adds product analytics. Backend logs use standard Python logging so "
+                "PostHog Logs can read the same structured fields when its handler is "
+                "attached."
+            ),
+        ),
+        GeneratorField(
+            "use_chatwoot",
+            "n",
+            "Use Chatwoot",
+            category="cx",
+            is_feature_flag=True,
+            description="Adds customer support chat scaffolding with runtime-off defaults.",
+        ),
+        GeneratorField(
+            "use_s3",
+            "y",
+            "Use S3",
+            category="storage",
+            is_feature_flag=True,
+            description="Adds S3-compatible media storage settings and deployment guidance.",
+        ),
+        GeneratorField(
+            "use_stripe",
+            "y",
+            "Use Stripe",
+            category="commerce",
+            is_feature_flag=True,
+            description="Adds subscription, checkout, billing, webhook, and pricing-page pieces.",
+        ),
+        GeneratorField(
+            "use_sentry",
+            "y",
+            "Use Sentry",
+            category="monitoring",
+            is_feature_flag=True,
+            description=(
+                "Adds error monitoring and connects standard Python logging records to "
+                "Sentry breadcrumbs, events, and optional logs."
+            ),
+        ),
+        GeneratorField(
+            "generate_blog",
+            "y",
+            "Generate Blog",
+            category="content",
+            is_feature_flag=True,
+            description=(
+                "Includes the blog app, routes, templates, admin tooling, and related tests."
+            ),
+        ),
+        GeneratorField(
+            "generate_docs",
+            "y",
+            "Generate Docs",
+            category="content",
+            is_feature_flag=True,
+            description=(
+                "Includes markdown-driven docs pages, navigation, templates, and docs tests."
+            ),
+        ),
+        GeneratorField(
+            "use_mjml",
+            "y",
+            "Use MJML",
+            category="cx",
+            is_feature_flag=True,
+            description="Adds MJML email template rendering support for transactional messages.",
+        ),
+        GeneratorField(
+            "use_ai",
+            "y",
+            "Use AI",
+            category="ai",
+            is_feature_flag=True,
+            description=(
+                "Adds Pydantic AI service scaffolding, provider settings, and example tests."
+            ),
+        ),
+        GeneratorField(
+            "use_logfire",
+            "y",
+            "Use Logfire",
+            category="monitoring",
+            is_feature_flag=True,
+            description=(
+                "Adds Logfire instrumentation that works with the generated app's standard "
+                "Python logging records and Pydantic telemetry."
+            ),
+        ),
+        GeneratorField(
+            "use_healthchecks",
+            "y",
+            "Use Healthchecks",
+            category="monitoring",
+            is_feature_flag=True,
+            description="Adds health-check endpoints and related monitoring configuration.",
+        ),
+        GeneratorField(
+            "use_apprise",
+            "n",
+            "Use Apprise",
+            category="monitoring",
+            is_feature_flag=True,
+            description="Adds Apprise-backed admin notifications with email fallback behavior.",
+        ),
+        GeneratorField(
+            "use_mcp",
+            "n",
+            "Use MCP",
+            category="ai",
+            is_feature_flag=True,
+            description=(
+                "Adds Model Context Protocol server scaffolding for agent workflows in the "
+                "generated project."
+            ),
+        ),
+        GeneratorField(
+            "use_ci",
+            "y",
+            "Use CI",
+            category="delivery",
+            is_feature_flag=True,
+            description="Adds GitHub Actions checks for the generated Django project.",
+        ),
+        GeneratorField(
+            "use_digitalocean",
+            "n",
+            "Use DigitalOcean",
+            category="delivery",
+            is_feature_flag=True,
+            description="Adds DigitalOcean App Platform configuration and deployment docs.",
+        ),
     ),
     categories=(
         GeneratorOptionCategory("monitoring", "Monitoring"),
@@ -209,6 +338,10 @@ def get_generator_option_groups() -> list[dict[str, Any]]:
 
 def get_option_label(key: str) -> str:
     return GENERATOR_OPTION_CATALOG.get_option_label(key)
+
+
+def get_option_description(key: str) -> str:
+    return GENERATOR_OPTION_CATALOG.get_option_description(key)
 
 
 def get_option_category_key(key: str) -> str:

@@ -388,6 +388,7 @@ class TestProjectFlow:
         assert "https://github.com/example/history-project" in content
         assert "Use Chatwoot" in content
         assert "Use MCP" in content
+        assert "standard Python logging records" in content
         assert "Legacy options" in content
         assert "retired_option" in content
         assert "legacy-value" in content

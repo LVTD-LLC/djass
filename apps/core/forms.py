@@ -6,6 +6,7 @@ from apps.core.generator_options import (
     COOKIECUTTER_FIELD_DEFAULTS,
     MODULE_FLAG_KEYS,
     get_generator_option_groups,
+    get_option_description,
     get_option_label,
 )
 from apps.core.models import Profile, Project
@@ -109,6 +110,7 @@ class ProjectCreateForm(forms.ModelForm):
                 choices=self.BOOL_CHOICES,
                 initial=COOKIECUTTER_FIELD_DEFAULTS[field_name],
                 label=get_option_label(field_name),
+                help_text=get_option_description(field_name),
                 required=False,
             )
 

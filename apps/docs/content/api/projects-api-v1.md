@@ -99,6 +99,7 @@ Retry guidance may appear in `error.details.retry_guidance`.
         {
           "key": "use_posthog",
           "label": "Use PostHog",
+          "description": "Adds product analytics. Backend logs use standard Python logging so PostHog Logs can read the same structured fields when its handler is attached.",
           "default": "y",
           "category": "monitoring"
         }
@@ -110,7 +111,8 @@ Retry guidance may appear in `error.details.retry_guidance`.
 
 Notes:
 - `defaults` mirrors the typed generator option catalog used by Djass.
-- `groups` contains feature flags only; identity/metadata fields stay in the create payload.
+- `groups` contains feature flags only, with labels and descriptions for UI/API clients.
+- Identity and metadata fields stay in the create payload.
 - create requests use the same flat option keys shown in `groups[].options[]`.
 
 ### 4.2 Create project

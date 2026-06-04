@@ -51,8 +51,9 @@ def build_djass_agent_skill_md() -> str:
 
            The response includes:
            - `defaults`: every supported cookiecutter field and default value.
-           - `groups` or `module_flags`: feature flags grouped for UI, API, and
-             MCP clients.
+           - `groups`: feature flags grouped with labels and descriptions for
+             UI, API, and MCP clients.
+           - `module_flags`: backwards-compatible flat feature flag names.
 
         2. Ask the user for missing product-specific values:
            - `project_name`
@@ -125,7 +126,8 @@ def build_djass_agent_skill_md() -> str:
 
            This endpoint is public and returns:
            - `defaults`: every supported cookiecutter field and default value.
-           - `groups`: feature flag options grouped for UI, API, and MCP clients.
+           - `groups`: feature flag options grouped with labels and descriptions
+             for UI, API, and MCP clients.
 
         2. Ask the user which optional feature flags and generator options they
            need and will use. Do not infer optional services from the app idea

@@ -53,6 +53,9 @@
                                                 <div class="grid gap-2 px-1 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.8fr)] sm:items-center">
                                                     <div>
                                                         <p class="text-sm font-semibold text-[var(--dj-heading)]">{{ option.label }}</p>
+                                                        {% if option.description %}
+                                                            <p class="mt-1 text-sm leading-6 text-[var(--dj-muted)]">{{ option.description }}</p>
+                                                        {% endif %}
                                                         <p class="mt-1 break-all font-mono text-xs text-[var(--dj-soft)]">{{ option.key }}</p>
                                                     </div>
                                                     <div class="sm:text-right">

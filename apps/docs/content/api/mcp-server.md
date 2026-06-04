@@ -49,7 +49,7 @@ want the SDK HTTP transport.
 ## Tools
 
 - `get_generator_options` returns supported Cookiecutter fields, defaults,
-  feature flags, and the active template path.
+  grouped feature flags with labels and descriptions, and the active template path.
 - `create_project` creates a `Project` row and queues background generation
   through Django Q2.
 - `get_project` fetches one project by id.

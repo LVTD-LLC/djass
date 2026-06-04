@@ -148,6 +148,7 @@ class TestProjectCreateView:
         assert 'name="use_apprise"' in content
         assert "Use MCP" in content
         assert 'name="use_mcp"' in content
+        assert "Backend logs use standard Python logging" in content
 
     def test_project_create_view_shows_project_limit_state(self, auth_client, settings, user):
         settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1

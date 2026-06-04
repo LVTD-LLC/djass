@@ -99,6 +99,10 @@ def test_project_options_endpoint_contract(client):
         "use_ci",
         "use_digitalocean",
     }
+    posthog_option = next(
+        option for option in groups["monitoring"]["options"] if option["key"] == "use_posthog"
+    )
+    assert "standard Python logging" in posthog_option["description"]
 
 
 @pytest.mark.django_db

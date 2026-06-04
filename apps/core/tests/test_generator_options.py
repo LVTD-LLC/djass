@@ -37,6 +37,10 @@ def test_generator_options_are_grouped_by_category():
         "use_ci",
         "use_digitalocean",
     }
+    posthog_option = next(
+        option for option in groups["monitoring"]["options"] if option["key"] == "use_posthog"
+    )
+    assert "standard Python logging" in posthog_option["description"]
 
 
 def test_api_and_mcp_catalog_payloads_match():
