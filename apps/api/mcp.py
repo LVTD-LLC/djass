@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -220,6 +220,13 @@ def _coerce_int(value: Any, field_name: str) -> tuple[int | None, dict[str, Any]
 def _list_projects(request: HttpRequest, principal: APIAuthPrincipal, arguments: dict[str, Any]):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
+        log_project_api_action(
+            request,
+            action="project.list",
+            status_code=403,
+            principal=principal,
+            metadata={"transport": "mcp", **scope_error},
+        )
         return {"error": scope_error}, 403
 
     raw_limit, limit_error = _coerce_int(arguments.get("limit", 20), "limit")
@@ -249,6 +256,13 @@ def _get_project_status(
 ):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
+        log_project_api_action(
+            request,
+            action="project.status",
+            status_code=403,
+            principal=principal,
+            metadata={"transport": "mcp", **scope_error},
+        )
         return {"error": scope_error}, 403
 
     project_id, project_id_error = _coerce_int(arguments.get("project_id"), "project_id")
@@ -399,7 +413,7 @@ def mcp_endpoint(request: HttpRequest):
             },
         )
     if method == "notifications/initialized":
-        return JsonResponse({}, status=202)
+        return HttpResponse(status=204)
     if method == "tools/list":
         return _mcp_result(request_id, {"tools": _tools(request)})
     if method == "tools/call":

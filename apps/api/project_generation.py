@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Any
 
 from apps.core.generator_options import get_generator_option_catalog
@@ -24,6 +25,7 @@ FIELD_DESCRIPTIONS = {
 }
 
 
+@lru_cache(maxsize=1)
 def project_generation_options() -> dict[str, Any]:
     catalog = get_generator_option_catalog()
     fields = []
@@ -64,6 +66,7 @@ def project_generation_options() -> dict[str, Any]:
     }
 
 
+@lru_cache(maxsize=1)
 def project_create_json_schema() -> dict[str, Any]:
     properties = {}
     required = []
