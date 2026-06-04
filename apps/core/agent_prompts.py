@@ -220,6 +220,7 @@ def build_djass_agent_skill_md() -> str:
             "generate_blog": "y",
             "generate_docs": "y",
             "use_mjml": "y",
+            "use_keyboard_shortcuts": "y",
             "use_ai": "y",
             "use_logfire": "y",
             "use_healthchecks": "y",

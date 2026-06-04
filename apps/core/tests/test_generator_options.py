@@ -32,6 +32,9 @@ def test_generator_options_are_grouped_by_category():
         "use_chatwoot",
         "use_mjml",
     }
+    assert {option["key"] for option in groups["ux"]["options"]} >= {
+        "use_keyboard_shortcuts",
+    }
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
     assert {option["key"] for option in groups["delivery"]["options"]} >= {
         "use_ci",

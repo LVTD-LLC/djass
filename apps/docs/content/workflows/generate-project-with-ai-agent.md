@@ -81,7 +81,7 @@ Use Djass to generate a new Django SaaS project for this app idea:
 
 First call get_generator_options. Summarize the project fields, defaults, and optional feature flags I need to decide.
 
-Ask me before enabling optional services such as analytics, payments, storage, support chat, CI, Apprise, or generated MCP scaffolding. Do not infer those from a vague app idea.
+Ask me before enabling optional services such as analytics, payments, storage, support chat, keyboard shortcuts, CI, Apprise, or generated MCP scaffolding. Do not infer those from a vague app idea.
 
 After I confirm the choices, call the Djass project creation tool with an explicit project_name, Python-safe project_slug, short project_description, repository URL if known, author fields if known, and every feature flag as "y" or "n".
 
