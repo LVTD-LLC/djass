@@ -13,9 +13,8 @@ from django_q.tasks import async_task
 
 from apps.core.choices import ProfileStates
 from apps.core.forms import ProjectCreateForm
-from apps.core.generator_options import get_generator_option_catalog
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, get_generator_option_catalog
 from apps.core.models import Profile, Project, ProjectStatus
-from apps.core.tasks import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 
 DEFAULT_MCP_USER_EMAIL = "djass-agent@example.local"
 DEFAULT_MCP_USERNAME = "djass-agent"
@@ -130,7 +129,7 @@ def get_generator_options() -> dict[str, Any]:
             "required": option.key in {"project_name", "project_slug"},
             "category": option.category or "other",
         }
-        if option.key in MODULE_FLAG_KEYS:
+        if option.is_feature_flag:
             field["choices"] = ["y", "n"]
         fields.append(field)
 
