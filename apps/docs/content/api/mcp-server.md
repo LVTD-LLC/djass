@@ -25,6 +25,9 @@ Remote agents should call `djass_generation_options`, then
 `djass_get_project_download`. The download response includes a URL plus the
 checksum; fetch that URL with the same API-key header.
 
+For a copy-ready setup prompt, see
+[Generate a Project With an AI Agent](/docs/workflows/generate-project-with-ai-agent/).
+
 ## Run locally
 
 From the repository root:

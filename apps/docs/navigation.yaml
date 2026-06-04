@@ -21,6 +21,7 @@ navigation:
   workflows:
     - adding-a-feature
     - ai-assisted-development
+    - generate-project-with-ai-agent
 
   configuration:
     - environment-variables
