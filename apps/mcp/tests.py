@@ -520,3 +520,98 @@ def test_mcp_download_and_prompt_django_endpoints(client, django_user_model):
     assert "use_mcp" in json.dumps(prompt.json()["options"])
     assert download.status_code == 200
     assert download["Content-Disposition"].startswith("attachment;")
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mcp_routes_are_reachable_through_deployed_asgi_app(
+    django_user_model,
+    settings,
+):
+    import asyncio
+
+    import httpx
+
+    user = django_user_model.objects.create_user(
+        username="hosted-asgi-download",
+        email="hosted-asgi-download@example.local",
+        password="password123",
+    )
+    user.profile.state = ProfileStates.SUBSCRIBED
+    user.profile.save(update_fields=["state"])
+    project = Project.objects.create(
+        user=user,
+        name="Ready ASGI Project",
+        slug="ready_asgi_project",
+        input_payload={"project_name": "Ready ASGI Project", "project_slug": "ready_asgi_project"},
+        status=ProjectStatus.READY,
+    )
+    artifact = ProjectArtifact.objects.create(project=project, size_bytes=7, sha256="abc123")
+    artifact.zip_file.save("ready_asgi_project.zip", io.BytesIO(b"zipdata"), save=True)
+    settings.ALLOWED_HOSTS = ["localhost"]
+
+    async def request_asgi_routes():
+        from djass.asgi import application
+
+        transport = httpx.ASGITransport(app=application)
+        async with httpx.AsyncClient(transport=transport, base_url="http://localhost") as client:
+            mcp = await client.post("/mcp")
+            prompt = await client.get("/mcp/prompt")
+            download = await client.get(
+                f"/mcp/projects/{project.id}/download",
+                headers={"Authorization": f"Bearer {user.profile.key}"},
+            )
+        return mcp, prompt, download
+
+    mcp, prompt, download = asyncio.run(request_asgi_routes())
+
+    assert mcp.status_code == 401
+    assert mcp.json()["error"] == "invalid_token"
+    assert prompt.status_code == 200
+    assert "FastMCP endpoint" in prompt.json()["prompt"]
+    assert download.status_code == 200
+    assert download.content == b"zipdata"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_hosted_fastmcp_streamable_http_lists_tools_with_api_key(
+    django_user_model,
+    settings,
+):
+    import asyncio
+
+    import httpx
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamable_http_client
+
+    user = django_user_model.objects.create_user(
+        username="hosted-streamable-http",
+        email="hosted-streamable-http@example.local",
+        password="password123",
+    )
+    settings.ALLOWED_HOSTS = ["localhost"]
+
+    async def list_tool_names() -> set[str]:
+        from apps.mcp.hosted import hosted_mcp
+        from djass.asgi import application
+
+        async with hosted_mcp.session_manager.run():
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=application),
+                base_url="http://localhost",
+                headers={"Authorization": f"Bearer {user.profile.key}"},
+                follow_redirects=True,
+            ) as http_client:
+                async with streamable_http_client(
+                    "http://localhost/mcp",
+                    http_client=http_client,
+                ) as (read_stream, write_stream, _get_session_id):
+                    async with ClientSession(read_stream, write_stream) as session:
+                        await session.initialize()
+                        tools = await session.list_tools()
+                        return {tool.name for tool in tools.tools}
+
+    tool_names = asyncio.run(list_tool_names())
+
+    assert "djass_generation_options" in tool_names
+    assert "djass_create_project" in tool_names
+    assert "djass_get_project_download" in tool_names

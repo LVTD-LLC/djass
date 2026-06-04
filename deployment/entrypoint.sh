@@ -72,7 +72,7 @@ case "$process_type" in
         else
             python manage.py migrate --noinput
         fi
-        exec gunicorn ${PROJECT_NAME}.wsgi:application --bind 0.0.0.0:${APP_PORT} --workers 3 --threads 2
+        exec uvicorn ${PROJECT_NAME}.asgi:application --host 0.0.0.0 --port ${APP_PORT} --workers 3
         ;;
     worker|workers)
         echo "Starting Djass workers..."

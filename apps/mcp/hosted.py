@@ -1,5 +1,6 @@
 import os
 from typing import Any, Literal
+from urllib.parse import urlparse
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djass.settings")
 
@@ -13,6 +14,7 @@ from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import AnyHttpUrl
 
 if not django_apps.ready:
@@ -40,12 +42,47 @@ class DjassAPITokenVerifier(TokenVerifier):
         )
 
 
+def _site_url() -> str:
+    return str(settings.SITE_URL).rstrip("/") or "https://djass.dev"
+
+
 def _auth_settings() -> AuthSettings:
-    site_url = str(settings.SITE_URL).rstrip("/") or "https://djass.dev"
+    site_url = _site_url()
     return AuthSettings(
         issuer_url=AnyHttpUrl(site_url),
         resource_server_url=AnyHttpUrl(f"{site_url}/mcp"),
         required_scopes=[],
+    )
+
+
+def _transport_security_settings() -> TransportSecuritySettings:
+    site_url = _site_url()
+    parsed_site_url = urlparse(site_url)
+    allowed_hosts = {
+        "127.0.0.1",
+        "127.0.0.1:*",
+        "localhost",
+        "localhost:*",
+        "[::1]",
+        "[::1]:*",
+    }
+    if parsed_site_url.netloc:
+        allowed_hosts.add(parsed_site_url.netloc)
+    if parsed_site_url.hostname:
+        allowed_hosts.add(parsed_site_url.hostname)
+
+    allowed_origins = {
+        "http://127.0.0.1",
+        "http://127.0.0.1:*",
+        "http://localhost",
+        "http://localhost:*",
+        "http://[::1]",
+        "http://[::1]:*",
+        site_url,
+    }
+    return TransportSecuritySettings(
+        allowed_hosts=sorted(allowed_hosts),
+        allowed_origins=sorted(allowed_origins),
     )
 
 
@@ -61,6 +98,7 @@ hosted_mcp = FastMCP(
     streamable_http_path="/mcp",
     json_response=True,
     stateless_http=True,
+    transport_security=_transport_security_settings(),
 )
 
 
@@ -257,7 +295,7 @@ def djass_get_project_status(project_id: int) -> dict[str, Any]:
 
 def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
     safe_slug = project.get("slug") or slugify(project.get("name", "")) or "project"
-    base_url = str(settings.SITE_URL).rstrip("/") or "https://djass.dev"
+    base_url = _site_url()
     artifact = project.get("artifact") or {}
     return {
         "project_id": project["id"],
