@@ -471,6 +471,11 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             type=Authenticator.Type.RECOVERY_CODES,
         ).exists()
         context["api_key"] = profile.key
+        context["mcp_endpoint_url"] = self.request.build_absolute_uri(reverse("mcp_endpoint"))
+        context["mcp_prompt_url"] = self.request.build_absolute_uri(reverse("mcp_prompt"))
+        context["generation_options_url"] = self.request.build_absolute_uri(
+            "/api/v1/project-options"
+        )
 
         return context
 

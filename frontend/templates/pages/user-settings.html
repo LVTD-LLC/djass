@@ -99,6 +99,38 @@
             <p class="mt-2 text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
           </section>
 
+          <section class="dj-panel p-6" data-controller="clipboard">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p class="dj-kicker">MCP</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Connect Djass to your agent</h2>
+                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                  Use Djass from Claude Code, Codex, OpenClaw, or any MCP-compatible agent. The MCP server exposes the latest project-generation options, so your agent can ask the right setup questions before it creates a project.
+                </p>
+              </div>
+              <a href="{{ mcp_prompt_url }}" class="dj-button dj-button-secondary min-w-24">Prompt JSON</a>
+            </div>
+
+            <div class="mt-5 grid gap-4 lg:grid-cols-2">
+              <div>
+                <label for="mcp-endpoint" class="block text-sm font-semibold text-[var(--dj-heading)]">MCP endpoint</label>
+                <input id="mcp-endpoint" type="text" readonly spellcheck="false" value="{{ mcp_endpoint_url }}" class="dj-input mt-2 block w-full font-mono text-xs" />
+              </div>
+              <div>
+                <label for="mcp-prompt-url" class="block text-sm font-semibold text-[var(--dj-heading)]">Agent prompt URL</label>
+                <input id="mcp-prompt-url" type="text" readonly spellcheck="false" value="{{ mcp_prompt_url }}" class="dj-input mt-2 block w-full font-mono text-xs" />
+              </div>
+            </div>
+
+            <label for="agent-mcp-prompt" class="mt-5 block text-sm font-semibold text-[var(--dj-heading)]">Copy this prompt into your agent</label>
+            <textarea id="agent-mcp-prompt" readonly rows="9" class="dj-input mt-2 block w-full font-mono text-xs">Use Djass to generate Django SaaS projects for me.
+
+MCP endpoint: {{ mcp_endpoint_url }}
+Auth: ask me for my Djass API key and send it as Authorization: Bearer &lt;key&gt; or X-API-Key. Never print or commit the key.
+
+Always call djass_generation_options before creating a project. If MCP is unavailable, fetch {{ generation_options_url }}. Ask me concise follow-up questions for every required field and every current Djass option I have not specified. If I explicitly say to decide for me, choose sensible defaults, summarize them, then call djass_create_project.</textarea>
+          </section>
+
           <section class="dj-panel p-6">
             <div>
               <p class="dj-kicker">Profile</p>
