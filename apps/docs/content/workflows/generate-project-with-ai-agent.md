@@ -121,4 +121,4 @@ directory.
 This prompt-first workflow is enough for early use. A plugin becomes useful when
 you want one-click installation, bundled agent skills, marketplace
 discoverability, or consistent setup across Claude Code, Codex, Cursor, Gemini,
-and OpenClaw.
+and OpenClaw-compatible environments.
