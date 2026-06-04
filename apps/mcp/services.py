@@ -13,8 +13,8 @@ from django_q.tasks import async_task
 
 from apps.core.choices import ProfileStates
 from apps.core.forms import ProjectCreateForm
+from apps.core.generator_options import COOKIECUTTER_FIELD_DEFAULTS, get_generator_option_catalog
 from apps.core.models import Profile, Project, ProjectStatus
-from apps.core.tasks import COOKIECUTTER_FIELD_DEFAULTS, MODULE_FLAG_KEYS
 
 DEFAULT_MCP_USER_EMAIL = "djass-agent@example.local"
 DEFAULT_MCP_USERNAME = "djass-agent"
@@ -117,22 +117,28 @@ def ensure_mcp_user(
 
 
 def get_generator_options() -> dict[str, Any]:
+    catalog = get_generator_option_catalog()
     fields = []
-    for name, default in COOKIECUTTER_FIELD_DEFAULTS.items():
+    for option in catalog.fields:
         field: dict[str, Any] = {
-            "name": name,
-            "default": default,
-            "required": name in {"project_name", "project_slug"},
+            "name": option.key,
+            "key": option.key,
+            "label": option.label,
+            "description": option.description,
+            "default": option.default,
+            "required": option.key in {"project_name", "project_slug"},
+            "category": option.category or "other",
         }
-        if name in MODULE_FLAG_KEYS:
+        if option.is_feature_flag:
             field["choices"] = ["y", "n"]
         fields.append(field)
 
     return {
         "template_path": str(settings.COOKIECUTTER_TEMPLATE_PATH),
         "fields": fields,
-        "defaults": dict(COOKIECUTTER_FIELD_DEFAULTS),
-        "module_flags": list(MODULE_FLAG_KEYS),
+        "defaults": dict(catalog.defaults),
+        "groups": catalog.get_option_groups(),
+        "module_flags": list(catalog.feature_flag_keys),
     }
 
 

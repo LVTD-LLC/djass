@@ -88,6 +88,7 @@ ProjectCreateIn = create_model(
 class ProjectGeneratorOptionOut(Schema):
     key: str
     label: str
+    description: str
     default: str
     category: str
 

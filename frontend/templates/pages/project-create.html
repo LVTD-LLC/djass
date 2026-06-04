@@ -133,6 +133,9 @@
                   {% for field in group.fields %}
                     <div>
                       <label class="mb-2 block text-sm font-semibold text-[var(--dj-heading)]" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      {% if field.help_text %}
+                        <p class="mb-3 text-sm leading-6 text-[var(--dj-muted)]">{{ field.help_text }}</p>
+                      {% endif %}
                       {{ field }}
                     </div>
                   {% endfor %}

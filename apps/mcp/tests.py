@@ -254,6 +254,14 @@ def test_generator_options_exposes_defaults_and_flags(settings):
     assert options["template_path"] == "https://example.test/template.git"
     assert options["defaults"]["project_name"] == "My Awesome Project"
     assert "use_stripe" in options["module_flags"]
+    assert "groups" in options
+    posthog_option = next(
+        option
+        for group in options["groups"]
+        for option in group["options"]
+        if option["key"] == "use_posthog"
+    )
+    assert "standard Python logging" in posthog_option["description"]
 
 
 def test_mcp_tools_expose_current_generator_fields_and_defaults():

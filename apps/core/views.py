@@ -147,12 +147,15 @@ def _format_project_payload_value(value):
     }
 
 
-def _build_project_payload_option(key, label, value):
-    return {
+def _build_project_payload_option(key, label, value, description=""):
+    option = {
         "key": key,
         "label": label,
         **_format_project_payload_value(value),
     }
+    if description:
+        option["description"] = description
+    return option
 
 
 def _build_project_payload_option_group(key, label):
@@ -181,7 +184,12 @@ def _build_project_payload_sections(payload):
         if field.key not in payload:
             continue
 
-        option = _build_project_payload_option(field.key, field.label, payload[field.key])
+        option = _build_project_payload_option(
+            field.key,
+            field.label,
+            payload[field.key],
+            field.description,
+        )
         if field.is_feature_flag:
             group_key = field.category or "other"
             option_group = option_groups.get(group_key)
