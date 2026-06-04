@@ -209,7 +209,7 @@ def _create_project(request: HttpRequest, principal: APIAuthPrincipal, arguments
 def _coerce_int(value: Any, field_name: str) -> tuple[int | None, dict[str, Any] | None]:
     try:
         return int(value), None
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return None, {
             "code": "validation_error",
             "message": f"{field_name} must be an integer.",
