@@ -11,6 +11,21 @@ Djass ships an MCP server that exposes the project generator directly to AI
 agents. It uses the same Django models and queued Cookiecutter generation task
 as the web app and Projects API.
 
+Hosted Djass also exposes an authenticated HTTP endpoint at `/mcp` for agents
+that can connect to remote MCP-style JSON-RPC tools. Use a Djass API key in the
+`Authorization: Bearer <key>` or `X-API-Key` header.
+
+## Hosted endpoint
+
+- Endpoint: `https://djass.dev/mcp`
+- Setup prompt: `https://djass.dev/mcp/prompt`
+- ZIP download route: `https://djass.dev/mcp/projects/{project_id}/download`
+
+Remote agents should call `djass_generation_options`, then
+`djass_create_project`, poll `djass_get_project_status`, and finally call
+`djass_get_project_download`. The download response includes a URL plus the
+checksum; fetch that URL with the same API-key header.
+
 ## Run locally
 
 From the repository root:
@@ -27,7 +42,9 @@ djass-mcp
 
 The default transport is `stdio`, which is the normal mode for local MCP
 clients. Set `DJASS_MCP_TRANSPORT=streamable-http` only when you intentionally
-want the SDK HTTP transport.
+want the SDK HTTP transport for a separate local MCP process. The hosted `/mcp`
+route is served by Django so it can share Djass API-key auth and project
+ownership rules.
 
 ## Client configuration example
 
@@ -46,7 +63,7 @@ want the SDK HTTP transport.
 }
 ```
 
-## Tools
+## Local stdio tools
 
 - `get_generator_options` returns supported Cookiecutter fields, defaults,
   feature flags, and the active template path.

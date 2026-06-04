@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
@@ -42,12 +43,11 @@ urlpatterns += [
     path("anymail/", include("anymail.urls")),
     path("uses", TemplateView.as_view(template_name="pages/uses.html"), name="uses"),
     path("blog/", include("apps.blog.urls")),
-    
+    path("", include("apps.mcp.urls")),
     path("api/", include("apps.api.urls")),
     path("", include("apps.pages.urls")),
     path("", include("apps.core.urls")),
     path("docs/", include("apps.docs.urls")),
-    
     path(
         "sitemap.xml",
         sitemap,
