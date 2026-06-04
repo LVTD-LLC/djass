@@ -347,127 +347,121 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     )
 
 
-def _rpc(method, params=None, request_id=1):
-    return {"jsonrpc": "2.0", "id": request_id, "method": method, "params": params or {}}
+def _set_hosted_auth(user, scopes=None):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+    from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
+    from mcp.server.auth.provider import AccessToken
+
+    access_token = AccessToken(
+        token="test-token",
+        client_id=str(user.id),
+        scopes=scopes or ["projects:create", "projects:read"],
+    )
+    return auth_context_var.set(AuthenticatedUser(access_token))
 
 
 @pytest.mark.django_db
-def test_remote_mcp_lists_tools_and_options_without_auth(client):
-    listing = client.post("/mcp", data=_rpc("tools/list"), content_type="application/json")
+def test_hosted_fastmcp_exposes_djass_tools():
+    from apps.mcp.hosted import hosted_mcp
 
-    assert listing.status_code == 200
-    tools = listing.json()["result"]["tools"]
-    names = {tool["name"] for tool in tools}
+    names = {tool.name for tool in hosted_mcp._tool_manager.list_tools()}
+
     assert "djass_generation_options" in names
     assert "djass_create_project" in names
+    assert "djass_list_projects" in names
+    assert "djass_get_project_status" in names
     assert "djass_get_project_download" in names
 
-    options = client.post(
-        "/mcp",
-        data=_rpc("tools/call", {"name": "djass_generation_options", "arguments": {}}),
-        content_type="application/json",
-    )
 
-    assert options.status_code == 200
-    text = options.json()["result"]["content"][0]["text"]
-    assert "use_mcp" in text
-    assert "Poll djass_get_project_status" in text
+@pytest.mark.django_db(transaction=True)
+def test_hosted_fastmcp_token_verifier_accepts_legacy_and_scoped_keys(django_user_model):
+    import asyncio
 
+    from apps.mcp.hosted import DjassAPITokenVerifier
 
-@pytest.mark.django_db
-def test_remote_mcp_create_project_requires_auth(client):
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {
-                "name": "djass_create_project",
-                "arguments": {"project_name": "No Auth", "project_slug": "no_auth"},
-            },
-        ),
-        content_type="application/json",
-    )
-
-    assert response.status_code == 401
-    assert response.json()["error"]["message"].startswith("Authentication required")
-
-
-@pytest.mark.django_db
-def test_remote_mcp_create_project_uses_authenticated_profile(
-    client, django_user_model, monkeypatch
-):
-    monkeypatch.setattr("apps.mcp.views.async_task", lambda *args, **kwargs: "task-id")
     user = django_user_model.objects.create_user(
-        username="remote-mcp",
-        email="remote-mcp@example.local",
+        username="hosted-verifier",
+        email="hosted-verifier@example.local",
+        password="password123",
+    )
+    scoped_key = ProjectAPIKey.objects.create(
+        profile=user.profile,
+        name="read only",
+        scopes=["projects:read"],
+    )
+    verifier = DjassAPITokenVerifier()
+
+    legacy = asyncio.run(verifier.verify_token(user.profile.key))
+    scoped = asyncio.run(verifier.verify_token(scoped_key.key))
+
+    assert legacy.client_id == str(user.id)
+    assert set(legacy.scopes) == {"projects:create", "projects:read"}
+    assert scoped.client_id == str(user.id)
+    assert scoped.scopes == ["projects:read"]
+    assert asyncio.run(verifier.verify_token("bad-key")) is None
+
+
+@pytest.mark.django_db
+def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_model, monkeypatch):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+
+    from apps.mcp.hosted import djass_create_project
+
+    monkeypatch.setattr("apps.mcp.services.async_task", lambda *args, **kwargs: "task-id")
+    user = django_user_model.objects.create_user(
+        username="hosted-mcp",
+        email="hosted-mcp@example.local",
         password="password123",
     )
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])
+    token = _set_hosted_auth(user)
+    try:
+        result = djass_create_project(
+            project_name="Hosted MCP Project",
+            project_slug="Hosted MCP Project",
+            project_description="Created through hosted FastMCP",
+            use_mcp="y",
+        )
+    finally:
+        auth_context_var.reset(token)
 
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {
-                "name": "djass_create_project",
-                "arguments": {
-                    "project_name": "Remote MCP Project",
-                    "project_slug": "Remote MCP Project",
-                    "project_description": "Created through hosted MCP",
-                    "use_mcp": "y",
-                },
-            },
-        ),
-        content_type="application/json",
-        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
-    )
-
-    assert response.status_code == 200
-    text = response.json()["result"]["content"][0]["text"]
-    assert "remote_mcp_project" in text
-
-    project = Project.objects.get(user=user, slug="remote_mcp_project")
+    assert "hosted_mcp_project" in json.dumps(result)
+    project = Project.objects.get(user=user, slug="hosted_mcp_project")
     assert project.status == ProjectStatus.QUEUED
     assert project.input_payload["author_email"] == user.email
     assert project.input_payload["use_mcp"] == "y"
 
 
 @pytest.mark.django_db
-def test_remote_mcp_respects_scoped_api_key_permissions(client, django_user_model):
+def test_hosted_fastmcp_respects_scoped_api_key_permissions(django_user_model):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+    from mcp.server.fastmcp.exceptions import ToolError
+
+    from apps.mcp.hosted import djass_create_project
+
     user = django_user_model.objects.create_user(
-        username="remote-scoped",
-        email="remote-scoped@example.local",
+        username="hosted-scoped",
+        email="hosted-scoped@example.local",
         password="password123",
     )
-    key = ProjectAPIKey.objects.create(
-        profile=user.profile,
-        name="read only",
-        scopes=["projects:read"],
-    )
-
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {
-                "name": "djass_create_project",
-                "arguments": {"project_name": "Denied", "project_slug": "denied"},
-            },
-        ),
-        content_type="application/json",
-        HTTP_X_API_KEY=key.key,
-    )
-
-    assert response.status_code == 403
-    assert response.json()["error"]["data"]["code"] == "insufficient_scope"
+    token = _set_hosted_auth(user, scopes=["projects:read"])
+    try:
+        with pytest.raises(ToolError, match="projects:create"):
+            djass_create_project(project_name="Denied", project_slug="denied")
+    finally:
+        auth_context_var.reset(token)
 
 
 @pytest.mark.django_db
-def test_remote_mcp_download_tool_returns_authenticated_zip_url(client, django_user_model):
+def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_model):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+
+    from apps.mcp.hosted import djass_get_project_download
+
     user = django_user_model.objects.create_user(
-        username="remote-download",
-        email="remote-download@example.local",
+        username="hosted-download",
+        email="hosted-download@example.local",
         password="password123",
     )
     user.profile.state = ProfileStates.SUBSCRIBED
@@ -485,102 +479,44 @@ def test_remote_mcp_download_tool_returns_authenticated_zip_url(client, django_u
         sha256="abc123",
     )
     artifact.zip_file.save("ready_project.zip", io.BytesIO(b"zipdata"), save=True)
+    token = _set_hosted_auth(user)
+    try:
+        result = djass_get_project_download(project.id)
+    finally:
+        auth_context_var.reset(token)
 
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {
-                "name": "djass_get_project_download",
-                "arguments": {"project_id": project.id},
-            },
-        ),
-        content_type="application/json",
-        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
-    )
-
-    assert response.status_code == 200
-    text = response.json()["result"]["content"][0]["text"]
+    text = json.dumps(result)
     assert f"/mcp/projects/{project.id}/download" in text
     assert "abc123" in text
 
+
+@pytest.mark.django_db
+def test_mcp_download_and_prompt_django_endpoints(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="hosted-direct-download",
+        email="hosted-direct-download@example.local",
+        password="password123",
+    )
+    user.profile.state = ProfileStates.SUBSCRIBED
+    user.profile.save(update_fields=["state"])
+    project = Project.objects.create(
+        user=user,
+        name="Ready Project",
+        slug="ready_project",
+        input_payload={"project_name": "Ready Project", "project_slug": "ready_project"},
+        status=ProjectStatus.READY,
+    )
+    artifact = ProjectArtifact.objects.create(project=project, size_bytes=7, sha256="abc123")
+    artifact.zip_file.save("ready_project.zip", io.BytesIO(b"zipdata"), save=True)
+
+    prompt = client.get("/mcp/prompt")
     download = client.get(
         f"/mcp/projects/{project.id}/download",
         HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
     )
+
+    assert prompt.status_code == 200
+    assert "FastMCP endpoint" in prompt.json()["prompt"]
+    assert "use_mcp" in json.dumps(prompt.json()["options"])
     assert download.status_code == 200
     assert download["Content-Disposition"].startswith("attachment;")
-
-
-@pytest.mark.django_db
-def test_remote_mcp_prompt_endpoint_contains_current_options(client):
-    response = client.get("/mcp/prompt")
-
-    assert response.status_code == 200
-    body = response.json()
-    assert "MCP endpoint" in body["prompt"]
-    assert "use_mcp" in json.dumps(body["options"])
-
-
-@pytest.mark.django_db
-def test_remote_mcp_rejects_non_object_json_body(client):
-    response = client.post("/mcp", data="[]", content_type="application/json")
-
-    assert response.status_code == 400
-    assert response.json()["error"]["code"] == -32600
-
-
-@pytest.mark.django_db
-def test_remote_mcp_ignores_non_dict_params_for_tool_call(client):
-    response = client.post(
-        "/mcp",
-        data=_rpc("tools/call", ["not", "an", "object"]),
-        content_type="application/json",
-    )
-
-    assert response.status_code == 401
-    assert response.json()["error"]["code"] == -32001
-
-
-@pytest.mark.django_db
-def test_remote_mcp_rejects_non_integer_list_inputs(client, django_user_model):
-    user = django_user_model.objects.create_user(
-        username="remote-list-invalid",
-        email="remote-list-invalid@example.local",
-        password="password123",
-    )
-
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {"name": "djass_list_projects", "arguments": {"limit": "abc", "offset": 0}},
-        ),
-        content_type="application/json",
-        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
-    )
-
-    assert response.status_code == 400
-    assert response.json()["error"]["data"]["field"] == "limit"
-
-
-@pytest.mark.django_db
-def test_remote_mcp_rejects_non_integer_project_id(client, django_user_model):
-    user = django_user_model.objects.create_user(
-        username="remote-status-invalid",
-        email="remote-status-invalid@example.local",
-        password="password123",
-    )
-
-    response = client.post(
-        "/mcp",
-        data=_rpc(
-            "tools/call",
-            {"name": "djass_get_project_status", "arguments": {"project_id": "abc"}},
-        ),
-        content_type="application/json",
-        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
-    )
-
-    assert response.status_code == 400
-    assert response.json()["error"]["data"]["field"] == "project_id"
