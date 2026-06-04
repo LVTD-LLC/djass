@@ -206,13 +206,31 @@ def _create_project(request: HttpRequest, principal: APIAuthPrincipal, arguments
     return {"project": _serialize_project(project)}, 201
 
 
+def _coerce_int(value: Any, field_name: str) -> tuple[int | None, dict[str, Any] | None]:
+    try:
+        return int(value), None
+    except TypeError, ValueError:
+        return None, {
+            "code": "validation_error",
+            "message": f"{field_name} must be an integer.",
+            "field": field_name,
+        }
+
+
 def _list_projects(request: HttpRequest, principal: APIAuthPrincipal, arguments: dict[str, Any]):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
         return {"error": scope_error}, 403
 
-    limit = max(1, min(int(arguments.get("limit", 20)), 100))
-    offset = max(0, int(arguments.get("offset", 0)))
+    raw_limit, limit_error = _coerce_int(arguments.get("limit", 20), "limit")
+    if limit_error:
+        return {"error": limit_error}, 400
+    raw_offset, offset_error = _coerce_int(arguments.get("offset", 0), "offset")
+    if offset_error:
+        return {"error": offset_error}, 400
+
+    limit = max(1, min(raw_limit, 100))
+    offset = max(0, raw_offset)
     queryset = Project.objects.filter(user=principal.profile.user).prefetch_related("artifact")
     total = queryset.count()
     projects = [_serialize_project(project) for project in queryset[offset : offset + limit]]
@@ -233,7 +251,10 @@ def _get_project_status(
     if scope_error:
         return {"error": scope_error}, 403
 
-    project_id = arguments.get("project_id")
+    project_id, project_id_error = _coerce_int(arguments.get("project_id"), "project_id")
+    if project_id_error:
+        return {"error": project_id_error}, 400
+
     try:
         project = Project.objects.prefetch_related("artifact").get(
             id=project_id, user=principal.profile.user

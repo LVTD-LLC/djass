@@ -103,6 +103,46 @@ def test_mcp_create_project_happy_path(client):
 
 
 @pytest.mark.django_db
+def test_mcp_list_projects_rejects_malformed_pagination(client):
+    _, profile = _create_subscribed_user("pagination")
+
+    response = client.post(
+        "/api/mcp",
+        data=_rpc(
+            "tools/call",
+            {"name": "djass_list_projects", "arguments": {"limit": "many"}},
+        ),
+        content_type="application/json",
+        HTTP_X_API_KEY=profile.key,
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert body["error"]["data"]["code"] == "validation_error"
+    assert body["error"]["data"]["field"] == "limit"
+
+
+@pytest.mark.django_db
+def test_mcp_get_project_status_rejects_malformed_project_id(client):
+    _, profile = _create_subscribed_user("badstatus")
+
+    response = client.post(
+        "/api/mcp",
+        data=_rpc(
+            "tools/call",
+            {"name": "djass_get_project_status", "arguments": {"project_id": "abc"}},
+        ),
+        content_type="application/json",
+        HTTP_X_API_KEY=profile.key,
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert body["error"]["data"]["code"] == "validation_error"
+    assert body["error"]["data"]["field"] == "project_id"
+
+
+@pytest.mark.django_db
 def test_mcp_respects_scoped_api_key_permissions(client):
     _, profile = _create_subscribed_user("scoped")
     key = ProjectAPIKey.objects.create(profile=profile, name="read only", scopes=["projects:read"])
