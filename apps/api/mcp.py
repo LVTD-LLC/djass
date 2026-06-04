@@ -209,7 +209,7 @@ def _create_project(request: HttpRequest, principal: APIAuthPrincipal, arguments
 def _coerce_int(value: Any, field_name: str) -> tuple[int | None, dict[str, Any] | None]:
     try:
         return int(value), None
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None, {
             "code": "validation_error",
             "message": f"{field_name} must be an integer.",
@@ -402,6 +402,8 @@ def mcp_endpoint(request: HttpRequest):
     request_id = message.get("id")
     method = message.get("method")
     params = message.get("params") or {}
+    if not isinstance(params, dict):
+        return _mcp_error(request_id, -32602, "params must be an object", status=400)
 
     if method == "initialize":
         return _mcp_result(

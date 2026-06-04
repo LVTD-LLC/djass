@@ -53,6 +53,18 @@ def test_mcp_lists_tools_and_generation_options_without_auth(client):
 
 
 @pytest.mark.django_db
+def test_mcp_rejects_non_object_params(client):
+    response = client.post(
+        "/api/mcp",
+        data={"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": ["bad"]},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["message"] == "params must be an object"
+
+
+@pytest.mark.django_db
 def test_mcp_create_project_requires_auth(client):
     response = client.post(
         "/api/mcp",
