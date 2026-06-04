@@ -104,5 +104,5 @@ directory.
 
 This prompt-first workflow is enough for early use. A plugin becomes useful when
 you want one-click installation, bundled agent skills, marketplace
-discoverability, or consistent setup across Claude Code, Codex, Cursor, Gemini,
-and OpenClaw-compatible environments.
+discoverability, or consistent setup across multiple MCP-compatible agent
+environments.
