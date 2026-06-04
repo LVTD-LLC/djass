@@ -3,7 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import FileResponse, Http404, HttpRequest, JsonResponse
+from django.http import FileResponse, Http404, HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -65,6 +65,22 @@ def _scope_error(principal: APIAuthPrincipal, scope: str) -> dict[str, Any] | No
         "message": f"API key is missing required scope: {scope}",
         "required_scope": scope,
     }
+
+
+def _clean_arguments(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _parse_int(value: Any, field: str) -> tuple[int | None, dict[str, Any] | None]:
+    try:
+        parsed = int(value)
+    except TypeError, ValueError:
+        return None, {
+            "code": "validation_error",
+            "message": f"{field} must be an integer.",
+            "field": field,
+        }
+    return parsed, None
 
 
 def _serialize_project(project: Project) -> dict[str, Any]:
@@ -232,10 +248,23 @@ def _create_project(request: HttpRequest, principal: APIAuthPrincipal, arguments
 def _list_projects(request: HttpRequest, principal: APIAuthPrincipal, arguments: dict[str, Any]):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_LIST,
+            status_code=403,
+            principal=principal,
+            metadata={"transport": "mcp", **scope_error},
+        )
         return {"error": scope_error}, 403
 
-    limit = max(1, min(int(arguments.get("limit", 20)), 100))
-    offset = max(0, int(arguments.get("offset", 0)))
+    limit, limit_error = _parse_int(arguments.get("limit", 20), "limit")
+    if limit_error:
+        return {"error": limit_error}, 400
+    offset, offset_error = _parse_int(arguments.get("offset", 0), "offset")
+    if offset_error:
+        return {"error": offset_error}, 400
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
     queryset = Project.objects.filter(user=principal.profile.user).prefetch_related("artifact")
     total = queryset.count()
     projects = [_serialize_project(project) for project in queryset[offset : offset + limit]]
@@ -254,9 +283,18 @@ def _get_project_status(
 ):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_STATUS,
+            status_code=403,
+            principal=principal,
+            metadata={"transport": "mcp", **scope_error},
+        )
         return {"error": scope_error}, 403
 
-    project_id = arguments.get("project_id")
+    project_id, project_id_error = _parse_int(arguments.get("project_id"), "project_id")
+    if project_id_error:
+        return {"error": project_id_error}, 400
     try:
         project = Project.objects.prefetch_related("artifact").get(
             id=project_id, user=principal.profile.user
@@ -275,9 +313,18 @@ def _get_project_download(
 ):
     scope_error = _scope_error(principal, "projects:read")
     if scope_error:
+        log_project_api_action(
+            request,
+            action=ProjectAPIAuditLog.ACTION_DOWNLOAD,
+            status_code=403,
+            principal=principal,
+            metadata={"transport": "mcp", **scope_error},
+        )
         return {"error": scope_error}, 403
 
-    project_id = arguments.get("project_id")
+    project_id, project_id_error = _parse_int(arguments.get("project_id"), "project_id")
+    if project_id_error:
+        return {"error": project_id_error}, 400
     try:
         project = Project.objects.select_related("artifact").get(
             id=project_id, user=principal.profile.user
@@ -366,7 +413,7 @@ def _tools() -> list[dict[str, Any]]:
 
 def _call_tool(request: HttpRequest, request_id: Any, params: dict[str, Any]):
     name = params.get("name")
-    arguments = params.get("arguments") or {}
+    arguments = _clean_arguments(params.get("arguments"))
 
     if name == "djass_generation_options":
         return _mcp_result(request_id, _tool_text(_generation_options_payload()))
@@ -426,9 +473,14 @@ def mcp_endpoint(request: HttpRequest):
     except json.JSONDecodeError:
         return _mcp_error(None, -32700, "Parse error", status=400)
 
+    if not isinstance(message, dict):
+        return _mcp_error(None, -32600, "Invalid Request", status=400)
+
     request_id = message.get("id")
     method = message.get("method")
     params = message.get("params") or {}
+    if not isinstance(params, dict):
+        params = {}
 
     if method == "initialize":
         return _mcp_result(
@@ -440,7 +492,7 @@ def mcp_endpoint(request: HttpRequest):
             },
         )
     if method == "notifications/initialized":
-        return JsonResponse({}, status=202)
+        return HttpResponse(status=204)
     if method == "tools/list":
         return _mcp_result(request_id, {"tools": _tools()})
     if method == "tools/call":

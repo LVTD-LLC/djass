@@ -520,3 +520,67 @@ def test_remote_mcp_prompt_endpoint_contains_current_options(client):
     body = response.json()
     assert "MCP endpoint" in body["prompt"]
     assert "use_mcp" in json.dumps(body["options"])
+
+
+@pytest.mark.django_db
+def test_remote_mcp_rejects_non_object_json_body(client):
+    response = client.post("/mcp", data="[]", content_type="application/json")
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == -32600
+
+
+@pytest.mark.django_db
+def test_remote_mcp_ignores_non_dict_params_for_tool_call(client):
+    response = client.post(
+        "/mcp",
+        data=_rpc("tools/call", ["not", "an", "object"]),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == -32001
+
+
+@pytest.mark.django_db
+def test_remote_mcp_rejects_non_integer_list_inputs(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="remote-list-invalid",
+        email="remote-list-invalid@example.local",
+        password="password123",
+    )
+
+    response = client.post(
+        "/mcp",
+        data=_rpc(
+            "tools/call",
+            {"name": "djass_list_projects", "arguments": {"limit": "abc", "offset": 0}},
+        ),
+        content_type="application/json",
+        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["data"]["field"] == "limit"
+
+
+@pytest.mark.django_db
+def test_remote_mcp_rejects_non_integer_project_id(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="remote-status-invalid",
+        email="remote-status-invalid@example.local",
+        password="password123",
+    )
+
+    response = client.post(
+        "/mcp",
+        data=_rpc(
+            "tools/call",
+            {"name": "djass_get_project_status", "arguments": {"project_id": "abc"}},
+        ),
+        content_type="application/json",
+        HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["data"]["field"] == "project_id"
