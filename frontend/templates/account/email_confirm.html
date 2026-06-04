@@ -9,9 +9,9 @@
   <div class="dj-auth-wrap">
     <div class="dj-auth-card">
       <div class="text-center">
-        <p class="dj-pill dj-pill-accent mx-auto">Djass Account Security</p>
+        <p class="dj-pill dj-pill-accent mx-auto">Djass account security</p>
         <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Confirm your email</h1>
-        <p class="mt-3 text-sm text-[var(--dj-muted)]">One quick step and your account is ready.</p>
+        <p class="mt-3 text-sm text-[var(--dj-muted)]">Confirm this address to finish securing your account.</p>
       </div>
 
       <section class="mt-8">
@@ -36,7 +36,7 @@
           {% else %}
             <div class="dj-alert dj-alert-danger">
               <p class="text-sm leading-6">
-                Unable to confirm
+                Djass cannot confirm
                 <span class="font-semibold">{{ confirmation.email_address.email }}</span>
                 because it is already confirmed by another account.
               </p>
@@ -45,7 +45,7 @@
         {% else %}
           {% url 'account_email' as email_url %}
           <div class="space-y-5">
-            <p class="text-sm leading-6 text-[var(--dj-muted)]">This confirmation link has expired or is invalid.</p>
+            <p class="text-sm leading-6 text-[var(--dj-muted)]">This confirmation link is expired or invalid.</p>
             <a href="{{ email_url }}" class="dj-button dj-button-secondary w-full">
               Request a new confirmation email
             </a>

@@ -7,7 +7,7 @@ def test_premium_offer_workflow_copy_crosses_out_lifetime_price():
     assert "founders, solo builders, and product teams" in content
     assert "$999" in content
     assert "crossed out" in content
-    assert "Free for now" in content
-    assert "See pricing and what's included" in content
+    assert "Free access" in content
+    assert "Review free access" in content
     assert "feedback" in content.lower()
     assert "client SaaS" not in content

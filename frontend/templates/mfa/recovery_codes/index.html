@@ -7,7 +7,7 @@
       <p class="dj-kicker">Security</p>
       <h1 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Recovery codes</h1>
       <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-        Save these one-time codes somewhere safe. They let you sign in if you lose access to your passkey.
+        Save these one-time codes somewhere private. They let you sign in if you lose access to your passkey.
       </p>
     </div>
     <a href="{% url 'mfa_index' %}" class="dj-button dj-button-secondary">Back to passkeys</a>
@@ -18,7 +18,7 @@
       {{ unused_codes|length }} of {{ total_count }} recovery codes available.
     </p>
     <p class="mt-1 text-sm text-[var(--dj-muted)]">
-      Each code can be used once. Generate a new set if these are lost or mostly used.
+      Each code can be used once. Generate a new set if these are lost or nearly used up.
     </p>
   </div>
 

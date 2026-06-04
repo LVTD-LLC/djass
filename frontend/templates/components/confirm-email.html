@@ -7,13 +7,13 @@
         </svg>
       </div>
       <div>
-        <h2 class="text-sm font-semibold text-[var(--dj-heading)]">Attention</h2>
+        <h2 class="text-sm font-semibold text-[var(--dj-heading)]">Confirm your email</h2>
         <form method="post" action="{{ resend_confirmation_url }}" class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
           {% csrf_token %}
-          <p>Your email is not yet confirmed. This will limit the available functionality.</p>
+          <p>Your email is not confirmed yet, so some account security features may be limited.</p>
           <p>
-            You should have received a confirmation code by email. If you haven't received it,
-            <button type="submit" class="font-semibold text-[var(--dj-warning)] underline">click here to resend</button>.
+            You should have received a confirmation email. If it did not arrive,
+            <button type="submit" class="font-semibold text-[var(--dj-warning)] underline">resend the confirmation email</button>.
           </p>
         </form>
       </div>

@@ -50,7 +50,7 @@ def test_pricing_page_shows_crossed_out_lifetime_price(client):
     content = response.content.decode()
     assert "$999" in content
     assert "line-through" in content
-    assert "Free for now while Djass improves" in content
+    assert "Free access while Djass improves" in content
     assert "The listed $999 lifetime price is paused" in content
     assert "No payment required during the current feedback window" in content
 
@@ -151,7 +151,7 @@ def test_signup_page_shows_passkey_option(client):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Sign up using a passkey" in content
+    assert "Create account with a passkey" in content
 
 
 def test_signup_page_is_email_only(client):
@@ -300,7 +300,7 @@ def test_signup_survives_confirmation_mail_failure(client, django_user_model, mo
 def test_passkey_signup_page_is_enabled(client):
     response = client.get("/accounts/signup/passkey/")
     assert response.status_code == 200
-    assert "Create your account with a passkey" in response.content.decode()
+    assert "Create your free account with a passkey" in response.content.decode()
 
 
 def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
@@ -337,7 +337,7 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "See pricing and what's included" in content
+    assert "Review free access" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
 
@@ -360,7 +360,7 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open your dashboard" in content
-    assert "See pricing and what's included" in content
+    assert "Review free access" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
 
@@ -369,8 +369,8 @@ def test_landing_and_pricing_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "hosted workflow for <strong>django-saas-starter</strong>" in landing_content
-    assert "Founders, product teams, and solo builders" in landing_content
+    assert "hosted generator" in landing_content
+    assert "SaaS product, internal tool, or experiment" in landing_content
     assert "How it works" in landing_content
     assert "UI flow" in landing_content
     assert "API flow" in landing_content
@@ -378,17 +378,17 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "/skill.md" in landing_content
     assert "OpenAPI docs" in landing_content
     assert "https://djass.dev/api/docs" in landing_content
-    assert "Djass generates in the background" in landing_content
+    assert "Djass builds from one project spec" in landing_content
     assert "agency" not in landing_content.lower()
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "One plan for serious Django SaaS work" in pricing_content
+    assert "Free access while the generator improves" in pricing_content
     assert "$999" in pricing_content
     assert "line-through" in pricing_content
-    assert "Free for now while Djass improves" in pricing_content
-    assert "Review the open-source baseline" in pricing_content
+    assert "Free access while Djass improves" in pricing_content
+    assert "Review the starter repository" in pricing_content
     assert "Need full control?" not in pricing_content
     assert "agency" not in pricing_content.lower()
 
@@ -398,25 +398,25 @@ def test_landing_guest_ctas_explain_destination(client):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Create your Djass account" in content
+    assert "Create a free Djass account" in content
     assert (
-        "Create an account to configure your starter, run generation, and track project history."
+        "Configure your starter, queue generation, and keep project history in one dashboard."
         in content
     )
-    assert "Sign in to your dashboard" in content
-    assert "Go to your existing Djass account and continue from your project dashboard." in content
+    assert "Sign in to dashboard" in content
+    assert "Continue from your existing project dashboard." in content
 
 
 def test_signup_cta_copy_uses_pricing_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Create your Djass account" in landing_content
-    assert "See pricing and what's included" in landing_content
+    assert "Create a free Djass account" in landing_content
+    assert "Review free access" in landing_content
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "Create account to start free" in pricing_content
+    assert "Create a free account" in pricing_content
     assert "$999" in pricing_content
     assert "line-through" in pricing_content

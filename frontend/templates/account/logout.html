@@ -5,13 +5,13 @@
   <div class="dj-auth-wrap">
     <div class="dj-auth-card text-center">
       <p class="dj-pill dj-pill-danger mx-auto">Session</p>
-      <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Please confirm Sign Out</h1>
+      <h1 class="mt-5 text-3xl font-semibold text-[var(--dj-heading)]">Sign out of Djass?</h1>
       <form method="post" class="mt-8" action="{% url 'account_logout' %}">
         {% csrf_token %}
         {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
         {% endif %}
-        <button class="dj-button dj-button-danger w-full" type="submit">Sign Out</button>
+        <button class="dj-button dj-button-danger w-full" type="submit">Sign out</button>
       </form>
     </div>
   </div>

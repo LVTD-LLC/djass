@@ -3,7 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-  <title>Djass - User Settings</title>
+  <title>Account settings | Djass</title>
 {% endblock meta %}
 
 {% block content %}
@@ -14,14 +14,14 @@
       <div class="grid gap-4 lg:grid-cols-[0.34fr_0.66fr]">
         <aside class="dj-panel p-6">
           <p class="dj-kicker">Account</p>
-          <h1 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">Settings</h1>
+          <h1 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">Account settings</h1>
           <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
-            Manage profile details, your agent API key, and account-level controls from one place.
+            Manage profile details, passkeys, your agent API key, and account controls from one place.
           </p>
 
           <div class="dj-alert dj-alert-success mt-6">
             <h2 class="font-semibold text-[var(--dj-heading)]">Free access is active</h2>
-            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation is available while Djass collects more feedback from real starter builds.</p>
+            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation is available while Djass collects feedback from real starter builds.</p>
           </div>
         </aside>
 
@@ -32,7 +32,7 @@
                 <p class="dj-kicker">Security</p>
                 <h2 id="passkey-settings-heading" class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h2>
                 <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  Add a passkey after account creation to sign in faster without typing your password.
+                  Add a passkey to sign in faster without typing your password.
                   {% if passkey_count %}You have {{ passkey_count }} passkey{{ passkey_count|pluralize }} set up.{% endif %}
                 </p>
               </div>
@@ -70,7 +70,7 @@
                 <p class="dj-kicker">Automation</p>
                 <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent API key</h2>
                 <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  Give this key to your coding agent so it can call the Djass Projects API on your behalf. Treat it like a password.
+                  Give this key to your coding agent so it can create, check, and download Djass projects for you. Treat it like a password.
                 </p>
               </div>
               <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary min-w-24">API docs</a>
@@ -102,7 +102,7 @@
           <section class="dj-panel p-6">
             <div>
               <p class="dj-kicker">Profile</p>
-              <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Personal Information</h2>
+              <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Profile details</h2>
             </div>
             <form id="settings-form" action="" method="post" class="mt-6">
               {% csrf_token %}
@@ -122,7 +122,7 @@
               </div>
 
               <div class="mt-6 border-t border-[var(--dj-border)] pt-6 text-right">
-                <button type="submit" class="dj-button dj-button-primary">Save Changes</button>
+                <button type="submit" class="dj-button dj-button-primary">Save changes</button>
               </div>
             </form>
           </section>
@@ -130,9 +130,9 @@
           <section class="dj-alert dj-alert-danger" data-controller="delete-account">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Danger Zone</h2>
+                <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h2>
                 <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  Deleting your account is irreversible. This will permanently delete your user record and related data from the database.
+                  This is permanent. Deleting your account removes your user record and related data from the database.
                 </p>
               </div>
               <button type="button" data-action="delete-account#open" class="dj-button dj-button-danger shrink-0">
@@ -154,7 +154,7 @@
                   <div>
                     <h3 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h3>
                     <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                      This action is irreversible. To confirm, type <span class="font-mono font-semibold text-[var(--dj-heading)]">DELETE</span> below.
+                      To confirm this permanent action, type <span class="font-mono font-semibold text-[var(--dj-heading)]">DELETE</span> below.
                     </p>
                   </div>
                   <button type="button" class="dj-icon-button" data-action="delete-account#close" aria-label="Close">

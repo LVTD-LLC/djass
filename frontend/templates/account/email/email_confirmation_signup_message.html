@@ -40,24 +40,24 @@
     <mj-section background-color="#ffffff" padding="0 20px 20px 20px">
       <mj-column>
         <mj-text font-size="18px" color="#1f2937" font-weight="600" padding="0 0 10px 0">
-          Welcome to Djass!
+          Welcome to Djass
         </mj-text>
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
           Hello,
         </mj-text>
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
-          Thank you for signing up at {{ site_name }}! We're excited to have you on board.
+          Your {{ site_name }} account is ready. Confirm your email address to finish securing it.
         </mj-text>
         {% if code %}
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
-          Enter this verification code to finish creating your account:
+          Enter this verification code to finish creating your account.
         </mj-text>
         <mj-text font-size="32px" color="#1f2937" font-weight="700" letter-spacing="6px" align="center" padding="8px 0 24px 0">
           {{ code }}
         </mj-text>
         {% else %}
         <mj-text font-size="16px" color="#4b5563" line-height="24px" padding="0 0 20px 0">
-          To get started, please confirm your email address by clicking the button below:
+          Use the button below to confirm your email address.
         </mj-text>
         {% endif %}
       </mj-column>
@@ -75,7 +75,7 @@
           padding="12px 24px"
           href="{{ activate_url }}"
         >
-          Confirm Email Address
+          Confirm email address
         </mj-button>
       </mj-column>
     </mj-section>

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-  <title>Admin Panel - Djass</title>
+  <title>Admin panel | Djass</title>
 {% endblock meta %}
 
 {% block content %}
@@ -10,7 +10,7 @@
     <div class="dj-container-wide">
       <div class="dj-panel p-6 sm:p-8">
         <p class="dj-kicker">Operations</p>
-        <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Admin Panel</h1>
+        <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Admin panel</h1>
         <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
           High-level user, profile, and feedback activity for the Djass generator.
         </p>
@@ -46,7 +46,7 @@
       <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section class="dj-panel overflow-hidden">
           <div class="border-b border-[var(--dj-border)] p-5">
-            <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recent Users</h2>
+            <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recent users</h2>
           </div>
           <div class="overflow-x-auto">
             <table class="dj-table min-w-[640px]">
@@ -66,7 +66,7 @@
                   </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="3" class="text-center">No users yet</td>
+                    <td colspan="3" class="text-center">No users yet.</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -76,7 +76,7 @@
 
         <section class="dj-panel">
           <div class="border-b border-[var(--dj-border)] p-5">
-            <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recent Feedback</h2>
+            <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recent feedback</h2>
           </div>
           <div class="p-5">
             <ul class="space-y-4">
@@ -90,7 +90,7 @@
                   </p>
                 </li>
               {% empty %}
-                <li class="text-center text-sm text-[var(--dj-muted)]">No feedback yet</li>
+                <li class="text-center text-sm text-[var(--dj-muted)]">No feedback yet.</li>
               {% endfor %}
             </ul>
           </div>
@@ -98,10 +98,10 @@
       </div>
 
       <div class="dj-panel mt-4 p-6">
-        <p class="dj-kicker">Quick Stats</p>
+        <p class="dj-kicker">Quick stats</p>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <p class="text-sm text-[var(--dj-muted)]">Average Users per Day (Last 30 days): <strong class="text-[var(--dj-heading)]">{{ avg_users_per_day|floatformat:1 }}</strong></p>
-          <p class="text-sm text-[var(--dj-muted)]">Total Profiles: <strong class="text-[var(--dj-heading)]">{{ total_profiles }}</strong></p>
+          <p class="text-sm text-[var(--dj-muted)]">Average users per day (last 30 days): <strong class="text-[var(--dj-heading)]">{{ avg_users_per_day|floatformat:1 }}</strong></p>
+          <p class="text-sm text-[var(--dj-muted)]">Total profiles: <strong class="text-[var(--dj-heading)]">{{ total_profiles }}</strong></p>
         </div>
       </div>
     </div>

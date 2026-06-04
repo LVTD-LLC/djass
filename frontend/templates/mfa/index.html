@@ -10,7 +10,7 @@
       <p class="dj-kicker">Security</p>
       <h1 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h1>
       <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-        Add a passkey to sign in faster and more securely with your device unlock, fingerprint, or face ID.
+        Add a passkey to sign in faster with your device unlock, fingerprint, or face ID.
       </p>
     </div>
     <a href="{% url 'settings' %}" class="dj-button dj-button-secondary">Back to settings</a>
@@ -46,9 +46,9 @@
           <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Recovery codes</h2>
           <p class="mt-1 text-sm text-[var(--dj-muted)]">
             {% if authenticators.recovery_codes %}
-              Backup codes are ready if you lose access to your passkey.
+              Recovery codes are ready if you lose access to your passkey.
             {% elif authenticators.webauthn|length %}
-              Generate backup codes so losing a passkey does not lock you out.
+              Generate recovery codes so losing a passkey does not lock you out.
             {% else %}
               Add a passkey first, then save recovery codes as your fallback.
             {% endif %}
