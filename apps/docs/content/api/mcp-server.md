@@ -25,6 +25,9 @@ Remote agents should call `djass_generation_options`, then
 `djass_get_project_download`. The download response includes a URL plus the
 checksum; fetch that URL with the same API-key header.
 
+For a copy-ready setup prompt, see
+[Generate a Project With an AI Agent](/docs/workflows/generate-project-with-ai-agent/).
+
 ## Run locally
 
 From the repository root:
@@ -91,9 +94,9 @@ access so local agents can operate without a manual signup flow.
 
 Agents should call `get_generator_options` first, then ask the user which
 optional feature flags and generator options they need and will use. Do not
-infer services such as analytics, payments, storage, support chat, CI, or MCP
-scaffolding from a vague app idea. If the user asks for Djass defaults, treat
-that as explicit confirmation.
+infer services such as analytics, payments, storage, support chat, keyboard
+shortcuts, CI, or MCP scaffolding from a vague app idea. If the user asks for
+Djass defaults, treat that as explicit confirmation.
 
 Use `create_project` to create a queued generation job, then poll `get_project`
 or `list_projects` until the status is `ready` or `failed`.

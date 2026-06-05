@@ -247,6 +247,17 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
             description="Adds MJML email template rendering support for transactional messages.",
         ),
         GeneratorField(
+            "use_keyboard_shortcuts",
+            "y",
+            "Use Keyboard Shortcuts",
+            category="ux",
+            is_feature_flag=True,
+            description=(
+                "Adds keyboard shortcut helpers, data attributes, and visible shortcut hints "
+                "for command-oriented UI controls."
+            ),
+        ),
+        GeneratorField(
             "use_ai",
             "y",
             "Use AI",
@@ -316,6 +327,7 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
         GeneratorOptionCategory("cx", "CX"),
         GeneratorOptionCategory("commerce", "Commerce"),
         GeneratorOptionCategory("storage", "Storage"),
+        GeneratorOptionCategory("ux", "UX"),
         GeneratorOptionCategory("content", "Content"),
         GeneratorOptionCategory("ai", "AI"),
         GeneratorOptionCategory("delivery", "Delivery"),

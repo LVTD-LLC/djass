@@ -36,6 +36,7 @@ CREATE_PAYLOAD = {
     "generate_blog": "y",
     "generate_docs": "y",
     "use_mjml": "y",
+    "use_keyboard_shortcuts": "y",
     "use_ai": "y",
     "use_logfire": "y",
     "use_healthchecks": "y",
@@ -93,6 +94,9 @@ def test_project_options_endpoint_contract(client):
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",
         "use_mjml",
+    }
+    assert {option["key"] for option in groups["ux"]["options"]} >= {
+        "use_keyboard_shortcuts",
     }
     assert {option["key"] for option in groups["ai"]["options"]} >= {"use_ai", "use_mcp"}
     assert {option["key"] for option in groups["delivery"]["options"]} >= {

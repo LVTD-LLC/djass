@@ -99,6 +99,7 @@ def _read_artifact_zip(project):
             generate_blog="n",
             generate_docs="n",
             use_mjml="n",
+            use_keyboard_shortcuts="n",
             use_ai="n",
             use_logfire="n",
             use_healthchecks="n",

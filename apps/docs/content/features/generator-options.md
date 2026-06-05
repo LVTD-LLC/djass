@@ -49,6 +49,11 @@ not block unrelated PRs.
 - **Use Chatwoot**: customer support/chat integration scaffolding.
 - **Use MJML**: email templating/rendering support.
 
+### UX
+
+- **Use Keyboard Shortcuts**: keyboard shortcut helpers, data attributes, and
+  visible shortcut hints for command-oriented UI controls.
+
 ### Commerce
 
 - **Use Stripe**: Stripe integration scaffold pieces.
