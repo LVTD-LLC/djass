@@ -31,9 +31,31 @@ def _mcp_route(route: Route) -> Route:
     )
 
 
+def _mcp_routes() -> list[Route]:
+    routes = []
+    for route in mcp_application.routes:
+        if not isinstance(route, Route):
+            continue
+        routes.append(_mcp_route(route))
+        if route.path == "/mcp":
+            alias_name = f"{route.name}_slash" if route.name else "mcp_slash"
+            routes.append(
+                _mcp_route(
+                    Route(
+                        "/mcp/",
+                        endpoint=route.endpoint,
+                        methods=route.methods,
+                        name=alias_name,
+                        include_in_schema=route.include_in_schema,
+                    )
+                )
+            )
+    return routes
+
+
 application = Starlette(
     routes=[
-        *[_mcp_route(route) for route in mcp_application.routes if isinstance(route, Route)],
+        *_mcp_routes(),
         Mount("/", app=django_application),
     ],
     lifespan=mcp_application.router.lifespan_context,

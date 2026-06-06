@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import FileResponse, Http404, HttpRequest, JsonResponse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -63,9 +64,9 @@ def mcp_project_download(request: HttpRequest, project_id: int):
 
 @require_http_methods(["GET"])
 def mcp_prompt(request: HttpRequest):
-    base_url = request.build_absolute_uri("/").rstrip("/")
-    mcp_url = request.build_absolute_uri("/mcp")
-    options_url = request.build_absolute_uri("/api/v1/project-options")
+    base_url = str(settings.SITE_URL).rstrip("/")
+    mcp_url = f"{base_url}/mcp"
+    options_url = f"{base_url}/api/v1/project-options"
     prompt = "\n".join(
         [
             "Use Djass to generate Django SaaS projects for this user.",

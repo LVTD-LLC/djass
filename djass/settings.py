@@ -89,6 +89,11 @@ if DEBUG:
 
 CSRF_TRUSTED_ORIGINS = [SITE_URL]
 
+if ENVIRONMENT == "prod":
+    # Render/Cloudflare terminate TLS before requests reach Django. Trust the
+    # proxy scheme header only in deployed production environments.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 DEFAULT_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

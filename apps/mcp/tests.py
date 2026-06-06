@@ -532,6 +532,19 @@ def test_mcp_download_and_prompt_django_endpoints(client, django_user_model):
     assert download["Content-Disposition"].startswith("attachment;")
 
 
+def test_mcp_prompt_uses_canonical_site_url(client, settings):
+    settings.SITE_URL = "https://djass.dev"
+    settings.ALLOWED_HOSTS = ["agent.example"]
+
+    prompt = client.get("/mcp/prompt", HTTP_HOST="agent.example")
+
+    assert prompt.status_code == 200
+    prompt_text = prompt.json()["prompt"]
+    assert "FastMCP endpoint: https://djass.dev/mcp" in prompt_text
+    assert "fetch https://djass.dev/api/v1/project-options" in prompt_text
+    assert "agent.example" not in prompt_text
+
+
 @pytest.mark.django_db(transaction=True)
 def test_mcp_routes_are_reachable_through_deployed_asgi_app(
     django_user_model,
@@ -562,20 +575,30 @@ def test_mcp_routes_are_reachable_through_deployed_asgi_app(
     async def request_asgi_routes():
         from djass.asgi import application
 
+        mcp_route_names = [
+            route.name
+            for route in application.routes
+            if getattr(route, "path", None) in {"/mcp", "/mcp/"}
+        ]
         transport = httpx.ASGITransport(app=application)
         async with httpx.AsyncClient(transport=transport, base_url="http://localhost") as client:
             mcp = await client.post("/mcp")
             prompt = await client.get("/mcp/prompt")
+            mcp_slash = await client.post("/mcp/")
             download = await client.get(
                 f"/mcp/projects/{project.id}/download",
                 headers={"Authorization": f"Bearer {user.profile.key}"},
             )
-        return mcp, prompt, download
+        return mcp, prompt, mcp_slash, download, mcp_route_names
 
-    mcp, prompt, download = asyncio.run(request_asgi_routes())
+    mcp, prompt, mcp_slash, download, mcp_route_names = asyncio.run(request_asgi_routes())
 
+    assert len(mcp_route_names) == 2
+    assert len(set(mcp_route_names)) == 2
     assert mcp.status_code == 401
     assert mcp.json()["error"] == "invalid_token"
+    assert mcp_slash.status_code == 401
+    assert mcp_slash.json()["error"] == "invalid_token"
     assert prompt.status_code == 200
     assert "FastMCP endpoint" in prompt.json()["prompt"]
     assert download.status_code == 200

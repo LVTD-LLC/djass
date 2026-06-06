@@ -28,6 +28,24 @@ checksum; fetch that URL with the same API-key header.
 For a copy-ready setup prompt, see
 [Generate a Project With an AI Agent](/docs/workflows/generate-project-with-ai-agent/).
 
+### Codex setup
+
+Djass hosted MCP is authenticated. Adding only the URL lets Codex reach the
+server, but it does not send a Djass API key, so the MCP initialization request
+is rejected with `401 invalid_token`.
+
+Create a Djass API key with `projects:create` and `projects:read`, keep it in an
+environment variable, then add the server with that variable name:
+
+```bash
+export DJASS_API_KEY="..."
+codex mcp add djass --url https://djass.dev/mcp --bearer-token-env-var DJASS_API_KEY
+codex mcp list
+```
+
+Restart Codex after updating the environment so the configured server process can
+read `DJASS_API_KEY`.
+
 ## Run locally
 
 From the repository root:
