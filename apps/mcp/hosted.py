@@ -333,15 +333,19 @@ async def get_project_status(project_id: int) -> dict[str, Any]:
     """Check queued/generating/ready/failed status for one generated project."""
 
     def fetch_project(profile: Profile) -> dict[str, Any]:
-        try:
-            project = services.get_project(project_id, user_email=profile.user.email)
-        except MCPServiceError as exc:
-            raise _tool_error(exc) from exc
-        if project["status"] == ProjectStatus.READY and project.get("artifact_ready"):
-            project["download"] = _download_payload(project)
-        return project
+        return _project_status_payload(project_id, profile)
 
     return await _with_authenticated_profile("projects:read", fetch_project)
+
+
+def _project_status_payload(project_id: int, profile: Profile) -> dict[str, Any]:
+    try:
+        project = services.get_project(project_id, user_email=profile.user.email)
+    except MCPServiceError as exc:
+        raise _tool_error(exc) from exc
+    if project["status"] == ProjectStatus.READY and project.get("artifact_ready"):
+        project["download"] = _download_payload(project)
+    return project
 
 
 def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
@@ -362,10 +366,13 @@ def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
 async def get_project_download(project_id: int) -> dict[str, Any]:
     """Return the authenticated download URL and checksum for a ready generated project ZIP."""
 
-    project = await get_project_status(project_id)
-    if project["status"] != ProjectStatus.READY or not project.get("artifact_ready"):
-        raise ToolError("Generated project ZIP is not ready yet. Poll status and retry.")
-    return {"download": project["download"]}
+    def fetch_download(profile: Profile) -> dict[str, Any]:
+        project = _project_status_payload(project_id, profile)
+        if project["status"] != ProjectStatus.READY or not project.get("artifact_ready"):
+            raise ToolError("Generated project ZIP is not ready yet. Poll status and retry.")
+        return {"download": project["download"]}
+
+    return await _with_authenticated_profile("projects:read", fetch_download)
 
 
 @hosted_mcp.prompt(name="generate_project")

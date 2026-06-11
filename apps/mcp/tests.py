@@ -602,6 +602,26 @@ def test_hosted_fastmcp_respects_scoped_api_key_permissions(django_user_model):
         auth_context_var.reset(token)
 
 
+@pytest.mark.django_db
+def test_hosted_fastmcp_download_requires_read_scope(django_user_model):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+    from mcp.server.fastmcp.exceptions import ToolError
+
+    from apps.mcp.hosted import get_project_download
+
+    user = django_user_model.objects.create_user(
+        username="hosted-download-scoped",
+        email="hosted-download-scoped@example.local",
+        password="password123",
+    )
+    token = _set_hosted_auth(user, scopes=["projects:create"])
+    try:
+        with pytest.raises(ToolError, match="projects:read"):
+            asyncio.run(get_project_download(1))
+    finally:
+        auth_context_var.reset(token)
+
+
 @pytest.mark.django_db(transaction=True)
 def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_model, settings):
     from mcp.server.auth.middleware.auth_context import auth_context_var
