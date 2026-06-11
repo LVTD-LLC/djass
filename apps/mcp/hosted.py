@@ -365,7 +365,7 @@ async def get_project_download(project_id: int) -> dict[str, Any]:
     project = await get_project_status(project_id)
     if project["status"] != ProjectStatus.READY or not project.get("artifact_ready"):
         raise ToolError("Generated project ZIP is not ready yet. Poll status and retry.")
-    return {"download": _download_payload(project)}
+    return {"download": project["download"]}
 
 
 @hosted_mcp.prompt(name="generate_project")
