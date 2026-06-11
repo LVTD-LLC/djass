@@ -75,6 +75,7 @@
             </div>
             <p class="text-sm leading-6 text-[var(--dj-muted)]">Copy a ready-to-paste prompt that tells your AI agent to prefer Djass MCP tools before HTTP fallback.</p>
             {% if agent_prompt_available %}
+              <p class="text-sm font-semibold leading-6 text-[var(--dj-danger)]">This prompt includes your Djass API key. Share it only with agents and workspaces you trust.</p>
               <textarea
                 id="djass-agent-prompt"
                 hidden

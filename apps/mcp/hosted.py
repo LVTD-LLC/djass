@@ -8,6 +8,7 @@ import django
 from asgiref.sync import sync_to_async
 from django.apps import apps as django_apps
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import slugify
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import AccessToken, TokenVerifier
@@ -43,11 +44,18 @@ class DjassAPITokenVerifier(TokenVerifier):
 
 
 def _site_url() -> str:
-    return str(settings.SITE_URL).rstrip("/") or "https://djass.dev"
+    return str(settings.SITE_URL).rstrip("/")
+
+
+def _required_site_url() -> str:
+    site_url = _site_url()
+    if not site_url:
+        raise ImproperlyConfigured("SITE_URL must be set to serve hosted Djass MCP.")
+    return site_url
 
 
 def _auth_settings() -> AuthSettings:
-    site_url = _site_url()
+    site_url = _required_site_url()
     return AuthSettings(
         issuer_url=AnyHttpUrl(site_url),
         resource_server_url=AnyHttpUrl(f"{site_url}/mcp"),
@@ -56,7 +64,7 @@ def _auth_settings() -> AuthSettings:
 
 
 def _transport_security_settings() -> TransportSecuritySettings:
-    site_url = _site_url()
+    site_url = _required_site_url()
     parsed_site_url = urlparse(site_url)
     allowed_hosts = {
         "127.0.0.1",
@@ -89,13 +97,13 @@ def _transport_security_settings() -> TransportSecuritySettings:
 hosted_mcp = FastMCP(
     "Djass",
     instructions=(
-        "Generate Django SaaS projects through Djass. Call djass_generation_options first, "
-        "then djass_create_project, poll djass_get_project_status, and finally call "
-        "djass_get_project_download when the artifact is ready."
+        "Generate Django SaaS projects through hosted Djass MCP. Call "
+        "get_generator_options first, then create_project, poll get_project_status, "
+        "and finally call get_project_download when the artifact is ready."
     ),
     token_verifier=DjassAPITokenVerifier(),
     auth=_auth_settings(),
-    streamable_http_path="/mcp",
+    streamable_http_path="/",
     json_response=True,
     stateless_http=True,
     transport_security=_transport_security_settings(),
@@ -179,22 +187,22 @@ def _payload_from_args(
     return payload
 
 
-@hosted_mcp.tool(name="djass_generation_options")
-def djass_generation_options() -> dict[str, Any]:
+@hosted_mcp.tool(name="get_generator_options")
+def get_generator_options() -> dict[str, Any]:
     """Return the Djass cookiecutter fields, defaults, feature flags, and template path."""
 
     options = services.get_generator_options()
     options["recommended_flow"] = [
-        "Call djass_generation_options first so your prompt stays current.",
+        "Call get_generator_options first so your prompt stays current.",
         "Ask the user for every required field and every y/n option not specified.",
-        "Only call djass_create_project after intent and options are clear.",
-        "Poll djass_get_project_status until ready, then call djass_get_project_download.",
+        "Only call create_project after intent and options are clear.",
+        "Poll get_project_status until ready, then call get_project_download.",
     ]
     return options
 
 
-@hosted_mcp.tool(name="djass_create_project")
-def djass_create_project(
+@hosted_mcp.tool(name="create_project")
+def create_project(
     project_name: str,
     project_slug: str,
     caprover_app_name: str = "",
@@ -257,14 +265,13 @@ def djass_create_project(
         return services.queue_project_generation_for_user(
             payload,
             user=profile.user,
-            extra_context=extra_context,
         )
     except MCPServiceError as exc:
         raise _tool_error(exc) from exc
 
 
-@hosted_mcp.tool(name="djass_list_projects")
-def djass_list_projects(
+@hosted_mcp.tool(name="list_projects")
+def list_projects(
     status: Literal["queued", "generating", "ready", "failed"] | None = None,
     limit: int = 20,
     offset: int = 0,
@@ -283,8 +290,8 @@ def djass_list_projects(
         raise _tool_error(exc) from exc
 
 
-@hosted_mcp.tool(name="djass_get_project_status")
-def djass_get_project_status(project_id: int) -> dict[str, Any]:
+@hosted_mcp.tool(name="get_project_status")
+def get_project_status(project_id: int) -> dict[str, Any]:
     """Check queued/generating/ready/failed status for one generated project."""
 
     profile = _profile_from_token("projects:read")
@@ -299,7 +306,7 @@ def djass_get_project_status(project_id: int) -> dict[str, Any]:
 
 def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
     safe_slug = project.get("slug") or slugify(project.get("name", "")) or "project"
-    base_url = _site_url()
+    base_url = _required_site_url()
     artifact = project.get("artifact") or {}
     return {
         "project_id": project["id"],
@@ -311,25 +318,25 @@ def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-@hosted_mcp.tool(name="djass_get_project_download")
-def djass_get_project_download(project_id: int) -> dict[str, Any]:
+@hosted_mcp.tool(name="get_project_download")
+def get_project_download(project_id: int) -> dict[str, Any]:
     """Return the authenticated download URL and checksum for a ready generated project ZIP."""
 
-    project = djass_get_project_status(project_id)
+    project = get_project_status(project_id)
     if project["status"] != ProjectStatus.READY or not project.get("artifact_ready"):
         raise ToolError("Generated project ZIP is not ready yet. Poll status and retry.")
     return {"download": _download_payload(project)}
 
 
-@hosted_mcp.prompt(name="generate_djass_project")
-def generate_djass_project_prompt(app_idea: str) -> str:
+@hosted_mcp.prompt(name="generate_project")
+def generate_project_prompt(app_idea: str) -> str:
     """Prompt an agent to transform an app idea into a Djass generation call."""
 
     return (
         "Use the hosted Djass FastMCP server to generate a Django SaaS project. "
-        "Call djass_generation_options first, ask concise follow-up questions for missing "
-        "required fields/options, then call djass_create_project. Poll "
-        "djass_get_project_status until ready. Finally call djass_get_project_download and "
+        "Call get_generator_options first, ask concise follow-up questions for missing "
+        "required fields/options, then call create_project. Poll "
+        "get_project_status until ready. Finally call get_project_download and "
         "download the returned ZIP URL with the same Authorization bearer token.\n\n"
         f"App idea:\n{app_idea}"
     )

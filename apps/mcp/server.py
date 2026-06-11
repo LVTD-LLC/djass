@@ -165,7 +165,6 @@ def create_project(
             username=username,
             create_user=create_user,
             grant_project_access=grant_project_access,
-            extra_context=extra_context,
         )
     except MCPServiceError as exc:
         raise _tool_error(exc) from exc

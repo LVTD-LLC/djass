@@ -5,6 +5,14 @@ DJASS_OPENAPI_DOCS_URL = "https://djass.dev/api/docs"
 DJASS_MCP_DOCS_URL = "https://djass.dev/docs/api/mcp-server/"
 
 
+def _mcp_url_from_api_base_url(base_url: str) -> str:
+    clean_base_url = base_url.rstrip("/")
+    api_suffix = "/api/v1"
+    if clean_base_url.endswith(api_suffix):
+        return f"{clean_base_url.removesuffix(api_suffix)}/mcp"
+    return f"{clean_base_url}/mcp"
+
+
 def build_djass_agent_skill_md() -> str:
     skill = dedent(
         """\
@@ -21,12 +29,21 @@ def build_djass_agent_skill_md() -> str:
 
         ## Runtime Inputs
 
-        Prefer a configured Djass MCP server. Expected tool names:
+        Prefer the hosted Djass MCP server at `https://djass.dev/mcp`.
+
+        Hosted Djass MCP tool names:
 
         - `get_generator_options`
         - `create_project`
-        - `get_project`
         - `list_projects`
+        - `get_project_status`
+        - `get_project_download`
+
+        Local stdio MCP is only for developing Djass itself or for workflows
+        where the MCP server and agent intentionally share a filesystem.
+
+        Local-only tool:
+
         - `export_project_artifact`
 
         MCP setup docs: __DJASS_MCP_DOCS_URL__
@@ -71,13 +88,13 @@ def build_djass_agent_skill_md() -> str:
            If the user says to use Djass defaults, treat that as confirmation.
 
         4. Call `create_project` with explicit project fields and feature flags
-           as `"y"` or `"n"`. Then use `get_project` or `list_projects` until the
+           as `"y"` or `"n"`. Then poll with `get_project_status` until the
            status is `ready` or `failed`.
 
         5. Retrieve the artifact after `artifact_ready: true`.
            - For hosted MCP servers, do not assume the server can write into the
-             agent's local workspace. Read `djass://projects/{project_id}/artifact.zip`
-             or use the artifact URL from `get_project`, then save and unzip it
+             agent's local workspace. Call `get_project_download`, fetch the
+             returned ZIP URL with the same bearer token, then save and unzip it
              in the client workspace.
            - Use `export_project_artifact` only when the MCP server shares a
              filesystem with the agent, such as a local stdio MCP server.
@@ -248,39 +265,25 @@ def build_djass_agent_skill_md() -> str:
 
 
 def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> str:
-    prompt = dedent(
-        """\
-        Use Djass to generate a new django-saas-starter repo, wait for the ZIP artifact,
-        download it, unzip it into the workspace, and continue from the generated repo.
-
-        Read the plain-text Djass skill instructions first:
-        __DJASS_SKILL_URL__
-
-        Preferred path: use Djass MCP tools if they are available in your tool
-        list. Call `get_generator_options`, ask the user which optional features
-        and generator options they need and will use, then call `create_project`
-        with explicit `"y"`/`"n"` feature flags. Poll with `get_project` or
-        `list_projects` until the artifact is ready. Use the HTTP API only if
-        Djass MCP is unavailable.
-
-        HTTP fallback runtime:
-
-        ```bash
-        export DJASS_BASE_URL="__DJASS_BASE_URL__"
-        export DJASS_API_KEY="__DJASS_API_KEY__"
-        ```
-
-        Treat `DJASS_API_KEY` as a secret.
-
-        Use the skill workflow: fetch project options, ask for missing
-        product-specific values, ask the user to confirm optional features and
-        generator options, create the queued project, retrieve/download the
-        artifact, inspect `djass-manifest.json` and `project-metadata.json`, then
-        follow the generated repo's setup instructions.
-        """
-    ).strip()
+    mcp_url = _mcp_url_from_api_base_url(base_url)
+    prompt = (
+        "Use Djass to generate a new django-saas-starter repo, download the ZIP "
+        "artifact, unzip it into the workspace, and continue from the generated repo.\n\n"
+        "Read and follow the plain-text Djass skill instructions first:\n"
+        "__DJASS_SKILL_URL__\n\n"
+        "Hosted Djass MCP URL: __DJASS_MCP_URL__\n"
+        "API key for hosted MCP bearer auth and HTTP fallback:\n"
+        "__DJASS_API_KEY__\n\n"
+        "HTTP fallback runtime, only if hosted MCP is unavailable:\n"
+        'export DJASS_BASE_URL="__DJASS_BASE_URL__"\n'
+        'export DJASS_API_KEY="__DJASS_API_KEY__"\n\n'
+        "This prompt includes a live `DJASS_API_KEY`. Treat it as a secret: only "
+        "share it with trusted agents/workspaces, never print it in logs, and "
+        "never commit it to files."
+    )
     return (
         prompt.replace("__DJASS_BASE_URL__", base_url)
+        .replace("__DJASS_MCP_URL__", mcp_url)
         .replace("__DJASS_API_KEY__", api_key)
         .replace("__DJASS_SKILL_URL__", skill_url)
     )

@@ -268,15 +268,24 @@ def test_generator_options_exposes_defaults_and_flags(settings):
 def test_mcp_tools_expose_current_generator_fields_and_defaults():
     from inspect import signature
 
-    from apps.mcp import server
+    from apps.mcp import hosted, server
+    from apps.mcp.hosted import (
+        _payload_from_args as hosted_payload_from_args,
+    )
+    from apps.mcp.hosted import (
+        create_project as hosted_create_project,
+    )
     from apps.mcp.server import _payload_from_args, create_project
 
     create_parameters = signature(create_project).parameters
+    hosted_create_parameters = signature(hosted_create_project).parameters
     assert not hasattr(server, "generate_project")
+    assert not hasattr(hosted, "djass_create_project")
     for field_name in COOKIECUTTER_FIELD_DEFAULTS:
         if field_name.startswith("_"):
             continue
         assert field_name in create_parameters
+        assert field_name in hosted_create_parameters
 
     expected_mcp_defaults = {
         "caprover_app_name": "",
@@ -290,6 +299,7 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     }
     for field_name, expected_default in expected_mcp_defaults.items():
         assert create_parameters[field_name].default == expected_default
+        assert hosted_create_parameters[field_name].default == expected_default
 
     payload = _payload_from_args(
         project_name="Support CRM",
@@ -324,6 +334,39 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     assert payload["use_mcp"] == "y"
     assert payload["use_digitalocean"] == "n"
 
+    hosted_payload = hosted_payload_from_args(
+        project_name="Support CRM",
+        project_slug="support_crm",
+        caprover_app_name="support-crm",
+        project_description="",
+        repo_url="",
+        author_name="",
+        author_email="",
+        author_url="",
+        project_main_color="green",
+        use_posthog="y",
+        use_chatwoot="y",
+        use_s3="y",
+        use_stripe="y",
+        use_sentry="y",
+        generate_blog="y",
+        generate_docs="y",
+        use_mjml="y",
+        use_keyboard_shortcuts="y",
+        use_ai="y",
+        use_logfire="y",
+        use_healthchecks="y",
+        use_apprise="n",
+        use_mcp="y",
+        use_ci="y",
+        use_digitalocean="n",
+        extra_context=None,
+    )
+    assert hosted_payload["use_chatwoot"] == "y"
+    assert hosted_payload["use_apprise"] == "n"
+    assert hosted_payload["use_mcp"] == "y"
+    assert hosted_payload["use_digitalocean"] == "n"
+
     defaulted_payload = _payload_from_args(
         project_name="Support CRM",
         project_slug="support_crm",
@@ -357,6 +400,45 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     )
 
 
+def test_local_mcp_create_project_passes_extra_context_once(monkeypatch):
+    from apps.mcp.server import create_project
+
+    captured = {}
+
+    def fake_queue_project_generation(
+        payload,
+        *,
+        user_email=None,
+        username=None,
+        create_user=True,
+        grant_project_access=True,
+        extra_context=None,
+    ):
+        captured["payload"] = payload
+        captured["user_email"] = user_email
+        captured["username"] = username
+        captured["create_user"] = create_user
+        captured["grant_project_access"] = grant_project_access
+        captured["extra_context"] = extra_context
+        return {"project": {"input_payload": payload}, "queued": True}
+
+    monkeypatch.setattr(
+        "apps.mcp.server.services.queue_project_generation",
+        fake_queue_project_generation,
+    )
+
+    create_project(
+        project_name="Local Extra Context",
+        project_slug="local_extra_context",
+        user_email="local-extra@example.local",
+        extra_context={"custom_template_value": "kept"},
+    )
+
+    assert captured["payload"]["custom_template_value"] == "kept"
+    assert captured["user_email"] == "local-extra@example.local"
+    assert captured["extra_context"] is None
+
+
 def _set_hosted_auth(user, scopes=None):
     from mcp.server.auth.middleware.auth_context import auth_context_var
     from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
@@ -376,11 +458,22 @@ def test_hosted_fastmcp_exposes_djass_tools():
 
     names = {tool.name for tool in hosted_mcp._tool_manager.list_tools()}
 
-    assert "djass_generation_options" in names
-    assert "djass_create_project" in names
-    assert "djass_list_projects" in names
-    assert "djass_get_project_status" in names
-    assert "djass_get_project_download" in names
+    assert "get_generator_options" in names
+    assert "create_project" in names
+    assert "list_projects" in names
+    assert "get_project_status" in names
+    assert "get_project_download" in names
+    assert "djass_create_project" not in names
+
+
+def test_hosted_site_url_uses_settings_without_production_fallback(settings):
+    from apps.mcp.hosted import _site_url
+
+    settings.SITE_URL = "https://staging.djass.example/"
+    assert _site_url() == "https://staging.djass.example"
+
+    settings.SITE_URL = ""
+    assert _site_url() == ""
 
 
 @pytest.mark.django_db(transaction=True)
@@ -415,7 +508,7 @@ def test_hosted_fastmcp_token_verifier_accepts_legacy_and_scoped_keys(django_use
 def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_model, monkeypatch):
     from mcp.server.auth.middleware.auth_context import auth_context_var
 
-    from apps.mcp.hosted import djass_create_project
+    from apps.mcp.hosted import create_project
 
     monkeypatch.setattr("apps.mcp.services.async_task", lambda *args, **kwargs: "task-id")
     user = django_user_model.objects.create_user(
@@ -427,7 +520,7 @@ def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_mo
     user.profile.save(update_fields=["state"])
     token = _set_hosted_auth(user)
     try:
-        result = djass_create_project(
+        result = create_project(
             project_name="Hosted MCP Project",
             project_slug="Hosted MCP Project",
             project_description="Created through hosted FastMCP",
@@ -444,11 +537,52 @@ def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_mo
 
 
 @pytest.mark.django_db
+def test_hosted_fastmcp_create_project_passes_extra_context_once(
+    django_user_model,
+    monkeypatch,
+):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+
+    from apps.mcp.hosted import create_project
+
+    captured = {}
+
+    def fake_queue_project_generation_for_user(payload, *, user, extra_context=None):
+        captured["payload"] = payload
+        captured["user"] = user
+        captured["extra_context"] = extra_context
+        return {"project": {"input_payload": payload}, "queued": True}
+
+    monkeypatch.setattr(
+        "apps.mcp.hosted.services.queue_project_generation_for_user",
+        fake_queue_project_generation_for_user,
+    )
+    user = django_user_model.objects.create_user(
+        username="hosted-extra-context",
+        email="hosted-extra-context@example.local",
+        password="password123",
+    )
+    token = _set_hosted_auth(user)
+    try:
+        create_project(
+            project_name="Hosted Extra Context",
+            project_slug="hosted_extra_context",
+            extra_context={"custom_template_value": "kept"},
+        )
+    finally:
+        auth_context_var.reset(token)
+
+    assert captured["payload"]["custom_template_value"] == "kept"
+    assert captured["user"] == user
+    assert captured["extra_context"] is None
+
+
+@pytest.mark.django_db
 def test_hosted_fastmcp_respects_scoped_api_key_permissions(django_user_model):
     from mcp.server.auth.middleware.auth_context import auth_context_var
     from mcp.server.fastmcp.exceptions import ToolError
 
-    from apps.mcp.hosted import djass_create_project
+    from apps.mcp.hosted import create_project
 
     user = django_user_model.objects.create_user(
         username="hosted-scoped",
@@ -458,17 +592,18 @@ def test_hosted_fastmcp_respects_scoped_api_key_permissions(django_user_model):
     token = _set_hosted_auth(user, scopes=["projects:read"])
     try:
         with pytest.raises(ToolError, match="projects:create"):
-            djass_create_project(project_name="Denied", project_slug="denied")
+            create_project(project_name="Denied", project_slug="denied")
     finally:
         auth_context_var.reset(token)
 
 
 @pytest.mark.django_db
-def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_model):
+def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_model, settings):
     from mcp.server.auth.middleware.auth_context import auth_context_var
 
-    from apps.mcp.hosted import djass_get_project_download
+    from apps.mcp.hosted import get_project_download
 
+    settings.SITE_URL = "https://staging.djass.example"
     user = django_user_model.objects.create_user(
         username="hosted-download",
         email="hosted-download@example.local",
@@ -491,17 +626,19 @@ def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_
     artifact.zip_file.save("ready_project.zip", io.BytesIO(b"zipdata"), save=True)
     token = _set_hosted_auth(user)
     try:
-        result = djass_get_project_download(project.id)
+        result = get_project_download(project.id)
     finally:
         auth_context_var.reset(token)
 
     text = json.dumps(result)
-    assert f"/mcp/projects/{project.id}/download" in text
+    assert f"https://staging.djass.example/mcp/projects/{project.id}/download" in text
+    assert "https://djass.dev" not in text
     assert "abc123" in text
 
 
 @pytest.mark.django_db
-def test_mcp_download_and_prompt_django_endpoints(client, django_user_model):
+def test_mcp_download_and_prompt_django_endpoints(client, django_user_model, settings):
+    settings.SITE_URL = "https://djass.dev"
     user = django_user_model.objects.create_user(
         username="hosted-direct-download",
         email="hosted-direct-download@example.local",
@@ -520,16 +657,66 @@ def test_mcp_download_and_prompt_django_endpoints(client, django_user_model):
     artifact.zip_file.save("ready_project.zip", io.BytesIO(b"zipdata"), save=True)
 
     prompt = client.get("/mcp/prompt")
+    metadata = client.get("/.well-known/oauth-protected-resource/mcp")
     download = client.get(
         f"/mcp/projects/{project.id}/download",
         HTTP_AUTHORIZATION=f"Bearer {user.profile.key}",
     )
 
     assert prompt.status_code == 200
-    assert "FastMCP endpoint" in prompt.json()["prompt"]
+    assert "First read and follow the Djass skill instructions" in prompt.json()["prompt"]
+    assert "https://djass.dev/skill.md" in prompt.json()["prompt"]
+    assert "Hosted Djass MCP URL:" in prompt.json()["prompt"]
+    assert "https://djass.dev/mcp" in prompt.json()["prompt"]
+    assert "http://djass.dev/mcp" not in prompt.json()["prompt"]
+    assert "https://djass.dev/api/v1" in prompt.json()["prompt"]
+    assert "Workflow:" not in prompt.json()["prompt"]
+    assert "djass_generation_options" not in prompt.json()["prompt"]
     assert "use_mcp" in json.dumps(prompt.json()["options"])
+    assert metadata.status_code == 200
+    assert metadata.json()["resource"] == "https://djass.dev/mcp"
+    assert metadata.json()["authorization_servers"] == ["https://djass.dev/"]
+    assert metadata.json()["scopes_supported"] == ["projects:read", "projects:create"]
     assert download.status_code == 200
     assert download["Content-Disposition"].startswith("attachment;")
+
+
+def test_mcp_root_path_adapter_rewrites_path_and_raw_path():
+    import asyncio
+
+    from djass.asgi import McpRootPathAdapter
+
+    captured_scope = {}
+
+    async def app(scope, receive, send):
+        captured_scope.update(scope)
+        await send({"type": "http.response.start", "status": 204, "headers": []})
+        await send({"type": "http.response.body", "body": b""})
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(_message):
+        return None
+
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/mcp",
+        "raw_path": b"/mcp",
+        "root_path": "/prefix",
+        "headers": [],
+        "query_string": b"",
+        "scheme": "https",
+        "server": ("example.test", 443),
+        "client": ("127.0.0.1", 1234),
+    }
+
+    asyncio.run(McpRootPathAdapter(app, "/mcp")(scope, receive, send))
+
+    assert captured_scope["path"] == "/"
+    assert captured_scope["raw_path"] == b"/"
+    assert captured_scope["root_path"] == "/prefix/mcp"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -565,19 +752,25 @@ def test_mcp_routes_are_reachable_through_deployed_asgi_app(
         transport = httpx.ASGITransport(app=application)
         async with httpx.AsyncClient(transport=transport, base_url="http://localhost") as client:
             mcp = await client.post("/mcp")
+            mcp_slash = await client.post("/mcp/")
             prompt = await client.get("/mcp/prompt")
+            metadata = await client.get("/.well-known/oauth-protected-resource/mcp")
             download = await client.get(
                 f"/mcp/projects/{project.id}/download",
                 headers={"Authorization": f"Bearer {user.profile.key}"},
             )
-        return mcp, prompt, download
+        return mcp, mcp_slash, prompt, metadata, download
 
-    mcp, prompt, download = asyncio.run(request_asgi_routes())
+    mcp, mcp_slash, prompt, metadata, download = asyncio.run(request_asgi_routes())
 
     assert mcp.status_code == 401
     assert mcp.json()["error"] == "invalid_token"
+    assert mcp_slash.status_code == 401
+    assert mcp_slash.json()["error"] == "invalid_token"
     assert prompt.status_code == 200
-    assert "FastMCP endpoint" in prompt.json()["prompt"]
+    assert "Hosted Djass MCP URL:" in prompt.json()["prompt"]
+    assert metadata.status_code == 200
+    assert metadata.json()["resource"].endswith("/mcp")
     assert download.status_code == 200
     assert download.content == b"zipdata"
 
@@ -622,6 +815,7 @@ def test_hosted_fastmcp_streamable_http_lists_tools_with_api_key(
 
     tool_names = asyncio.run(list_tool_names())
 
-    assert "djass_generation_options" in tool_names
-    assert "djass_create_project" in tool_names
-    assert "djass_get_project_download" in tool_names
+    assert "get_generator_options" in tool_names
+    assert "create_project" in tool_names
+    assert "get_project_download" in tool_names
+    assert "djass_create_project" not in tool_names

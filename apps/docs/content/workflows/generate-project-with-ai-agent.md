@@ -14,19 +14,20 @@ The agent will connect to the Djass MCP server, inspect the available generator
 options, ask you to confirm important choices, queue the project, and retrieve
 the generated ZIP when it is ready.
 
-## 1) Choose hosted or local Djass
+## 1) Use hosted Djass MCP
 
 Use hosted Djass when you want the agent to create projects through your Djass
-account without running the app locally.
+account without running the app locally. This is the production path for AI
+agents.
 
 - Endpoint: `https://djass.dev/mcp`
 - Setup prompt: `https://djass.dev/mcp/prompt`
 - Authentication: `Authorization: Bearer <your Djass API key>`
 
-Use local Djass when you are developing Djass itself or need the agent and MCP
-server to share a filesystem for artifact export.
+Use local stdio only when you are developing Djass itself or intentionally need
+the agent and MCP server to share a filesystem for artifact export.
 
-## 2) Prepare local Djass
+## 2) Prepare local Djass only for development
 
 For local development, run the normal stack first:
 
@@ -39,17 +40,16 @@ queued project generation jobs.
 
 Skip this step when you use hosted Djass.
 
-## 3) Configure the MCP server
+## 3) Configure the hosted MCP server
 
 For hosted Djass, configure your MCP client to use `https://djass.dev/mcp` with
 your Djass API key in the `Authorization` header. If your agent supports setup
 prompts, open `https://djass.dev/mcp/prompt` and follow the generated client
 instructions.
 
-For local Djass, use the canonical local `stdio` configuration in
-[MCP Server](/docs/api/mcp-server/). Add that JSON to the MCP settings file or
-settings screen your agent uses. Keep the working directory pointed at the
-Djass repository root so `uv` can resolve the project.
+For local Djass development, use the canonical local `stdio` configuration in
+[MCP Server](/docs/api/mcp-server/). Do not use local stdio for normal project
+generation.
 
 ## 4) Give your agent this prompt
 
@@ -62,15 +62,15 @@ Use Djass to generate a new Django SaaS project for this app idea:
 
 [Describe the app, users, core workflow, and any integrations you already know you need.]
 
-First call the generator options tool: use get_generator_options for a local stdio Djass MCP server, or djass_generation_options for hosted Djass. Summarize the project fields, defaults, and optional feature flags I need to decide.
+First call get_generator_options on the hosted Djass MCP server. Summarize the project fields, defaults, and optional feature flags I need to decide.
 
 Ask me before enabling optional services such as analytics, payments, storage, support chat, keyboard shortcuts, CI, Apprise, or generated MCP scaffolding. Do not infer those from a vague app idea.
 
 After I confirm the choices, call the Djass project creation tool with an explicit project_name, Python-safe project_slug, short project_description, repository URL if known, author fields if known, and every feature flag as "y" or "n".
 
-Poll the Djass project status tool until the project is ready or failed.
+Poll get_project_status until the project is ready or failed.
 
-When artifact_ready is true, retrieve the generated ZIP from the artifact resource, artifact URL, or Djass download tool. If you and the MCP server share a local filesystem, ask me before using export_project_artifact with extract=true. Never overwrite an existing export unless I explicitly approve it.
+When artifact_ready is true, call get_project_download, download the returned ZIP URL with the same Authorization bearer token, and unzip it into a new workspace directory. Never overwrite an existing export unless I explicitly approve it.
 ```
 
 ## 5) Review the choices before generation
@@ -86,15 +86,15 @@ notification helpers.
 
 When generation finishes, the agent should fetch the artifact ZIP.
 
-For hosted or HTTP MCP setups, the agent should save the ZIP on the client side.
-For local `stdio` MCP setups where the agent and server share a filesystem, the
-agent can export and extract the artifact locally after you approve the target
-directory.
+For hosted MCP setups, the agent should save the ZIP on the client side. For
+local `stdio` development setups where the agent and server share a filesystem,
+the agent can export and extract the artifact locally after you approve the
+target directory.
 
 ## What the agent should not do
 
-- Do not skip generator option discovery. Use `get_generator_options` locally
-  or `djass_generation_options` on hosted Djass.
+- Do not skip generator option discovery. Use `get_generator_options` on hosted
+  Djass.
 - Do not enable optional integrations without confirmation.
 - Do not treat `use_mcp` as the switch for using the Djass MCP server. It only
   controls whether the generated project includes MCP scaffolding.

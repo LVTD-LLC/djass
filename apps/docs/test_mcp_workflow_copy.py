@@ -7,8 +7,9 @@ def test_ai_agent_generation_workflow_has_starter_prompt():
     ).read_text()
 
     assert "You have access to the Djass MCP server" in content
-    assert "use get_generator_options for a local stdio Djass MCP server" in content
-    assert "djass_generation_options for hosted Djass" in content
-    assert "Use `get_generator_options` locally" in content
+    assert "This is the production path for AI" in content
+    assert "First call get_generator_options on the hosted Djass MCP server" in content
+    assert "call get_project_download" in content
+    assert "djass_generation_options" not in content
     assert "Do not treat `use_mcp`" in content
     assert "plugin becomes useful" in content
