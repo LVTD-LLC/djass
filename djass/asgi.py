@@ -20,20 +20,34 @@ django_application = get_asgi_application()
 from apps.mcp.hosted import application as mcp_application  # noqa: E402
 
 
-def _mcp_route(route: Route) -> Route:
-    return Route(
-        route.path,
-        endpoint=route.endpoint,
-        methods=route.methods,
-        name=route.name,
-        include_in_schema=route.include_in_schema,
-        middleware=mcp_application.user_middleware,
-    )
+class McpRootPathAdapter:
+    """Serve the mounted MCP app at both /mcp and /mcp/ without a redirect."""
+
+    def __init__(self, app, root_path: str):
+        self.app = app
+        self.root_path = root_path
+
+    async def __call__(self, scope, receive, send):
+        adapted_scope = {
+            **scope,
+            "path": "/",
+            "root_path": f"{scope.get('root_path', '')}{self.root_path}",
+        }
+        await self.app(adapted_scope, receive, send)
 
 
 application = Starlette(
     routes=[
-        *[_mcp_route(route) for route in mcp_application.routes if isinstance(route, Route)],
+        Route(
+            "/mcp",
+            endpoint=McpRootPathAdapter(mcp_application, "/mcp"),
+            methods=["GET", "POST", "DELETE", "OPTIONS"],
+        ),
+        Route(
+            "/mcp/",
+            endpoint=McpRootPathAdapter(mcp_application, "/mcp"),
+            methods=["GET", "POST", "DELETE", "OPTIONS"],
+        ),
         Mount("/", app=django_application),
     ],
     lifespan=mcp_application.router.lifespan_context,

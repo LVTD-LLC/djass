@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.http import FileResponse, Http404, HttpRequest, JsonResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_http_methods
@@ -8,6 +10,10 @@ from apps.api.auth import APIAuthPrincipal, header_or_query_api_key_auth
 from apps.api.models import ProjectAPIAuditLog
 from apps.core.models import Project, ProjectStatus
 from apps.mcp import services
+
+
+def _site_url() -> str:
+    return str(settings.SITE_URL).rstrip("/")
 
 
 def _principal(request: HttpRequest) -> APIAuthPrincipal | None:
@@ -61,33 +67,41 @@ def mcp_project_download(request: HttpRequest, project_id: int):
     return FileResponse(artifact.zip_file, as_attachment=True, filename=filename)
 
 
+@require_http_methods(["GET", "OPTIONS"])
+def mcp_protected_resource_metadata(request: HttpRequest):
+    base_url = _site_url() or request.build_absolute_uri("/").rstrip("/")
+    return JsonResponse(
+        {
+            "resource": f"{base_url}/mcp",
+            "authorization_servers": [f"{base_url}/"],
+            "scopes_supported": [],
+            "bearer_methods_supported": ["header"],
+        }
+    )
+
+
 @require_http_methods(["GET"])
 def mcp_prompt(request: HttpRequest):
-    base_url = request.build_absolute_uri("/").rstrip("/")
-    mcp_url = request.build_absolute_uri("/mcp")
-    options_url = request.build_absolute_uri("/api/v1/project-options")
+    base_url = _site_url() or request.build_absolute_uri("/").rstrip("/")
+    mcp_url = f"{base_url}/mcp"
+    skill_url = f"{base_url}{reverse('agent_skill')}"
+    options_url = f"{base_url}/api/v1/project-options"
     prompt = "\n".join(
         [
             "Use Djass to generate Django SaaS projects for this user.",
             "",
-            "Connection:",
-            f"- Djass site: {base_url}",
-            f"- FastMCP endpoint: {mcp_url}",
-            "- Auth: ask the user for their Djass API key and send it as Authorization: "
-            "Bearer <key>. Never print or commit the key.",
+            "First read and follow the Djass skill instructions:",
+            skill_url,
             "",
-            "Workflow:",
-            "1. Connect to the hosted Djass FastMCP server.",
-            "2. Always call djass_generation_options before creating a project. "
-            f"If MCP is unavailable, fetch {options_url}.",
-            "3. Ask concise follow-up questions for every required field and every "
-            "current option the user did not specify.",
-            "4. If the user explicitly says to decide for them, choose sensible defaults, "
-            "summarize those choices, then continue.",
-            "5. Only call djass_create_project after the intent and options are clear.",
-            "6. Poll djass_get_project_status until status is ready or failed.",
-            "7. When ready, call djass_get_project_download and download the ZIP from "
-            "the returned URL using the same Authorization header.",
+            "Hosted Djass MCP URL:",
+            mcp_url,
+            "",
+            "Auth:",
+            "- Ask the user for their Djass API key.",
+            "- Send it as Authorization: Bearer <key>. Never print or commit the key.",
+            "",
+            "HTTP fallback API base, only if hosted MCP is unavailable:",
+            options_url.removesuffix("/project-options"),
         ]
     )
     return JsonResponse({"prompt": prompt, "options": services.get_generator_options()})

@@ -3,6 +3,7 @@ from allauth.account.internal.flows.email_verification_by_code import (
     EMAIL_VERIFICATION_CODE_SESSION_KEY,
 )
 from allauth.account.models import EmailAddress
+from django.conf import settings
 from django.contrib.messages import get_messages
 from django.test import override_settings
 from django.urls import reverse
@@ -58,6 +59,9 @@ class TestHomeView:
         assert "/skill.md" in content
         assert "OpenAPI docs" in content
         assert "MCP docs" in content
+        assert "This prompt includes your Djass API key" in content
+        assert "Share it only with agents and workspaces you trust" in content
+        assert f"{settings.SITE_URL.rstrip('/')}{reverse('agent_skill')}" in content
         assert "https://djass.dev/api/v1" in content
         assert "http://testserver/api/v1" not in content
         assert user.profile.key in content
