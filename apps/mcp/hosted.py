@@ -8,6 +8,7 @@ import django
 from asgiref.sync import sync_to_async
 from django.apps import apps as django_apps
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import slugify
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import AccessToken, TokenVerifier
@@ -43,11 +44,18 @@ class DjassAPITokenVerifier(TokenVerifier):
 
 
 def _site_url() -> str:
-    return str(settings.SITE_URL).rstrip("/") or "https://djass.dev"
+    return str(settings.SITE_URL).rstrip("/")
+
+
+def _required_site_url() -> str:
+    site_url = _site_url()
+    if not site_url:
+        raise ImproperlyConfigured("SITE_URL must be set to serve hosted Djass MCP.")
+    return site_url
 
 
 def _auth_settings() -> AuthSettings:
-    site_url = _site_url()
+    site_url = _required_site_url()
     return AuthSettings(
         issuer_url=AnyHttpUrl(site_url),
         resource_server_url=AnyHttpUrl(f"{site_url}/mcp"),
@@ -56,7 +64,7 @@ def _auth_settings() -> AuthSettings:
 
 
 def _transport_security_settings() -> TransportSecuritySettings:
-    site_url = _site_url()
+    site_url = _required_site_url()
     parsed_site_url = urlparse(site_url)
     allowed_hosts = {
         "127.0.0.1",
@@ -257,7 +265,6 @@ def create_project(
         return services.queue_project_generation_for_user(
             payload,
             user=profile.user,
-            extra_context=extra_context,
         )
     except MCPServiceError as exc:
         raise _tool_error(exc) from exc
@@ -299,7 +306,7 @@ def get_project_status(project_id: int) -> dict[str, Any]:
 
 def _download_payload(project: dict[str, Any]) -> dict[str, Any]:
     safe_slug = project.get("slug") or slugify(project.get("name", "")) or "project"
-    base_url = _site_url()
+    base_url = _required_site_url()
     artifact = project.get("artifact") or {}
     return {
         "project_id": project["id"],

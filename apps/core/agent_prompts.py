@@ -5,6 +5,14 @@ DJASS_OPENAPI_DOCS_URL = "https://djass.dev/api/docs"
 DJASS_MCP_DOCS_URL = "https://djass.dev/docs/api/mcp-server/"
 
 
+def _mcp_url_from_api_base_url(base_url: str) -> str:
+    clean_base_url = base_url.rstrip("/")
+    api_suffix = "/api/v1"
+    if clean_base_url.endswith(api_suffix):
+        return f"{clean_base_url.removesuffix(api_suffix)}/mcp"
+    return f"{clean_base_url}/mcp"
+
+
 def build_djass_agent_skill_md() -> str:
     skill = dedent(
         """\
@@ -257,12 +265,13 @@ def build_djass_agent_skill_md() -> str:
 
 
 def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> str:
+    mcp_url = _mcp_url_from_api_base_url(base_url)
     prompt = (
         "Use Djass to generate a new django-saas-starter repo, download the ZIP "
         "artifact, unzip it into the workspace, and continue from the generated repo.\n\n"
         "Read and follow the plain-text Djass skill instructions first:\n"
         "__DJASS_SKILL_URL__\n\n"
-        "Hosted Djass MCP URL: https://djass.dev/mcp\n"
+        "Hosted Djass MCP URL: __DJASS_MCP_URL__\n"
         "API key for hosted MCP bearer auth and HTTP fallback:\n"
         "__DJASS_API_KEY__\n\n"
         "HTTP fallback runtime, only if hosted MCP is unavailable:\n"
@@ -274,6 +283,7 @@ def build_djass_agent_prompt(base_url: str, api_key: str, *, skill_url: str) -> 
     )
     return (
         prompt.replace("__DJASS_BASE_URL__", base_url)
+        .replace("__DJASS_MCP_URL__", mcp_url)
         .replace("__DJASS_API_KEY__", api_key)
         .replace("__DJASS_SKILL_URL__", skill_url)
     )

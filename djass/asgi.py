@@ -31,6 +31,7 @@ class McpRootPathAdapter:
         adapted_scope = {
             **scope,
             "path": "/",
+            "raw_path": b"/",
             "root_path": f"{scope.get('root_path', '')}{self.root_path}",
         }
         await self.app(adapted_scope, receive, send)

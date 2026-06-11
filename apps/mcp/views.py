@@ -12,8 +12,8 @@ from apps.core.models import Project, ProjectStatus
 from apps.mcp import services
 
 
-def _site_url() -> str:
-    return str(settings.SITE_URL).rstrip("/")
+def _site_url(request: HttpRequest) -> str:
+    return str(settings.SITE_URL).rstrip("/") or request.build_absolute_uri("/").rstrip("/")
 
 
 def _principal(request: HttpRequest) -> APIAuthPrincipal | None:
@@ -69,12 +69,12 @@ def mcp_project_download(request: HttpRequest, project_id: int):
 
 @require_http_methods(["GET", "OPTIONS"])
 def mcp_protected_resource_metadata(request: HttpRequest):
-    base_url = _site_url() or request.build_absolute_uri("/").rstrip("/")
+    base_url = _site_url(request)
     return JsonResponse(
         {
             "resource": f"{base_url}/mcp",
             "authorization_servers": [f"{base_url}/"],
-            "scopes_supported": [],
+            "scopes_supported": ["projects:read", "projects:create"],
             "bearer_methods_supported": ["header"],
         }
     )
@@ -82,7 +82,7 @@ def mcp_protected_resource_metadata(request: HttpRequest):
 
 @require_http_methods(["GET"])
 def mcp_prompt(request: HttpRequest):
-    base_url = _site_url() or request.build_absolute_uri("/").rstrip("/")
+    base_url = _site_url(request)
     mcp_url = f"{base_url}/mcp"
     skill_url = f"{base_url}{reverse('agent_skill')}"
     options_url = f"{base_url}/api/v1/project-options"

@@ -52,3 +52,15 @@ def test_agent_prompt_references_plain_skill_markdown_without_embedding_skill():
     assert "---BEGIN SKILL.md---" not in prompt
     assert "## API Fallback Workflow" not in prompt
     assert len(prompt.splitlines()) <= 20
+
+
+def test_agent_prompt_derives_mcp_url_from_api_base_url():
+    prompt = build_djass_agent_prompt(
+        "https://staging.djass.example/api/v1",
+        "test-key",
+        skill_url="https://staging.djass.example/skill.md",
+    )
+
+    assert "Hosted Djass MCP URL: https://staging.djass.example/mcp" in prompt
+    assert 'export DJASS_BASE_URL="https://staging.djass.example/api/v1"' in prompt
+    assert "https://djass.dev/mcp" not in prompt
