@@ -336,7 +336,7 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Open your dashboard" in content
+    assert "Open dashboard" in content
     assert "Review free access" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
