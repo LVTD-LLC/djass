@@ -1,3 +1,4 @@
+import asyncio
 import io
 import json
 import zipfile
@@ -504,7 +505,7 @@ def test_hosted_fastmcp_token_verifier_accepts_legacy_and_scoped_keys(django_use
     assert asyncio.run(verifier.verify_token("bad-key")) is None
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_model, monkeypatch):
     from mcp.server.auth.middleware.auth_context import auth_context_var
 
@@ -520,11 +521,13 @@ def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_mo
     user.profile.save(update_fields=["state"])
     token = _set_hosted_auth(user)
     try:
-        result = create_project(
-            project_name="Hosted MCP Project",
-            project_slug="Hosted MCP Project",
-            project_description="Created through hosted FastMCP",
-            use_mcp="y",
+        result = asyncio.run(
+            create_project(
+                project_name="Hosted MCP Project",
+                project_slug="Hosted MCP Project",
+                project_description="Created through hosted FastMCP",
+                use_mcp="y",
+            )
         )
     finally:
         auth_context_var.reset(token)
@@ -536,7 +539,7 @@ def test_hosted_fastmcp_create_project_uses_authenticated_profile(django_user_mo
     assert project.input_payload["use_mcp"] == "y"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_hosted_fastmcp_create_project_passes_extra_context_once(
     django_user_model,
     monkeypatch,
@@ -564,10 +567,12 @@ def test_hosted_fastmcp_create_project_passes_extra_context_once(
     )
     token = _set_hosted_auth(user)
     try:
-        create_project(
-            project_name="Hosted Extra Context",
-            project_slug="hosted_extra_context",
-            extra_context={"custom_template_value": "kept"},
+        asyncio.run(
+            create_project(
+                project_name="Hosted Extra Context",
+                project_slug="hosted_extra_context",
+                extra_context={"custom_template_value": "kept"},
+            )
         )
     finally:
         auth_context_var.reset(token)
@@ -592,12 +597,32 @@ def test_hosted_fastmcp_respects_scoped_api_key_permissions(django_user_model):
     token = _set_hosted_auth(user, scopes=["projects:read"])
     try:
         with pytest.raises(ToolError, match="projects:create"):
-            create_project(project_name="Denied", project_slug="denied")
+            asyncio.run(create_project(project_name="Denied", project_slug="denied"))
     finally:
         auth_context_var.reset(token)
 
 
 @pytest.mark.django_db
+def test_hosted_fastmcp_download_requires_read_scope(django_user_model):
+    from mcp.server.auth.middleware.auth_context import auth_context_var
+    from mcp.server.fastmcp.exceptions import ToolError
+
+    from apps.mcp.hosted import get_project_download
+
+    user = django_user_model.objects.create_user(
+        username="hosted-download-scoped",
+        email="hosted-download-scoped@example.local",
+        password="password123",
+    )
+    token = _set_hosted_auth(user, scopes=["projects:create"])
+    try:
+        with pytest.raises(ToolError, match="projects:read"):
+            asyncio.run(get_project_download(1))
+    finally:
+        auth_context_var.reset(token)
+
+
+@pytest.mark.django_db(transaction=True)
 def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_model, settings):
     from mcp.server.auth.middleware.auth_context import auth_context_var
 
@@ -626,7 +651,7 @@ def test_hosted_fastmcp_download_tool_returns_authenticated_zip_url(django_user_
     artifact.zip_file.save("ready_project.zip", io.BytesIO(b"zipdata"), save=True)
     token = _set_hosted_auth(user)
     try:
-        result = get_project_download(project.id)
+        result = asyncio.run(get_project_download(project.id))
     finally:
         auth_context_var.reset(token)
 
@@ -778,22 +803,41 @@ def test_mcp_routes_are_reachable_through_deployed_asgi_app(
 @pytest.mark.django_db(transaction=True)
 def test_hosted_fastmcp_streamable_http_lists_tools_with_api_key(
     django_user_model,
+    monkeypatch,
     settings,
 ):
-    import asyncio
-
     import httpx
     from mcp import ClientSession
     from mcp.client.streamable_http import streamable_http_client
 
+    monkeypatch.setattr("apps.mcp.services.async_task", lambda *args, **kwargs: "task-id")
     user = django_user_model.objects.create_user(
         username="hosted-streamable-http",
         email="hosted-streamable-http@example.local",
         password="password123",
     )
+    user.profile.state = ProfileStates.SUBSCRIBED
+    user.profile.save(update_fields=["state"])
+    ready_project = Project.objects.create(
+        user=user,
+        name="Ready Streamable Project",
+        slug="ready_streamable_project",
+        input_payload={
+            "project_name": "Ready Streamable Project",
+            "project_slug": "ready_streamable_project",
+        },
+        status=ProjectStatus.READY,
+    )
+    artifact = ProjectArtifact.objects.create(
+        project=ready_project,
+        size_bytes=7,
+        sha256="abc123",
+    )
+    artifact.zip_file.save("ready_streamable_project.zip", io.BytesIO(b"zipdata"), save=True)
     settings.ALLOWED_HOSTS = ["localhost"]
+    settings.SITE_URL = "http://localhost"
 
-    async def list_tool_names() -> set[str]:
+    async def call_project_tools():
         from apps.mcp.hosted import hosted_mcp
         from djass.asgi import application
 
@@ -811,11 +855,40 @@ def test_hosted_fastmcp_streamable_http_lists_tools_with_api_key(
                     async with ClientSession(read_stream, write_stream) as session:
                         await session.initialize()
                         tools = await session.list_tools()
-                        return {tool.name for tool in tools.tools}
+                        listed = await session.call_tool("list_projects", {})
+                        created = await session.call_tool(
+                            "create_project",
+                            {
+                                "project_name": "Created Streamable Project",
+                                "project_slug": "created_streamable_project",
+                            },
+                        )
+                        status = await session.call_tool(
+                            "get_project_status",
+                            {"project_id": ready_project.id},
+                        )
+                        download = await session.call_tool(
+                            "get_project_download",
+                            {"project_id": ready_project.id},
+                        )
+                        return {tool.name for tool in tools.tools}, (
+                            listed,
+                            created,
+                            status,
+                            download,
+                        )
 
-    tool_names = asyncio.run(list_tool_names())
+    tool_names, results = asyncio.run(call_project_tools())
 
     assert "get_generator_options" in tool_names
     assert "create_project" in tool_names
     assert "get_project_download" in tool_names
     assert "djass_create_project" not in tool_names
+    for result in results:
+        assert result.isError is not True
+        assert result.structuredContent
+    listed, created, status, download = (result.structuredContent for result in results)
+    assert listed["total"] >= 1
+    assert created["queued"] is True
+    assert status["download"]["sha256"] == "abc123"
+    assert download["download"]["sha256"] == "abc123"
