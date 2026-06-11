@@ -4,10 +4,8 @@
   <rect width="128" height="128" rx="24" fill="#092E20" />
   <path
     d="M35 29h32.5C87.8 29 101 42.9 101 64S87.8 99 67.5 99H35V29Zm19 18v34h13.4C77.2 81 83 74.7 83 64s-5.8-17-15.6-17H54Z"
-    fill="#F4FBF7" />
-  <path
-    d="M54 47v34h13.4C77.2 81 83 74.7 83 64s-5.8-17-15.6-17H54Z"
-    fill="#092E20" />
+    fill="#F4FBF7"
+    fill-rule="evenodd" />
   <path
     d="M82 42l12 10-12 10"
     fill="none"
