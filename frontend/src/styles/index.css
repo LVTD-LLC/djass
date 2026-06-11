@@ -699,6 +699,26 @@ body {
   }
 }
 
+@media (max-width: 1279px) {
+  .dj-hero-title {
+    font-size: 4.25rem;
+  }
+
+  .dj-section-title {
+    font-size: 2.75rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dj-hero-title {
+    font-size: 3.75rem;
+  }
+
+  .dj-section-title {
+    font-size: 2.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dj-main {
     padding-top: 4.85rem;
