@@ -400,6 +400,45 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
     )
 
 
+def test_local_mcp_create_project_passes_extra_context_once(monkeypatch):
+    from apps.mcp.server import create_project
+
+    captured = {}
+
+    def fake_queue_project_generation(
+        payload,
+        *,
+        user_email=None,
+        username=None,
+        create_user=True,
+        grant_project_access=True,
+        extra_context=None,
+    ):
+        captured["payload"] = payload
+        captured["user_email"] = user_email
+        captured["username"] = username
+        captured["create_user"] = create_user
+        captured["grant_project_access"] = grant_project_access
+        captured["extra_context"] = extra_context
+        return {"project": {"input_payload": payload}, "queued": True}
+
+    monkeypatch.setattr(
+        "apps.mcp.server.services.queue_project_generation",
+        fake_queue_project_generation,
+    )
+
+    create_project(
+        project_name="Local Extra Context",
+        project_slug="local_extra_context",
+        user_email="local-extra@example.local",
+        extra_context={"custom_template_value": "kept"},
+    )
+
+    assert captured["payload"]["custom_template_value"] == "kept"
+    assert captured["user_email"] == "local-extra@example.local"
+    assert captured["extra_context"] is None
+
+
 def _set_hosted_auth(user, scopes=None):
     from mcp.server.auth.middleware.auth_context import auth_context_var
     from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
