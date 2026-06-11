@@ -359,7 +359,7 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Open your dashboard" in content
+    assert "Open dashboard" in content
     assert "Review free access" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
@@ -369,16 +369,14 @@ def test_landing_and_pricing_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "hosted generator" in landing_content
-    assert "SaaS product, internal tool, or experiment" in landing_content
-    assert "How it works" in landing_content
-    assert "UI flow" in landing_content
-    assert "API flow" in landing_content
-    assert "Agent flow" in landing_content
-    assert "/skill.md" in landing_content
+    assert "hosted project generator" in landing_content
+    assert "Generate the codebase. Ship the product." in landing_content
+    assert "useful SaaS features" in landing_content
+    assert "Generate your way" in landing_content
     assert "OpenAPI docs" in landing_content
+    assert "/skill.md" in landing_content
     assert "https://djass.dev/api/docs" in landing_content
-    assert "Djass builds from one project spec" in landing_content
+    assert "AI agent handoff" in landing_content
     assert "agency" not in landing_content.lower()
 
     pricing_response = client.get(reverse("pricing"))
@@ -393,25 +391,22 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "agency" not in pricing_content.lower()
 
 
-def test_landing_guest_ctas_explain_destination(client):
+def test_landing_guest_ctas_are_simple(client):
     response = client.get(reverse("landing"))
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Create a free Djass account" in content
-    assert (
-        "Configure your starter, queue generation, and keep project history in one dashboard."
-        in content
-    )
-    assert "Sign in to dashboard" in content
-    assert "Continue from your existing project dashboard." in content
+    assert "Create a free account" in content
+    assert "Sign in" in content
+    assert "Configure your starter, queue generation, and keep project history" not in content
+    assert "Continue from your existing project dashboard." not in content
 
 
 def test_signup_cta_copy_uses_pricing_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Create a free Djass account" in landing_content
+    assert "Create a free account" in landing_content
     assert "Review free access" in landing_content
 
     pricing_response = client.get(reverse("pricing"))
