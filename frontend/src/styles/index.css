@@ -93,11 +93,6 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   background-color: var(--dj-bg);
-  background-image:
-    linear-gradient(var(--dj-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--dj-grid) 1px, transparent 1px);
-  background-position: center top;
-  background-size: 48px 48px;
   color: var(--dj-text);
 }
 
@@ -413,7 +408,7 @@ body {
 
 .dj-hero-title {
   color: var(--dj-heading);
-  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-size: 3rem;
   font-weight: 760;
   line-height: 0.98;
   letter-spacing: 0;
@@ -427,7 +422,7 @@ body {
 
 .dj-section-title {
   color: var(--dj-heading);
-  font-size: clamp(2rem, 4vw, 3.15rem);
+  font-size: 2.25rem;
   font-weight: 740;
   line-height: 1.04;
   letter-spacing: 0;
@@ -704,13 +699,38 @@ body {
   }
 }
 
+@media (min-width: 769px) {
+  .dj-hero-title {
+    font-size: 3.75rem;
+  }
+
+  .dj-section-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dj-hero-title {
+    font-size: 4.25rem;
+  }
+
+  .dj-section-title {
+    font-size: 2.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dj-hero-title {
+    font-size: 4.75rem;
+  }
+
+  .dj-section-title {
+    font-size: 3rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dj-main {
     padding-top: 4.85rem;
   }
-
-  .dj-hero-title {
-    font-size: clamp(2.45rem, 12vw, 3.65rem);
-  }
-
 }

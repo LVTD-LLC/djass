@@ -24,50 +24,50 @@
                 {% else %}
                     <a href="{% url 'docs_home' %}"
                        class="dj-nav-link{% if current_url == 'docs_home' or current_url == 'docs_page' %} dj-nav-link-active{% endif %}">Docs</a>
-                    <a href="{% url 'blog_posts' %}"
-                       class="dj-nav-link{% if current_url == 'blog_posts' or current_url == 'blog_post' %} dj-nav-link-active{% endif %}">Blog</a>
                     <a href="{% url 'pricing' %}"
                        class="dj-nav-link{% if current_url == 'pricing' %} dj-nav-link-active{% endif %}">Pricing</a>
                 {% endif %}
             </nav>
             <div class="ml-auto hidden items-center gap-2 lg:flex">
-                <button type="button"
-                        data-controller="theme"
-                        data-action="click->theme#toggle"
-                        class="dj-icon-button"
-                        aria-label="Toggle theme">
-                    <span class="sr-only" data-theme-target="label">Theme</span>
-                    <svg data-theme-target="iconLight"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="1.8"
-                         stroke-linecap="round"
-                         stroke-linejoin="round"
-                         class="h-5 w-5">
-                        <circle cx="12" cy="12" r="4" />
-                        <path d="M12 2v2" />
-                        <path d="M12 20v2" />
-                        <path d="M4.93 4.93l1.41 1.41" />
-                        <path d="M17.66 17.66l1.41 1.41" />
-                        <path d="M2 12h2" />
-                        <path d="M20 12h2" />
-                        <path d="M4.93 19.07l1.41-1.41" />
-                        <path d="M17.66 6.34l1.41-1.41" />
-                    </svg>
-                    <svg data-theme-target="iconDark"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="1.8"
-                         stroke-linecap="round"
-                         stroke-linejoin="round"
-                         class="hidden h-5 w-5">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
-                    </svg>
-                </button>
+                {% if site_header_variant == 'app' %}
+                    <button type="button"
+                            data-controller="theme"
+                            data-action="click->theme#toggle"
+                            class="dj-icon-button"
+                            aria-label="Toggle theme">
+                        <span class="sr-only" data-theme-target="label">Theme</span>
+                        <svg data-theme-target="iconLight"
+                             xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             class="h-5 w-5">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" />
+                            <path d="M12 20v2" />
+                            <path d="M4.93 4.93l1.41 1.41" />
+                            <path d="M17.66 17.66l1.41 1.41" />
+                            <path d="M2 12h2" />
+                            <path d="M20 12h2" />
+                            <path d="M4.93 19.07l1.41-1.41" />
+                            <path d="M17.66 6.34l1.41-1.41" />
+                        </svg>
+                        <svg data-theme-target="iconDark"
+                             xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             class="hidden h-5 w-5">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+                        </svg>
+                    </button>
+                {% endif %}
                 {% if user.is_authenticated %}
                     {% if site_header_variant != 'app' %}
                         <a href="{% url 'home' %}" class="dj-button dj-button-primary">Dashboard</a>
@@ -129,10 +129,6 @@
                                    class="dj-nav-link w-full justify-center{% if current_url == 'docs_home' or current_url == 'docs_page' %} dj-nav-link-active{% endif %}">Docs</a>
                             </li>
                             {% if site_header_variant != 'app' or not user.is_authenticated %}
-                                <li>
-                                    <a href="{% url 'blog_posts' %}"
-                                       class="dj-nav-link w-full justify-center{% if current_url == 'blog_posts' or current_url == 'blog_post' %} dj-nav-link-active{% endif %}">Blog</a>
-                                </li>
                                 <li>
                                     <a href="{% url 'pricing' %}"
                                        class="dj-nav-link w-full justify-center{% if current_url == 'pricing' %} dj-nav-link-active{% endif %}">Pricing</a>

@@ -7,13 +7,17 @@ PRICING_TEMPLATE = Path("frontend/templates/pages/pricing.html")
 def test_landing_template_uses_product_led_copy():
     content = LANDING_TEMPLATE.read_text()
 
-    assert "Django SaaS starter, ready to generate" in content
+    assert "Project generator for Django SaaS" in content
+    assert "Generate the codebase. Ship the product." in content
     assert "production-ready" in content
-    assert "hosted generator" in content
-    assert "Create a free Djass account" in content
-    assert "Sign in to dashboard" in content
+    assert "hosted project generator" in content
+    assert "Create a free account" in content
+    assert (
+        """<a href="{% url 'account_login' %}" class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>"""
+        in content
+    )
     assert "Review free access" in content
-    assert "Agent flow" in content
+    assert "AI agent handoff" in content
     assert "/skill.md" in content
     assert "djass_openapi_docs_url" in content
     assert "premium" not in content.lower()
