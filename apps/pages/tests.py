@@ -397,7 +397,10 @@ def test_landing_guest_ctas_are_simple(client):
 
     content = response.content.decode()
     assert "Create a free account" in content
-    assert "Sign in" in content
+    assert (
+        f'href="{reverse("account_login")}" class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>'
+        in content
+    )
     assert "Configure your starter, queue generation, and keep project history" not in content
     assert "Continue from your existing project dashboard." not in content
 

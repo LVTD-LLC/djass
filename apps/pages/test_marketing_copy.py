@@ -12,7 +12,10 @@ def test_landing_template_uses_product_led_copy():
     assert "production-ready" in content
     assert "hosted project generator" in content
     assert "Create a free account" in content
-    assert "Sign in" in content
+    assert (
+        """<a href="{% url 'account_login' %}" class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>"""
+        in content
+    )
     assert "Review free access" in content
     assert "AI agent handoff" in content
     assert "/skill.md" in content
