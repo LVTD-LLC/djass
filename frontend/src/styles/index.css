@@ -408,7 +408,7 @@ body {
 
 .dj-hero-title {
   color: var(--dj-heading);
-  font-size: 4.75rem;
+  font-size: 3rem;
   font-weight: 760;
   line-height: 0.98;
   letter-spacing: 0;
@@ -422,7 +422,7 @@ body {
 
 .dj-section-title {
   color: var(--dj-heading);
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 740;
   line-height: 1.04;
   letter-spacing: 0;
@@ -699,17 +699,7 @@ body {
   }
 }
 
-@media (max-width: 1279px) {
-  .dj-hero-title {
-    font-size: 4.25rem;
-  }
-
-  .dj-section-title {
-    font-size: 2.75rem;
-  }
-}
-
-@media (max-width: 1023px) {
+@media (min-width: 769px) {
   .dj-hero-title {
     font-size: 3.75rem;
   }
@@ -719,17 +709,28 @@ body {
   }
 }
 
+@media (min-width: 1024px) {
+  .dj-hero-title {
+    font-size: 4.25rem;
+  }
+
+  .dj-section-title {
+    font-size: 2.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dj-hero-title {
+    font-size: 4.75rem;
+  }
+
+  .dj-section-title {
+    font-size: 3rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dj-main {
     padding-top: 4.85rem;
   }
-
-  .dj-hero-title {
-    font-size: 3rem;
-  }
-
-  .dj-section-title {
-    font-size: 2.25rem;
-  }
-
 }
