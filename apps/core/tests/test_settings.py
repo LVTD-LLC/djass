@@ -31,9 +31,10 @@ def _load_secure_proxy_ssl_header(environment: str) -> str:
         cwd=ROOT_DIR,
         env=env,
         capture_output=True,
-        check=True,
         text=True,
     )
+    if result.returncode != 0:
+        raise AssertionError(f"Settings import failed (exit {result.returncode}):\n{result.stderr}")
     return result.stdout.strip()
 
 
