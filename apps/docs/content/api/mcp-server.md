@@ -34,7 +34,9 @@ Djass hosted MCP is authenticated. Adding only the URL lets Codex reach the
 server, but it does not send a Djass API key, so the MCP initialization request
 is rejected with `401 invalid_token`.
 
-1. Create a Djass API key with `projects:create` and `projects:read`.
+1. Open [Account settings](https://djass.dev/settings) and copy your Agent API
+   key. If you use a scoped project API key instead, grant `projects:create` and
+   `projects:read`.
    Expected outcome: you have a key that can create projects and read generated
    project artifacts.
 
