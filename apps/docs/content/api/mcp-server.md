@@ -34,17 +34,39 @@ Djass hosted MCP is authenticated. Adding only the URL lets Codex reach the
 server, but it does not send a Djass API key, so the MCP initialization request
 is rejected with `401 invalid_token`.
 
-Create a Djass API key with `projects:create` and `projects:read`, keep it in an
-environment variable, then add the server with that variable name:
+1. Create a Djass API key with `projects:create` and `projects:read`.
+   Expected outcome: you have a key that can create projects and read generated
+   project artifacts.
 
-```bash
-export DJASS_API_KEY="..."
-codex mcp add djass --url https://djass.dev/mcp --bearer-token-env-var DJASS_API_KEY
-codex mcp list
-```
+2. Save the key in your shell environment:
 
-Restart Codex after updating the environment so the configured server process can
-read `DJASS_API_KEY`.
+   ```bash
+   export DJASS_API_KEY="..."
+   ```
+
+   Expected outcome: `DJASS_API_KEY` is available to Codex as a secret
+   environment variable.
+
+3. Add the hosted Djass MCP server to Codex:
+
+   ```bash
+   codex mcp add djass --url https://djass.dev/mcp --bearer-token-env-var DJASS_API_KEY
+   ```
+
+   Expected outcome: Codex stores a `djass` MCP server that sends
+   `Authorization: Bearer <DJASS_API_KEY>` to the hosted endpoint.
+
+4. Verify the server configuration:
+
+   ```bash
+   codex mcp list
+   ```
+
+   Expected outcome: `djass` appears in the configured MCP server list.
+
+5. Restart Codex after updating the environment.
+   Expected outcome: the configured MCP server can read `DJASS_API_KEY`, and MCP
+   initialization no longer fails with `401 invalid_token`.
 
 ## Hosted tools
 
