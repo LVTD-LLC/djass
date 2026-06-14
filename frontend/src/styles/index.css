@@ -761,6 +761,29 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .dj-logo-carousel {
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .dj-logo-track,
+  .dj-logo-set {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .dj-logo-set[aria-hidden="true"] {
+    display: none;
+  }
+
+  .dj-logo-mark {
+    flex: 1 1 8rem;
+    white-space: normal;
+  }
+}
+
 @keyframes dj-logo-scroll {
   from {
     transform: translateX(0);

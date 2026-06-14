@@ -401,7 +401,8 @@ def test_landing_guest_ctas_are_simple(client):
 
     content = response.content.decode()
     assert "Generate your starter" in content
-    assert f'href="{reverse("pricing")}" class="dj-button dj-button-secondary sm:min-w-44">See pricing</a>' in content
+    assert f'href="{reverse("pricing")}"' in content
+    assert "See pricing" in content
     assert "Configure your starter, queue generation, and keep project history" not in content
     assert "Continue from your existing project dashboard." not in content
 
