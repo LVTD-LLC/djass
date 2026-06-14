@@ -53,7 +53,11 @@ def test_pricing_page_shows_crossed_out_lifetime_price(client):
     assert "$200" in content
     assert "$999" in content
     assert "Launch pricing" in content
-    assert "Paid members only can generate projects" in content
+    assert "10 launch spots left at $10" in content
+    assert "Purchase once to unlock project generation" in content
+    assert "Launch spot schedule" in content
+    assert ("scar" + "city") not in content.lower()
+    assert ("paid " + "seats") not in content.lower()
 
 
 @override_settings(
@@ -390,6 +394,7 @@ def test_landing_and_pricing_copy_is_product_led(client):
     assert "$100" in pricing_content
     assert "$200" in pricing_content
     assert "$999" in pricing_content
+    assert "10 launch spots left at $10" in pricing_content
     assert "Review the starter repository" in pricing_content
     assert "Need full control?" not in pricing_content
     assert "agency" not in pricing_content.lower()

@@ -11,5 +11,8 @@ def test_premium_offer_workflow_copy_crosses_out_lifetime_price():
     assert "$999" in content
     assert "Launch pricing" in content
     assert "Review launch pricing" in content
-    assert "paid members only" in content.lower()
+    assert "limited number of spots" in content
+    assert "Launch spot schedule" in content
+    assert ("paid " + "seats") not in content.lower()
+    assert ("scar" + "city") not in content.lower()
     assert "client SaaS" not in content

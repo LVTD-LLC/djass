@@ -34,6 +34,10 @@ def test_pricing_template_crosses_out_lifetime_price():
     assert "$200" in content
     assert "$999" in content
     assert "Djass generator access" in content
-    assert "Paid members only can generate projects" in content
+    assert "10 launch spot" in content
+    assert "Purchase once to unlock project generation" in content
+    assert "Launch spot schedule" in content
     assert "Review the starter repository" in content
+    assert ("scar" + "city") not in content.lower()
+    assert ("paid " + "seats") not in content.lower()
     assert "agencies that ship client SaaS repeatedly" not in content

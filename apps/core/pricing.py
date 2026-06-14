@@ -30,6 +30,20 @@ class LaunchPriceTier:
             return f"{self.first_paid_member}+"
         return f"{self.first_paid_member}-{self.last_paid_member}"
 
+    @property
+    def spot_count(self):
+        if self.last_paid_member is None:
+            return None
+        return self.last_paid_member - self.first_paid_member + 1
+
+    @property
+    def availability_label(self):
+        if self.spot_count is None:
+            return f"Spot {self.first_paid_member}+"
+        if self.first_paid_member == 1:
+            return f"First {self.spot_count} spots"
+        return f"Next {self.spot_count} spots"
+
 
 LAUNCH_PRICE_TIERS = (
     LaunchPriceTier(key="launch_10", amount=10, first_paid_member=1, last_paid_member=10),
@@ -58,11 +72,13 @@ def get_pending_launch_reservation_count():
     ).count()
 
 
+def get_claimed_launch_price_spot_count():
+    return get_paid_member_count() + get_pending_launch_reservation_count()
+
+
 def get_launch_price_tier(paid_member_count=None):
     paid_member_count = (
-        get_paid_member_count() + get_pending_launch_reservation_count()
-        if paid_member_count is None
-        else paid_member_count
+        get_claimed_launch_price_spot_count() if paid_member_count is None else paid_member_count
     )
     next_paid_member = paid_member_count + 1
 
@@ -71,6 +87,16 @@ def get_launch_price_tier(paid_member_count=None):
             return tier
 
     return LAUNCH_PRICE_TIERS[-1]
+
+
+def get_launch_price_spots_left(paid_member_count=None):
+    paid_member_count = (
+        get_claimed_launch_price_spot_count() if paid_member_count is None else paid_member_count
+    )
+    current_tier = get_launch_price_tier(paid_member_count)
+    if current_tier.last_paid_member is None:
+        return None
+    return max(current_tier.last_paid_member - paid_member_count, 0)
 
 
 def get_price_id_for_tier(tier):

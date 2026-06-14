@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from apps.core.choices import ProfileStates
 from apps.core.models import LaunchPriceReservation
-from apps.core.pricing import get_launch_price_tier
+from apps.core.pricing import get_launch_price_spots_left, get_launch_price_tier
 
 LAUNCH_PRICE_IDS = {
     "launch_10": "price_launch_10",
@@ -139,6 +139,16 @@ def test_get_launch_price_tier_boundaries():
     assert get_launch_price_tier(20).key == "launch_200"
     assert get_launch_price_tier(29).key == "launch_200"
     assert get_launch_price_tier(30).key == "launch_999"
+
+
+def test_get_launch_price_spots_left_boundaries():
+    assert get_launch_price_spots_left(0) == 10
+    assert get_launch_price_spots_left(9) == 1
+    assert get_launch_price_spots_left(10) == 10
+    assert get_launch_price_spots_left(19) == 1
+    assert get_launch_price_spots_left(20) == 10
+    assert get_launch_price_spots_left(29) == 1
+    assert get_launch_price_spots_left(30) is None
 
 
 @override_settings(
