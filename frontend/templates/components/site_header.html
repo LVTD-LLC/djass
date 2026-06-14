@@ -104,7 +104,7 @@
                     </div>
                 {% else %}
                     <a href="{% url 'account_login' %}" class="dj-button dj-button-subtle">Sign in</a>
-                    <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary">Create account</a>
+                    <a href="{% url 'account_signup' %}" class="dj-button dj-button-primary">Generate starter</a>
                 {% endif %}
             </div>
             <div class="ml-auto lg:hidden" data-controller="dropdown">
@@ -158,7 +158,7 @@
                                 </li>
                                 <li class="p-2">
                                     <a href="{% url 'account_signup' %}"
-                                       class="dj-button dj-button-primary w-full">Create account</a>
+                                       class="dj-button dj-button-primary w-full">Generate starter</a>
                                 </li>
                             {% endif %}
                         </ul>

@@ -332,15 +332,15 @@ def test_signup_tracking_mixin_queues_expected_events(monkeypatch, user):
     assert signup_call[1]["properties"]["entrypoint"] == "ui"
 
 
-def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
+def test_landing_authenticated_user_gets_dashboard_and_project_ctas(auth_client, user):
     response = auth_client.get(reverse("landing"))
     assert response.status_code == 200
 
     content = response.content.decode()
     assert "Open dashboard" in content
-    assert "Review launch pricing" in content
+    assert "Create project" in content
     assert reverse("home") in content
-    assert reverse("pricing") in content
+    assert reverse("project_new") in content
 
 
 def test_landing_header_omits_stack_link(client):
@@ -352,7 +352,7 @@ def test_landing_header_omits_stack_link(client):
     assert ">Stack</a>" not in content
 
 
-def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
+def test_landing_subscribed_user_gets_dashboard_and_project_ctas(auth_client, user):
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])
 
@@ -361,19 +361,21 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open dashboard" in content
-    assert "Review launch pricing" in content
+    assert "Create project" in content
     assert reverse("home") in content
-    assert reverse("pricing") in content
+    assert reverse("project_new") in content
 
 
 def test_landing_and_pricing_copy_is_product_led(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "hosted project generator" in landing_content
-    assert "Generate the codebase. Ship the product." in landing_content
-    assert "useful SaaS features" in landing_content
-    assert "Generate your way" in landing_content
+    assert "Agent-ready Django SaaS repo generator" in landing_content
+    assert "Generate agent-ready Django SaaS repos." in landing_content
+    assert "codebase.zip" in landing_content
+    assert "Generated with this cookiecutter" in landing_content
+    assert "Already behind real products." in landing_content
+    assert "Generate from where you work" in landing_content
     assert "OpenAPI docs" in landing_content
     assert "/skill.md" in landing_content
     assert "https://djass.dev/api/docs" in landing_content
@@ -398,22 +400,18 @@ def test_landing_guest_ctas_are_simple(client):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Create account" in content
-    signin_link = (
-        f'href="{reverse("account_login")}" '
-        'class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>'
-    )
-    assert signin_link in content
+    assert "Generate your starter" in content
+    assert f'href="{reverse("pricing")}" class="dj-button dj-button-secondary sm:min-w-44">See pricing</a>' in content
     assert "Configure your starter, queue generation, and keep project history" not in content
     assert "Continue from your existing project dashboard." not in content
 
 
-def test_signup_cta_copy_uses_pricing_language(client):
+def test_landing_cta_copy_uses_pricing_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Create account" in landing_content
-    assert "Review launch pricing" in landing_content
+    assert "Generate your starter" in landing_content
+    assert "See pricing" in landing_content
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200

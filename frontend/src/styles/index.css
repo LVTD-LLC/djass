@@ -500,6 +500,59 @@ body {
   font-weight: 650;
 }
 
+.dj-logo-carousel {
+  position: relative;
+  overflow: hidden;
+  border-block: 1px solid var(--dj-border);
+  padding-block: 0.75rem;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.dj-logo-track {
+  display: flex;
+  width: max-content;
+  gap: 0.65rem;
+}
+
+.dj-logo-set {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.65rem;
+}
+
+.dj-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: max(8rem, 12vw);
+  min-height: 3.25rem;
+  border: 1px solid var(--dj-border);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  background: var(--dj-panel-solid);
+  color: var(--dj-heading);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.dj-logo-mark:hover,
+.dj-logo-mark:focus-visible {
+  border-color: var(--dj-border-strong);
+  background: var(--dj-bg-muted);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.dj-logo-mark:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dj-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
 .dj-product-surface {
   position: relative;
   overflow: hidden;
@@ -696,6 +749,25 @@ body {
   .dj-nav-link {
     transition-duration: 160ms;
     transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .dj-logo-track {
+    animation: dj-logo-scroll 32s linear infinite;
+  }
+
+  .dj-logo-carousel:hover .dj-logo-track,
+  .dj-logo-carousel:focus-within .dj-logo-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes dj-logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.325rem));
   }
 }
 

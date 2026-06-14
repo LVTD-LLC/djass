@@ -7,17 +7,15 @@ PRICING_TEMPLATE = Path("frontend/templates/pages/pricing.html")
 def test_landing_template_uses_product_led_copy():
     content = LANDING_TEMPLATE.read_text()
 
-    assert "Project generator for Django SaaS" in content
-    assert "Generate the codebase. Ship the product." in content
-    assert "production-ready" in content
-    assert "hosted project generator" in content
-    assert "Create account" in content
-    signin_link = (
-        """<a href="{% url 'account_login' %}" """
-        """class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>"""
-    )
-    assert signin_link in content
-    assert "Review launch pricing" in content
+    assert "Agent-ready Django SaaS repo generator" in content
+    assert "Generate agent-ready Django SaaS repos." in content
+    assert "deployment defaults" in content
+    assert "normal Django repo ZIP" in content
+    assert "Generate your starter" in content
+    assert "See pricing" in content
+    assert "Generated with this cookiecutter" in content
+    assert "FileBridge" in content
+    assert "Ask HN Digest" in content
     assert "AI agent handoff" in content
     assert "/skill.md" in content
     assert "djass_openapi_docs_url" in content
