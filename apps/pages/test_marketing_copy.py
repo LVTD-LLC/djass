@@ -15,7 +15,9 @@ def test_landing_template_uses_product_led_copy():
     assert "See pricing" in content
     assert "Generated with this cookiecutter" in content
     assert "FileBridge" in content
+    assert "Tech Job Alerts" in content
     assert "Ask HN Digest" in content
+    assert "https://osig.app/" in content
     assert "AI agent handoff" in content
     assert "/skill.md" in content
     assert "djass_openapi_docs_url" in content
