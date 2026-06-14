@@ -96,12 +96,15 @@ If `AWS_S3_ENDPOINT_URL` is empty, filesystem storage is used.
 
 ### Payments
 
-- `PAYMENTS_ENABLED` (default `False`) — when disabled, checkout and customer portal routes stay dormant; when enabled, project generation requires active account access
-- `GRANT_PRO_MEMBERSHIP_ON_SIGNUP` (default `True`) — assigns new users subscribed/pro access immediately
+- `PAYMENTS_ENABLED` (default `True`) — when enabled, project generation requires paid account access
+- `GRANT_PRO_MEMBERSHIP_ON_SIGNUP` (default `False`) — assigns new users subscribed/pro access immediately
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_ID_ONE_TIME`
-- `STRIPE_ONE_TIME_AMOUNT_CENTS` (default `99900`)
+- `STRIPE_PRICE_ID_LAUNCH_10`
+- `STRIPE_PRICE_ID_LAUNCH_100`
+- `STRIPE_PRICE_ID_LAUNCH_200`
+- `STRIPE_PRICE_ID_LAUNCH_999`
 
 ### AI provider
 

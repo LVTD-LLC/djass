@@ -4,7 +4,23 @@ from apps.core import signals
 from apps.core.choices import ProfileStates
 
 
-def test_new_user_profiles_are_pro_by_default(sync_state_transitions, django_user_model):
+def test_new_user_profiles_start_signed_up_by_default(sync_state_transitions, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="new-signed-up-user",
+        email="new-signed-up-user@example.com",
+        password="password123",
+    )
+
+    user.profile.refresh_from_db()
+    assert user.profile.state == ProfileStates.SIGNED_UP
+    assert user.profile.has_active_subscription is False
+
+
+def test_new_user_profiles_can_use_legacy_free_signup_state(
+    settings, sync_state_transitions, django_user_model
+):
+    settings.GRANT_PRO_MEMBERSHIP_ON_SIGNUP = True
+
     user = django_user_model.objects.create_user(
         username="new-pro-user",
         email="new-pro-user@example.com",
@@ -15,22 +31,6 @@ def test_new_user_profiles_are_pro_by_default(sync_state_transitions, django_use
     assert user.profile.state == ProfileStates.SUBSCRIBED
     assert user.profile.current_state == ProfileStates.SUBSCRIBED
     assert user.profile.has_active_subscription is True
-
-
-def test_new_user_profiles_can_use_legacy_signup_state(
-    settings, sync_state_transitions, django_user_model
-):
-    settings.GRANT_PRO_MEMBERSHIP_ON_SIGNUP = False
-
-    user = django_user_model.objects.create_user(
-        username="new-signed-up-user",
-        email="new-signed-up-user@example.com",
-        password="password123",
-    )
-
-    user.profile.refresh_from_db()
-    assert user.profile.state == ProfileStates.SIGNED_UP
-    assert user.profile.has_active_subscription is False
 
 
 def test_track_user_login_queues_auth_event(monkeypatch, user):

@@ -48,11 +48,12 @@ def test_pricing_page_shows_crossed_out_lifetime_price(client):
     assert response.status_code == 200
 
     content = response.content.decode()
+    assert "$10" in content
+    assert "$100" in content
+    assert "$200" in content
     assert "$999" in content
-    assert "line-through" in content
-    assert "Free access while Djass improves" in content
-    assert "The listed $999 lifetime price is paused" in content
-    assert "No payment required during the current feedback window" in content
+    assert "Launch pricing" in content
+    assert "Paid members only can generate projects" in content
 
 
 @override_settings(
@@ -337,7 +338,7 @@ def test_landing_authenticated_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open dashboard" in content
-    assert "Review free access" in content
+    assert "Review launch pricing" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
 
@@ -360,7 +361,7 @@ def test_landing_subscribed_user_gets_primary_signup_cta(auth_client, user):
 
     content = response.content.decode()
     assert "Open dashboard" in content
-    assert "Review free access" in content
+    assert "Review launch pricing" in content
     assert reverse("home") in content
     assert reverse("pricing") in content
 
@@ -382,10 +383,11 @@ def test_landing_and_pricing_copy_is_product_led(client):
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "Free access while the generator improves" in pricing_content
+    assert "Launch pricing" in pricing_content
+    assert "$10" in pricing_content
+    assert "$100" in pricing_content
+    assert "$200" in pricing_content
     assert "$999" in pricing_content
-    assert "line-through" in pricing_content
-    assert "Free access while Djass improves" in pricing_content
     assert "Review the starter repository" in pricing_content
     assert "Need full control?" not in pricing_content
     assert "agency" not in pricing_content.lower()
@@ -396,11 +398,12 @@ def test_landing_guest_ctas_are_simple(client):
     assert response.status_code == 200
 
     content = response.content.decode()
-    assert "Create a free account" in content
-    assert (
-        f'href="{reverse("account_login")}" class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>'
-        in content
+    assert "Create account" in content
+    signin_link = (
+        f'href="{reverse("account_login")}" '
+        'class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>'
     )
+    assert signin_link in content
     assert "Configure your starter, queue generation, and keep project history" not in content
     assert "Continue from your existing project dashboard." not in content
 
@@ -409,12 +412,11 @@ def test_signup_cta_copy_uses_pricing_language(client):
     landing_response = client.get(reverse("landing"))
     assert landing_response.status_code == 200
     landing_content = landing_response.content.decode()
-    assert "Create a free account" in landing_content
-    assert "Review free access" in landing_content
+    assert "Create account" in landing_content
+    assert "Review launch pricing" in landing_content
 
     pricing_response = client.get(reverse("pricing"))
     assert pricing_response.status_code == 200
     pricing_content = pricing_response.content.decode()
-    assert "Create a free account" in pricing_content
+    assert "Create account to buy" in pricing_content
     assert "$999" in pricing_content
-    assert "line-through" in pricing_content

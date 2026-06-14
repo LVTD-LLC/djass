@@ -174,6 +174,14 @@ def build_project_payload(
 
 
 def _create_project(user, payload: dict[str, Any]) -> Project:
+    profile = Profile.objects.get(user=user)
+    if getattr(settings, "PAYMENTS_ENABLED", False) and not profile.has_active_subscription:
+        raise MCPServiceError(
+            "subscription_required",
+            "Project generation requires paid Djass access.",
+            {"upgrade_url": "/pricing"},
+        )
+
     project_slug = slugify(payload["project_slug"]).replace("-", "_")
     if not project_slug:
         raise MCPServiceError(

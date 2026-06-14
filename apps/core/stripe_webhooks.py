@@ -2,10 +2,14 @@ import stripe
 from django.conf import settings
 from django.core.cache import cache
 
-from djass.utils import get_djass_logger
-from apps.core.choices import ProfileStates
 from apps.core import tasks as core_tasks
+from apps.core.choices import ProfileStates
 from apps.core.models import Profile
+from apps.core.pricing import (
+    cancel_launch_price_reservation_for_checkout,
+    mark_launch_price_reservation_paid,
+)
+from djass.utils import get_djass_logger
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -296,6 +300,7 @@ def handle_checkout_completed(event):
             checkout_id=checkout_id,
             payment_status=payment_status,
         )
+        cancel_launch_price_reservation_for_checkout(checkout_id, "payment_not_paid")
         return
 
     idempotency_token = checkout_id or checkout_data.get("payment_intent")
@@ -361,6 +366,7 @@ def handle_checkout_completed(event):
             },
             source_function="stripe_webhook handle_checkout_completed",
         )
+        mark_launch_price_reservation_paid(checkout_id, payment_intent)
 
         logger.info(
             "User completed one-time payment",

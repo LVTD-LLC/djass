@@ -85,6 +85,47 @@ class ProfileStateTransition(BaseModel):
     backup_profile_id = models.IntegerField()
     metadata = models.JSONField(null=True, blank=True)
 
+
+class LaunchPriceLedger(BaseModel):
+    key = models.CharField(max_length=64, unique=True, default="default")
+
+    def __str__(self):
+        return self.key
+
+
+class LaunchPriceReservation(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PAID = "paid", "Paid"
+        CANCELED = "canceled", "Canceled"
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="launch_price_reservations",
+    )
+    tier_key = models.CharField(max_length=50)
+    amount_cents = models.PositiveIntegerField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    stripe_checkout_session_id = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+    stripe_payment_intent = models.CharField(max_length=255, blank=True, default="")
+    canceled_reason = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["tier_key", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id}:{self.tier_key}:{self.status}"
+
 class Feedback(BaseModel):
     profile = models.ForeignKey(
         Profile,

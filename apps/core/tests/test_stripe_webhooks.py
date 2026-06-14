@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from apps.core.choices import ProfileStates
-from apps.core.models import Profile
+from apps.core.models import LaunchPriceReservation, Profile
 from apps.core.stripe_webhooks import (
     handle_checkout_completed,
     handle_created_subscription,
@@ -125,12 +125,21 @@ def test_handle_checkout_completed_payment_grants_access(sync_state_transitions,
     )
 
     with patch("apps.core.stripe_webhooks.core_tasks.track_event") as track_event:
+        reservation = LaunchPriceReservation.objects.create(
+            user=profile.user,
+            tier_key="launch_10",
+            amount_cents=1000,
+            stripe_checkout_session_id="cs_paid",
+        )
         handle_checkout_completed(event)
 
     profile.refresh_from_db()
+    reservation.refresh_from_db()
     assert profile.stripe_customer_id == "cus_paid"
     assert profile.state == ProfileStates.SUBSCRIBED
     assert profile.current_state == ProfileStates.SUBSCRIBED
+    assert reservation.status == LaunchPriceReservation.Status.PAID
+    assert reservation.stripe_payment_intent == "pi_paid"
     track_event.assert_called_once_with(
         profile_id=profile.id,
         event_name="checkout_succeeded",
@@ -192,8 +201,17 @@ def test_handle_checkout_completed_tracks_payment_failure_event(sync_state_trans
         patch("apps.core.stripe_webhooks.core_tasks.track_state_change") as track_state_change,
         patch("apps.core.stripe_webhooks.core_tasks.track_event") as track_event,
     ):
+        reservation = LaunchPriceReservation.objects.create(
+            user=profile.user,
+            tier_key="launch_10",
+            amount_cents=1000,
+            stripe_checkout_session_id="cs_unpaid",
+        )
         handle_checkout_completed(event)
 
+    reservation.refresh_from_db()
+    assert reservation.status == LaunchPriceReservation.Status.CANCELED
+    assert reservation.canceled_reason == "payment_not_paid"
     track_state_change.assert_not_called()
     track_event.assert_called_once_with(
         profile_id=profile.id,
@@ -214,7 +232,9 @@ def test_handle_checkout_completed_tracks_payment_failure_event(sync_state_trans
 
 
 @pytest.mark.django_db
-def test_handle_checkout_completed_falls_back_to_client_reference_id(sync_state_transitions, profile):
+def test_handle_checkout_completed_falls_back_to_client_reference_id(
+    sync_state_transitions, profile
+):
     event = build_checkout_completed_event(
         customer_id="",
         checkout_id="cs_ref_only",
@@ -227,7 +247,8 @@ def test_handle_checkout_completed_falls_back_to_client_reference_id(sync_state_
         payment_intent="pi_ref_only",
     )
 
-    handle_checkout_completed(event)
+    with patch("apps.core.stripe_webhooks.core_tasks.track_event"):
+        handle_checkout_completed(event)
 
     profile.refresh_from_db()
     assert profile.state == ProfileStates.SUBSCRIBED
@@ -247,7 +268,8 @@ def test_handle_checkout_completed_falls_back_to_customer_email(sync_state_trans
         payment_intent="pi_email_only",
     )
 
-    handle_checkout_completed(event)
+    with patch("apps.core.stripe_webhooks.core_tasks.track_event"):
+        handle_checkout_completed(event)
 
     profile.refresh_from_db()
     assert profile.state == ProfileStates.SUBSCRIBED

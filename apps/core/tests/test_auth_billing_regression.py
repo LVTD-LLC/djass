@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
+from django.test import override_settings
 from django.urls import reverse
 
 from apps.core.choices import EmailType, ProfileStates
@@ -45,6 +46,7 @@ def test_confirmation_mail_tracks_welcome_vs_resend(user, monkeypatch):
     assert tracked[1]["email_type"] == EmailType.EMAIL_CONFIRMATION
 
 
+@override_settings(PAYMENTS_ENABLED=False)
 @pytest.mark.django_db
 def test_checkout_route_does_not_start_external_session(auth_client, monkeypatch):
     monkeypatch.setattr(
@@ -74,7 +76,7 @@ def test_paid_checkout_unlocks_entitlement_and_generation_gate(
     assert user.profile.has_active_subscription is False
     response = auth_client.get(reverse("project_new"))
     assert response.status_code == 200
-    assert "Generation is available" in response.content.decode()
+    assert "Generation is locked" in response.content.decode()
 
     event = build_checkout_completed_event(
         customer_id="cus_unlock",

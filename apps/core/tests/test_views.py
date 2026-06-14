@@ -8,6 +8,7 @@ from django.contrib.messages import get_messages
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.core.choices import ProfileStates
 from apps.core.models import Profile, Project, ProjectStatus
 from apps.core.views import get_price_id_for_plan
 
@@ -24,7 +25,17 @@ class TestHomeView:
         response = auth_client.get(url)
         assert "pages/home.html" in [t.name for t in response.templates]
 
-    def test_home_shows_generation_unlocked_by_default(self, auth_client):
+    def test_home_shows_generation_locked_by_default(self, auth_client):
+        response = auth_client.get(reverse("home"))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Generation locked" in content
+        assert "Unlock for $10" in content
+
+    def test_home_shows_generation_unlocked_for_paid_user(self, auth_client, user):
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
+
         response = auth_client.get(reverse("home"))
         assert response.status_code == 200
         content = response.content.decode()
@@ -43,6 +54,9 @@ class TestHomeView:
         )
 
     def test_home_shows_short_copyable_agent_prompt(self, auth_client, user):
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
+
         response = auth_client.get(reverse("home"))
 
         assert response.status_code == 200
@@ -83,7 +97,7 @@ class TestHomeView:
         content = response.content.decode()
         assert "Agent project generator prompt" not in content
         assert "Copy prompt" not in content
-        assert "Generation unavailable" in content
+        assert "Generation locked" in content
 
     @override_settings(
         CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
@@ -131,14 +145,27 @@ class TestAgentSkillView:
 
 @pytest.mark.django_db
 class TestProjectCreateView:
-    def test_project_create_view_shows_unlocked_state_by_default(self, auth_client):
+    def test_project_create_view_shows_locked_state_by_default(self, auth_client):
+        response = auth_client.get(reverse("project_new"))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Generation is locked" in content
+        assert "currently $10" in content
+
+    def test_project_create_view_shows_unlocked_state_for_paid_user(self, auth_client, user):
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
+
         response = auth_client.get(reverse("project_new"))
         assert response.status_code == 200
         content = response.content.decode()
         assert "Generation is available" in content
         assert "Generation is locked" not in content
 
-    def test_project_create_view_renders_current_generator_options(self, auth_client):
+    def test_project_create_view_renders_current_generator_options(self, auth_client, user):
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
+
         response = auth_client.get(reverse("project_new"))
 
         assert response.status_code == 200
@@ -155,6 +182,8 @@ class TestProjectCreateView:
         assert "Backend logs use standard Python logging" in content
 
     def test_project_create_view_shows_project_limit_state(self, auth_client, settings, user):
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
         settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
         Project.objects.create(
             user=user,
@@ -183,6 +212,8 @@ def test_settings_omits_upgrade_copy(auth_client, user):
     assert "Upgrade Your Account" not in content
     assert "$999" not in content
     assert "premium" not in content.lower()
+    assert "Generation is locked" in content
+    assert "current launch tier is $10" in content
 
 
 @pytest.mark.django_db

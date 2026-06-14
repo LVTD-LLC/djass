@@ -17,6 +17,9 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 
 ### Added
+- Launch ladder billing for Djass lifetime access: first 10 paid members at $10,
+  next 10 at $100, next 10 at $200, then $999 forever.
+- Stripe setup command now creates the Djass product and all launch ladder one-time prices.
 - Djass SVG logo assets with refreshed PNG and favicon fallbacks.
 - Login now accepts either username or email address.
 - Copyable Agent API key section on the user settings page so users can give their key to coding agents.
@@ -34,18 +37,20 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Hosted FastMCP `/mcp` endpoint with authenticated tools for generation options, project creation, status polling, and generated ZIP download links.
 
 ### Fixed
+- Retry checkout now cancels a user's stale pending launch reservation before recomputing the tier, so abandoned sessions do not self-inflate the next price.
 - Deployment workflows now use lowercase GHCR image names after the repository move to `LVTD-LLC`.
 - Temporarily disabled passkey-based signup and login paths while passkey auth is unstable; auth pages now hide passkey actions and `/accounts/signup/passkey/` is no longer exposed.
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
 - Mailgun sender-domain default now matches the verified Djass Mailgun domain (`mg.djass.dev`) to prevent `401 Forbidden` during signup confirmation sends when env overrides are not set.
 
 ### Changed
+- Djass is paid by default; project generation through the UI, API, and hosted MCP now requires paid account access.
 - Signup/email verification flow now allows immediate post-signup dashboard access (`ACCOUNT_EMAIL_VERIFICATION=optional`) while still sending verification emails.
 - Switched email verification to link-based confirmation (`ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED=False`) with one-click confirm on GET.
 - Added a branded `account/verification_sent.html` so fallback verification-sent UX matches Djass styling instead of the default allauth page.
 
 ### Changed
-- Free access page copy now frames Djass as a feedback-led Django SaaS starter workflow for founders, builders, and teams.
+- Pricing page copy now frames Djass as a paid launch-ladder Django SaaS starter workflow for founders, builders, and teams.
 - Blog list/detail pages no longer render top tag chips in the page header/card metadata, reducing visual clutter while keeping layout spacing intact.
 - API key authentication for v1 project endpoints now accepts `X-API-Key` and `Authorization` header formats in addition to `?api_key=` query fallback.
 - Contract-level error payload for Spec 001 standardized to `{ "error": { "code", "message", "details" } }`.
@@ -56,14 +61,14 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - ZIP artifact creation now uses deterministic file ordering and fixed archive entry timestamps.
 - Generation failures now persist more actionable diagnostics in `Project.error_message`.
 - Landing page “How it works” section now spells out the UI flow and API flow separately, then explains the background generation and handoff steps in scan-friendly cards.
-- Free access page and workflow copy now remove the legacy “Need full control?” bridge in favor of product-first messaging that points builders to the open-source baseline without agency framing.
+- Pricing page and workflow copy now remove the legacy “Need full control?” bridge in favor of product-first messaging that points builders to the open-source baseline without agency framing.
 
 ### Fixed
 - Signup no longer fails account creation when welcome/confirmation email delivery errors during registration; the failure is logged, the user gets a retry warning, and explicit resend failures still surface normally.
 
 ### Changed
 - Home page converted from placeholder to a functional project dashboard with generation status/actions.
-- Landing and free access copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
+- Landing and pricing copy now position Djass as a product-first Django SaaS starter workflow for founders and teams instead of agency-focused service language.
 - Landing page CTA copy now uses clearer action labels and helper text that explains exactly where each homepage CTA goes.
 - Added `COOKIECUTTER_TEMPLATE_PATH` setting for configurable template source path.
 - Generation now uses Cookiecutter Python API first with CLI fallback for resilience.

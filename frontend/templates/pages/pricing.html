@@ -3,21 +3,21 @@
 
 {% block meta %}
   <title>Djass - Pricing</title>
-  <meta name="description" content="Generate Django SaaS starter projects for free while Djass collects feedback. The usual $999 lifetime price is paused during this window." />
+  <meta name="description" content="Get Djass lifetime access with launch ladder pricing: first 10 paid members at $10, then $100, then $200, then $999 forever." />
   <meta name="keywords" content="" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://{{ request.get_host }}{% url 'pricing' %}" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Djass - Pricing" />
   <meta property="og:url" content="https://{{ request.get_host }}{% url 'pricing' %}" />
-  <meta property="og:description" content="Generate Django SaaS starter projects for free while Djass collects feedback. The usual $999 lifetime price is paused during this window." />
+  <meta property="og:description" content="Get Djass lifetime access with launch ladder pricing: first 10 paid members at $10, then $100, then $200, then $999 forever." />
   <meta property="og:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:creator" content="@rasulkireev" />
   <meta name="twitter:site" content="@rasulkireev" />
   <meta name="twitter:title" content="Djass - Pricing" />
-  <meta name="twitter:description" content="Generate Django SaaS starter projects for free while Djass collects feedback. The usual $999 lifetime price is paused during this window." />
+  <meta name="twitter:description" content="Get Djass lifetime access with launch ladder pricing: first 10 paid members at $10, then $100, then $200, then $999 forever." />
   <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
@@ -25,16 +25,15 @@
   <section class="py-16 sm:py-24">
     <div class="dj-container">
       <div class="mx-auto max-w-3xl text-center">
-        <p class="dj-kicker">Free access while the generator improves</p>
+        <p class="dj-kicker">Launch pricing</p>
         <h1 class="dj-section-title mt-3">
-          <span class="line-through decoration-2 decoration-[var(--dj-soft)]">$999</span>
-          Free access while Djass improves.
+          {{ current_price_tier.display_amount }} one-time lifetime access.
         </h1>
         <p class="dj-section-copy mx-auto mt-5 max-w-2xl">
-          Djass normally has a clear $999 lifetime price. During the feedback window, signed-in users can generate starter projects for free and tell us where the workflow needs sharper defaults.
+          Djass is paid now. The first 10 paid members get lifetime access for $10, then the price increases in batches until it returns to $999 forever.
         </p>
         <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-soft)]">
-          Try the full path: configure a starter, download the ZIP, and send notes from the feedback button if anything slows you down.
+          Current tier: paid seats {{ current_price_tier.seats }} at {{ current_price_tier.display_amount }}.
         </p>
       </div>
 
@@ -44,18 +43,27 @@
             <div>
               <p class="dj-pill dj-pill-accent">Djass generator access</p>
               <h2 id="tier-lifetime" class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-2 text-5xl font-semibold leading-none text-[var(--dj-heading)]">
-                <span class="line-through decoration-2 decoration-[var(--dj-soft)]">$999</span>
-                <span class="text-[var(--dj-accent-strong)]">Free access</span>
+                <span class="text-[var(--dj-accent-strong)]">{{ current_price_tier.display_amount }}</span>
+                <span class="text-lg font-semibold text-[var(--dj-muted)]">one-time</span>
               </h2>
               <p class="mt-4 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
-                The listed $999 lifetime price is paused. Signed-in users can generate projects for free while this feedback window stays open.
+                Unlock project generation, project history, ZIP downloads, API access, and MCP workflows with one lifetime purchase.
               </p>
             </div>
             <div class="sm:min-w-56">
               {% if user.is_authenticated %}
-                <a href="{% url 'project_new' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Create a project for free</a>
+                {% if has_pro_subscription %}
+                  <a href="{% url 'project_new' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Generation unlocked</a>
+                {% else %}
+                  <form method="post" action="{% url 'user_upgrade_checkout_session' pk=user.id plan='one-time' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="price_tier" value="{{ current_price_tier.key }}">
+                    <button type="submit" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Continue to checkout</button>
+                  </form>
+                  <p class="mt-3 text-xs leading-5 text-[var(--dj-soft)]">Stripe confirms the final active tier before payment.</p>
+                {% endif %}
               {% else %}
-                <a href="{% url 'account_signup' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Create a free account</a>
+                <a href="{% url 'account_signup' %}" aria-describedby="tier-lifetime" class="dj-button dj-button-primary w-full">Create account to buy</a>
               {% endif %}
             </div>
           </div>
@@ -74,27 +82,30 @@
               <p class="font-semibold text-[var(--dj-heading)]">Generate through the web app, Projects API, or MCP-enabled agent workflows</p>
             </div>
             <div class="border-t border-[var(--dj-border)] pt-4 sm:col-span-2">
-              <p class="font-semibold text-[var(--dj-heading)]">No payment required during the current feedback window</p>
+              <p class="font-semibold text-[var(--dj-heading)]">Paid members only can generate projects</p>
             </div>
           </div>
         </section>
 
         <aside class="dj-panel p-6 sm:p-8">
-          <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Best fit</h2>
+          <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Price ladder</h2>
           <div class="mt-5 border-t border-[var(--dj-border)] pt-5">
-            <h3 class="dj-kicker">Who this is for</h3>
+            <h3 class="dj-kicker">Scarcity schedule</h3>
             <ul class="mt-3 space-y-3 text-sm leading-6 text-[var(--dj-muted)]">
-              <li>Solo founders and small teams testing a Django SaaS idea</li>
-              <li>Product teams that want a predictable starting point for new apps and experiments</li>
-              <li>Builders willing to share practical notes after generating real projects</li>
+              {% for tier in launch_price_tiers %}
+                <li class="flex items-center justify-between gap-4 border-b border-[var(--dj-border)] pb-3 last:border-b-0 last:pb-0">
+                  <span>Paid seats {{ tier.seats }}</span>
+                  <span class="font-semibold text-[var(--dj-heading)]">{{ tier.display_amount }}</span>
+                </li>
+              {% endfor %}
             </ul>
           </div>
           <div class="mt-6 border-t border-[var(--dj-border)] pt-5">
-            <h3 class="dj-kicker">Useful feedback</h3>
+            <h3 class="dj-kicker">Who this is for</h3>
             <ul class="mt-3 space-y-3 text-sm leading-6 text-[var(--dj-muted)]">
-              <li>Try the full flow from setup to ZIP download</li>
-              <li>Report confusing fields, weak defaults, and failed generations</li>
-              <li>Share what you expected the generated starter to include</li>
+              <li>Solo founders and small teams testing a Django SaaS idea</li>
+              <li>Product teams that want a predictable starting point for new apps</li>
+              <li>Builders who want API and MCP access for repeatable generation</li>
             </ul>
           </div>
           <p class="mt-6 border-t border-[var(--dj-border)] pt-5 text-sm leading-6 text-[var(--dj-muted)]">
@@ -108,24 +119,24 @@
       <section class="dj-panel mt-10 p-6 sm:p-8">
         <div class="max-w-3xl">
           <p class="dj-kicker">FAQ</p>
-          <h2 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">What to expect during free access</h2>
+          <h2 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">What to expect after payment</h2>
         </div>
         <dl class="mt-8 grid gap-6 md:grid-cols-2">
           <div class="border-t border-[var(--dj-border)] pt-4">
-            <dt class="font-semibold text-[var(--dj-heading)]">Why show $999 if generation is free right now?</dt>
-            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">The lifetime price stays visible so expectations are clear. It is crossed out because the generator is free while more builders test it and share feedback.</dd>
+            <dt class="font-semibold text-[var(--dj-heading)]">Why does the price increase?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">The launch price rewards early buyers. After the first 30 paid members, Djass returns to the normal $999 lifetime price.</dd>
           </div>
           <div class="border-t border-[var(--dj-border)] pt-4">
             <dt class="font-semibold text-[var(--dj-heading)]">What exactly is included?</dt>
             <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API or MCP.</dd>
           </div>
           <div class="border-t border-[var(--dj-border)] pt-4">
-            <dt class="font-semibold text-[var(--dj-heading)]">What kind of feedback is useful?</dt>
-            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Send notes about confusing fields, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.</dd>
+            <dt class="font-semibold text-[var(--dj-heading)]">Can unpaid users generate projects?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">No. Project generation, retries, downloads, API generation, and MCP project tools require paid account access.</dd>
           </div>
           <div class="border-t border-[var(--dj-border)] pt-4">
-            <dt class="font-semibold text-[var(--dj-heading)]">Could pricing change later?</dt>
-            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Yes. If the access model changes later, existing users will get clear notice before anything changes for their accounts.</dd>
+            <dt class="font-semibold text-[var(--dj-heading)]">Is this recurring?</dt>
+            <dd class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">No. The launch ladder is one-time lifetime access, not a subscription.</dd>
           </div>
         </dl>
       </section>
@@ -139,7 +150,7 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Djass - Pricing",
-      "description": "Generate Django SaaS starter projects for free while Djass collects feedback. The usual $999 lifetime price is paused during this window.",
+      "description": "Get Djass lifetime access with launch ladder pricing: first 10 paid members at $10, then $100, then $200, then $999 forever.",
       "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=Djass - Pricing&subtitle=Generate your Django SaaS starter faster&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
       "url": "https://{{ request.get_host }}{% url 'pricing' %}",
       "author": {

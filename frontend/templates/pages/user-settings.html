@@ -19,10 +19,18 @@
             Manage profile details, passkeys, your agent API key, and account controls from one place.
           </p>
 
-          <div class="dj-alert dj-alert-success mt-6">
-            <h2 class="font-semibold text-[var(--dj-heading)]">Free access is active</h2>
-            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation is available while Djass collects feedback from real starter builds.</p>
-          </div>
+          {% if has_subscription %}
+            <div class="dj-alert dj-alert-success mt-6">
+              <h2 class="font-semibold text-[var(--dj-heading)]">Paid access is active</h2>
+              <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation, API access, and MCP workflows are unlocked for this account.</p>
+            </div>
+          {% else %}
+            <div class="dj-alert dj-alert-warning mt-6">
+              <h2 class="font-semibold text-[var(--dj-heading)]">Generation is locked</h2>
+              <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Unlock lifetime access with a one-time payment. The current launch tier is {{ current_price_tier.display_amount }}.</p>
+              <a href="{% url 'pricing' %}" class="dj-button dj-button-primary mt-4 w-full">Review launch pricing</a>
+            </div>
+          {% endif %}
         </aside>
 
         <div class="space-y-4">

@@ -40,6 +40,13 @@ from apps.core.agent_prompts import (
 from apps.core.forms import ProfileUpdateForm, ProjectCreateForm
 from apps.core.generator_options import get_generator_option_catalog
 from apps.core.models import Profile, Project, ProjectStatus
+from apps.core.pricing import (
+    attach_checkout_session_to_reservation,
+    cancel_launch_price_reservation,
+    get_launch_price_tier,
+    get_price_id_for_tier,
+    reserve_launch_price_tier,
+)
 from apps.core.project_limits import project_create_quota
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 from djass.utils import get_djass_logger
@@ -72,7 +79,7 @@ def _payments_enabled():
 
 def _deny_project_access(request):
     if _payments_enabled() and request.user.is_authenticated and hasattr(request.user, "profile"):
-        messages.error(request, "Project generation requires active account access.")
+        messages.error(request, "Project generation unlocks after a one-time Djass payment.")
         return redirect("free_access")
 
     messages.error(
@@ -250,6 +257,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["can_generate"] = can_create_projects and not context["project_limit_reached"]
         context["projects_openapi_docs_url"] = DJASS_OPENAPI_DOCS_URL
         context["djass_mcp_docs_url"] = DJASS_MCP_DOCS_URL
+        context["current_price_tier"] = get_launch_price_tier()
         context["agent_prompt_available"] = False
         if can_create_projects:
             context["projects_api_base_url"] = DJASS_API_BASE_URL
@@ -314,6 +322,7 @@ class ProjectCreateView(LoginRequiredMixin, TemplateView):
         context["can_generate"] = (
             _user_can_create_projects(self.request.user) and not context["project_limit_reached"]
         )
+        context["current_price_tier"] = get_launch_price_tier()
         return context
 
 
@@ -484,6 +493,8 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             type=Authenticator.Type.RECOVERY_CODES,
         ).exists()
         context["api_key"] = profile.key
+        context["has_subscription"] = profile.has_active_subscription
+        context["current_price_tier"] = get_launch_price_tier()
 
         return context
 
@@ -588,6 +599,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
     user = request.user
     profile = user.profile
     plan_key = (plan or "").lower()
+    requested_tier_key = (request.POST.get("price_tier") or "").strip()
 
     if plan_key != "one-time":
         logger.warning(
@@ -602,13 +614,27 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
         messages.info(request, "Project generation is already active for this account.")
         return redirect("project_new")
 
-    price_id = get_price_id_for_plan("one-time")
+    current_tier, price_reservation = reserve_launch_price_tier(user)
+    if requested_tier_key and requested_tier_key != current_tier.key:
+        cancel_launch_price_reservation(price_reservation, "stale_pricing_page_tier")
+        messages.error(
+            request,
+            "Pricing moved. Please review the current tier and try again.",
+        )
+        return redirect("pricing")
+
+    price_id = get_price_id_for_tier(current_tier)
     if not price_id:
-        logger.warning("Stripe price id not configured for one-time plan", user_id=user.id)
+        cancel_launch_price_reservation(price_reservation, "missing_price_id")
+        logger.warning(
+            "Stripe price id not configured for launch tier",
+            user_id=user.id,
+            tier=current_tier.key,
+        )
         messages.error(request, "Unable to find pricing for the selected plan.")
         return redirect("free_access")
 
-    expected_amount_cents = settings.STRIPE_ONE_TIME_AMOUNT_CENTS
+    expected_amount_cents = current_tier.amount_cents
     try:
         price = stripe.Price.retrieve(price_id)
     except stripe.error.StripeError as exc:
@@ -618,6 +644,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             price_id=price_id,
             error=str(exc),
         )
+        cancel_launch_price_reservation(price_reservation, "price_validation_failed")
         _queue_profile_event(
             profile=profile,
             event_name="checkout_failed",
@@ -625,6 +652,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
                 "reason": "price_validation_failed",
                 "error_type": exc.__class__.__name__,
                 "plan": "one-time",
+                "price_tier": current_tier.key,
                 "funnel_step": "checkout_failed",
                 "entrypoint": "ui",
             },
@@ -641,15 +669,18 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             "Stripe one-time price amount mismatch",
             profile_id=profile.id,
             price_id=price_id,
+            price_tier=current_tier.key,
             expected_amount_cents=expected_amount_cents,
             actual_amount_cents=price_amount,
         )
+        cancel_launch_price_reservation(price_reservation, "price_amount_mismatch")
         _queue_profile_event(
             profile=profile,
             event_name="checkout_failed",
             properties={
                 "reason": "price_amount_mismatch",
                 "plan": "one-time",
+                "price_tier": current_tier.key,
                 "funnel_step": "checkout_failed",
                 "entrypoint": "ui",
                 "expected_amount_cents": expected_amount_cents,
@@ -668,6 +699,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             profile_id=profile.id,
             error=str(exc),
         )
+        cancel_launch_price_reservation(price_reservation, "customer_setup_failed")
         _queue_profile_event(
             profile=profile,
             event_name="checkout_failed",
@@ -710,6 +742,8 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             "pk": pk,
             "price_id": price_id,
             "plan": "one-time",
+            "price_tier": current_tier.key,
+            "price_amount_dollars": current_tier.amount,
         },
     }
 
@@ -720,8 +754,10 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             "Stripe checkout session creation failed",
             profile_id=profile.id,
             plan="one-time",
+            tier=current_tier.key,
             error=str(exc),
         )
+        cancel_launch_price_reservation(price_reservation, "session_creation_failed")
         _queue_profile_event(
             profile=profile,
             event_name="checkout_failed",
@@ -740,9 +776,11 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
     event_properties = {
         "plan": "one-time",
         "price_id": price_id,
+        "price_tier": current_tier.key,
         "amount_cents": price_amount,
     }
     checkout_id = getattr(checkout_session, "id", None)
+    attach_checkout_session_to_reservation(price_reservation, checkout_id)
     if checkout_id:
         event_properties["checkout_id"] = checkout_id
     session_url = getattr(checkout_session, "url", None)
@@ -752,6 +790,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             profile_id=profile.id,
             checkout_id=checkout_id,
         )
+        cancel_launch_price_reservation(price_reservation, "session_url_missing")
         _queue_profile_event(
             profile=profile,
             event_name="checkout_failed",
