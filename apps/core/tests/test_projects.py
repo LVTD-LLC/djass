@@ -406,6 +406,8 @@ class TestProjectFlow:
         assert "Legacy options" in content
         assert "retired_option" in content
         assert "legacy-value" in content
+        assert "Local testing" not in content
+        assert "make test-local-postgres" not in content
 
     def test_project_detail_shows_local_testing_guidance_for_ready_artifact(
         self, auth_client, user
