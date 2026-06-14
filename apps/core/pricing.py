@@ -80,6 +80,14 @@ def get_price_id_for_tier(tier):
 def reserve_launch_price_tier(user):
     with transaction.atomic():
         LaunchPriceLedger.objects.select_for_update().get_or_create(key=LAUNCH_PRICE_LEDGER_KEY)
+        LaunchPriceReservation.objects.filter(
+            user=user,
+            status=LaunchPriceReservation.Status.PENDING,
+        ).update(
+            status=LaunchPriceReservation.Status.CANCELED,
+            canceled_reason="replaced_by_new_checkout",
+            updated_at=timezone.now(),
+        )
         current_tier = get_launch_price_tier()
         reservation = LaunchPriceReservation.objects.create(
             user=user,

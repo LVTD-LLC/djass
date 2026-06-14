@@ -242,6 +242,64 @@ def test_enabled_checkout_counts_pending_launch_reservations(
     STRIPE_PRICE_IDS=LAUNCH_PRICE_IDS,
 )
 @pytest.mark.django_db
+def test_enabled_checkout_replaces_same_user_pending_reservation(
+    auth_client, user, django_user_model, monkeypatch
+):
+    captured = {}
+    user.profile.state = ProfileStates.STRANGER
+    user.profile.save(update_fields=["state"])
+    for index in range(9):
+        paid_user = django_user_model.objects.create_user(
+            username=f"paid-retry-{index}",
+            email=f"paid-retry-{index}@example.com",
+            password="password123",
+        )
+        paid_user.profile.state = ProfileStates.SUBSCRIBED
+        paid_user.profile.save(update_fields=["state"])
+
+    stale_reservation = LaunchPriceReservation.objects.create(
+        user=user,
+        tier_key="launch_10",
+        amount_cents=1000,
+        status=LaunchPriceReservation.Status.PENDING,
+        stripe_checkout_session_id="cs_stale",
+    )
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Price.retrieve",
+        lambda *_args, **_kwargs: SimpleNamespace(unit_amount=1000),
+    )
+    monkeypatch.setattr(
+        "apps.core.views.stripe.Customer.create",
+        lambda **_kwargs: SimpleNamespace(id="cus_checkout"),
+    )
+    monkeypatch.setattr("apps.core.views.async_task", lambda *args, **kwargs: "task-id")
+
+    def fake_session_create(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(id="cs_checkout_retry", url="https://example.com/checkout")
+
+    monkeypatch.setattr("apps.core.views.stripe.checkout.Session.create", fake_session_create)
+
+    response = auth_client.post(reverse("user_upgrade_checkout_session", args=[1, "one-time"]))
+
+    assert response.status_code == 302
+    assert captured["line_items"][0]["price"] == "price_launch_10"
+    assert captured["metadata"]["price_tier"] == "launch_10"
+    stale_reservation.refresh_from_db()
+    assert stale_reservation.status == LaunchPriceReservation.Status.CANCELED
+    assert stale_reservation.canceled_reason == "replaced_by_new_checkout"
+    assert LaunchPriceReservation.objects.filter(
+        user=user,
+        status=LaunchPriceReservation.Status.PENDING,
+    ).count() == 1
+
+
+@override_settings(
+    PAYMENTS_ENABLED=True,
+    STRIPE_PRICE_IDS=LAUNCH_PRICE_IDS,
+)
+@pytest.mark.django_db
 def test_enabled_checkout_skips_external_session_for_active_pro_user(
     auth_client, user, monkeypatch
 ):

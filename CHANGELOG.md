@@ -37,6 +37,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Hosted FastMCP `/mcp` endpoint with authenticated tools for generation options, project creation, status polling, and generated ZIP download links.
 
 ### Fixed
+- Retry checkout now cancels a user's stale pending launch reservation before recomputing the tier, so abandoned sessions do not self-inflate the next price.
 - Deployment workflows now use lowercase GHCR image names after the repository move to `LVTD-LLC`.
 - Temporarily disabled passkey-based signup and login paths while passkey auth is unstable; auth pages now hide passkey actions and `/accounts/signup/passkey/` is no longer exposed.
 - Signup now uses a single password field while preserving django-allauth password validation and updated coverage for the streamlined flow.
