@@ -6,6 +6,7 @@ from django_q.tasks import async_task
 from apps.core.agent_prompts import DJASS_OPENAPI_DOCS_URL
 from apps.core.pricing import (
     LAUNCH_PRICE_TIERS,
+    get_claimed_launch_price_spot_count,
     get_launch_price_spots_left,
     get_launch_price_tier,
 )
@@ -92,9 +93,10 @@ class PricingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        claimed_spot_count = get_claimed_launch_price_spot_count()
         context["launch_price_tiers"] = LAUNCH_PRICE_TIERS
-        context["current_price_tier"] = get_launch_price_tier()
-        context["current_price_spots_left"] = get_launch_price_spots_left()
+        context["current_price_tier"] = get_launch_price_tier(claimed_spot_count)
+        context["current_price_spots_left"] = get_launch_price_spots_left(claimed_spot_count)
         if self.request.user.is_authenticated and hasattr(self.request.user, "profile"):
             context["has_pro_subscription"] = self.request.user.profile.has_active_subscription
         else:

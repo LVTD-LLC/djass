@@ -60,6 +60,26 @@ def test_pricing_page_shows_crossed_out_lifetime_price(client):
     assert ("paid " + "seats") not in content.lower()
 
 
+def test_pricing_page_uses_one_launch_spot_snapshot(client, monkeypatch):
+    calls = []
+
+    def fake_claimed_spot_count():
+        calls.append("count")
+        return 9
+
+    monkeypatch.setattr(
+        "apps.pages.views.get_claimed_launch_price_spot_count",
+        fake_claimed_spot_count,
+    )
+
+    response = client.get(reverse("pricing"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "1 launch spot left at $10" in content
+    assert calls == ["count"]
+
+
 @override_settings(
     CHATWOOT_BASE_URL="https://chatwoot.cap.gregagi.com",
     CHATWOOT_WEBSITE_TOKEN="testtoken",
