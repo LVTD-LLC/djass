@@ -91,6 +91,20 @@ local `stdio` development setups where the agent and server share a filesystem,
 the agent can export and extract the artifact locally after you approve the
 target directory.
 
+## 7) Run local Postgres checks
+
+Generated repos include a PGSandbox MCP testing workflow for disposable local
+Postgres checks. After unzipping the generated project, ask your agent to use
+`.agents/skills/pgsandbox-testing` or provide a PGSandbox `DATABASE_URL` and run:
+
+```bash
+make test-local-postgres
+```
+
+PGSandbox is intentionally separate from the generated app dependencies. The
+generated workflow points agents to the project URL and install commands they
+need before creating a temporary database.
+
 ## What the agent should not do
 
 - Do not skip generator option discovery. Use `get_generator_options` on hosted

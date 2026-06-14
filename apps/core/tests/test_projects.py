@@ -407,6 +407,31 @@ class TestProjectFlow:
         assert "retired_option" in content
         assert "legacy-value" in content
 
+    def test_project_detail_shows_local_testing_guidance_for_ready_artifact(
+        self, auth_client, user
+    ):
+        project = Project.objects.create(
+            user=user,
+            name="Ready Project",
+            slug="ready_project",
+            input_payload=_valid_project_post_data(project_name="Ready Project"),
+            status=ProjectStatus.READY,
+        )
+        ProjectArtifact.objects.create(project=project, zip_file="generated-projects/test.zip")
+
+        response = auth_client.get(reverse("project_detail", args=[project.id]))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Local testing" in content
+        assert "PGSandbox MCP guidance" in content
+        assert ".agents/skills/pgsandbox-testing" in content
+        assert "make test-local-postgres" in content
+        assert reverse(
+            "docs_page",
+            kwargs={"category": "workflows", "page": "generate-project-with-ai-agent"},
+        ) in content
+
     def test_project_detail_denies_other_users_project(self, auth_client, django_user_model):
         other_user = django_user_model.objects.create_user(
             username="project-owner",
