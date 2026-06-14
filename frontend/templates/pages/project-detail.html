@@ -156,6 +156,16 @@
                             <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">ZIP artifact metadata is not available yet.</p>
                         {% endif %}
                     </section>
+                    {% if project.status == "ready" and artifact %}
+                        <section class="dj-panel p-5">
+                            <h2 class="text-base font-semibold text-[var(--dj-heading)]">Local testing</h2>
+                            <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
+                                Generated repos include PGSandbox MCP guidance for disposable Postgres checks. After downloading the ZIP, ask your agent to use <span class="font-mono">.agents/skills/pgsandbox-testing</span> or run <span class="font-mono">make test-local-postgres</span>.
+                            </p>
+                            <a href="{% url 'docs_page' category='workflows' page='generate-project-with-ai-agent' %}"
+                               class="dj-button dj-button-secondary mt-4 w-full">Agent workflow docs</a>
+                        </section>
+                    {% endif %}
                     {% if project.status == "failed" %}
                         <section class="dj-panel p-5">
                             <h2 class="text-base font-semibold text-[var(--dj-heading)]">Failure details</h2>
