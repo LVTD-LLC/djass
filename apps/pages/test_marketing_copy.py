@@ -7,17 +7,17 @@ PRICING_TEMPLATE = Path("frontend/templates/pages/pricing.html")
 def test_landing_template_uses_product_led_copy():
     content = LANDING_TEMPLATE.read_text()
 
-    assert "Project generator for Django SaaS" in content
-    assert "Generate the codebase. Ship the product." in content
-    assert "production-ready" in content
-    assert "hosted project generator" in content
-    assert "Create account" in content
-    signin_link = (
-        """<a href="{% url 'account_login' %}" """
-        """class="dj-button dj-button-secondary sm:min-w-44">Sign in</a>"""
-    )
-    assert signin_link in content
-    assert "Review launch pricing" in content
+    assert "Agent-ready Django SaaS repo generator" in content
+    assert "Generate agent-ready Django SaaS repos." in content
+    assert "deployment defaults" in content
+    assert "normal Django repo ZIP" in content
+    assert "Generate your starter" in content
+    assert "See pricing" in content
+    assert "Generated with this cookiecutter" in content
+    assert "FileBridge" in content
+    assert "Tech Job Alerts" in content
+    assert "Ask HN Digest" in content
+    assert "https://osig.app/" in content
     assert "AI agent handoff" in content
     assert "/skill.md" in content
     assert "djass_openapi_docs_url" in content
@@ -34,6 +34,10 @@ def test_pricing_template_crosses_out_lifetime_price():
     assert "$200" in content
     assert "$999" in content
     assert "Djass generator access" in content
-    assert "Paid members only can generate projects" in content
+    assert "10 launch spot" in content
+    assert "Purchase once to unlock project generation" in content
+    assert "Launch spot schedule" in content
     assert "Review the starter repository" in content
+    assert ("scar" + "city") not in content.lower()
+    assert ("paid " + "seats") not in content.lower()
     assert "agencies that ship client SaaS repeatedly" not in content

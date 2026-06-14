@@ -10,8 +10,8 @@ This doc is implementation-ready copy mapped to the current Djass pricing page.
 ## Audience and qualification intent
 
 - Primary audience: founders, solo builders, and product teams testing Django SaaS starters.
-- Desired behavior: understand Djass is paid, notice the launch price scarcity, buy lifetime access, and generate real projects.
-- Explicit ask: buy early if the generator fits your workflow, because the price increases after every 10 paid members.
+- Desired behavior: understand Djass is paid, see the current launch spots available, buy lifetime access, and generate real projects.
+- Explicit ask: buy early if the generator fits your workflow, because each launch-price batch has a limited number of spots.
 
 ## Page copy map (production)
 
@@ -23,13 +23,13 @@ This doc is implementation-ready copy mapped to the current Djass pricing page.
 
 **$10 one-time lifetime access.**
 
-The headline uses the active tier amount, so it becomes $100, $200, then $999 as paid-member thresholds are reached.
+The headline uses the active tier amount, so it becomes $100, $200, then $999 as launch spot tiers are claimed.
 
 ### 3) Hero support text
 
-Djass is paid now. The first 10 paid members get lifetime access for $10, then the price increases in batches until it returns to $999 forever.
+Djass is paid now. The first 10 launch spots are $10, then the price increases in small batches until it returns to $999 forever.
 
-Current tier: paid seats 1-10 at $10.
+Current tier: 10 launch spots left at $10.
 
 ### 4) Pricing card title + price
 
@@ -43,16 +43,16 @@ Current tier: paid seats 1-10 at $10.
 - Start each new build from the current maintained starter baseline
 - Give your team and coding agents the same repeatable project shape every time
 - Generate through the web app, Projects API, or MCP-enabled agent workflows
-- Paid members only can generate projects
+- Purchase once to unlock project generation
 
 ### 6) Price ladder section
 
-**Scarcity schedule**
+**Launch spot schedule**
 
-- Paid seats 1-10: $10
-- Paid seats 11-20: $100
-- Paid seats 21-30: $200
-- Paid seats 31+: $999
+- First 10 spots: $10
+- Next 10 spots: $100
+- Next 10 spots: $200
+- Spot 31+: $999
 
 ### 7) Proof/risk-reduction bridge
 
@@ -61,7 +61,7 @@ Want to inspect the foundation first? You can review the starter repository befo
 ### 8) FAQ block
 
 **Why does the price increase?**
-The launch price rewards early buyers. After the first 30 paid members, Djass returns to the normal $999 lifetime price.
+The launch price gives early buyers the lowest available spot. After the first 30 launch spots are claimed, Djass returns to the normal $999 lifetime price.
 
 **What exactly is included?**
 You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API or MCP.
