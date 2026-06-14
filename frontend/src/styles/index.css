@@ -525,11 +525,12 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.65rem;
   min-width: max(8rem, 12vw);
   min-height: 3.25rem;
   border: 1px solid var(--dj-border);
   border-radius: 4px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem 0.65rem 0.75rem;
   background: var(--dj-panel-solid);
   color: var(--dj-heading);
   font-size: 0.9rem;
@@ -538,6 +539,27 @@ body {
   text-decoration: none;
   white-space: nowrap;
   transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.dj-logo-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid color-mix(in srgb, var(--dj-accent) 34%, var(--dj-border));
+  border-radius: 4px;
+  background: var(--dj-accent-soft);
+  color: var(--dj-accent-strong);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.dj-logo-name {
+  display: inline-block;
 }
 
 .dj-logo-mark:hover,
