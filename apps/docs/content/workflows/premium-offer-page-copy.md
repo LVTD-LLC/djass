@@ -1,7 +1,7 @@
 ---
-title: Pricing Page Copy (Free Access)
-description: Publish-ready conversion copy for the Djass pricing page while the $999 lifetime price is paused.
-keywords: Djass, pricing copy, product positioning, free access, Django SaaS starter
+title: Pricing Page Copy (Launch Ladder)
+description: Publish-ready conversion copy for the Djass paid launch ladder.
+keywords: Djass, pricing copy, product positioning, launch pricing, Django SaaS starter
 author: Scribe
 ---
 
@@ -10,30 +10,32 @@ This doc is implementation-ready copy mapped to the current Djass pricing page.
 ## Audience and qualification intent
 
 - Primary audience: founders, solo builders, and product teams testing Django SaaS starters.
-- Desired behavior: notice the normal $999 lifetime price, understand free access is open right now, create a project, and leave practical product feedback.
-- Explicit ask: report confusing setup fields, weak defaults, generation failures, and anything that slows down the workflow.
+- Desired behavior: understand Djass is paid, notice the launch price scarcity, buy lifetime access, and generate real projects.
+- Explicit ask: buy early if the generator fits your workflow, because the price increases after every 10 paid members.
 
 ## Page copy map (production)
 
 ### 1) Hero badge
 
-**Free access while the generator improves.**
+**Launch pricing.**
 
 ### 2) Hero headline
 
-**$999** crossed out, followed by **Free access while Djass improves.**
+**$10 one-time lifetime access.**
+
+The headline uses the active tier amount, so it becomes $100, $200, then $999 as paid-member thresholds are reached.
 
 ### 3) Hero support text
 
-Djass normally has a clear $999 lifetime price. During the feedback window, signed-in users can generate starter projects for free and tell us where the workflow needs sharper defaults.
+Djass is paid now. The first 10 paid members get lifetime access for $10, then the price increases in batches until it returns to $999 forever.
 
-Try the full path: configure a starter, download the ZIP, and send notes from the feedback button if anything slows you down.
+Current tier: paid seats 1-10 at $10.
 
 ### 4) Pricing card title + price
 
 - **Djass generator access**
-- **$999** crossed out
-- **Free access**
+- Active tier amount
+- One-time lifetime access
 
 ### 5) Core value bullets
 
@@ -41,19 +43,16 @@ Try the full path: configure a starter, download the ZIP, and send notes from th
 - Start each new build from the current maintained starter baseline
 - Give your team and coding agents the same repeatable project shape every time
 - Generate through the web app, Projects API, or MCP-enabled agent workflows
-- No payment required during the current feedback window
+- Paid members only can generate projects
 
-### 6) Fit criteria section
+### 6) Price ladder section
 
-**Who this is for**
-- Solo founders and small teams testing a Django SaaS idea
-- Product teams that want a predictable starting point for new apps and experiments
-- Builders willing to share practical notes after generating real projects
+**Scarcity schedule**
 
-**Useful feedback**
-- Try the full flow from setup to ZIP download
-- Report confusing fields, weak defaults, and failed generations
-- Share what you expected the generated starter to include
+- Paid seats 1-10: $10
+- Paid seats 11-20: $100
+- Paid seats 21-30: $200
+- Paid seats 31+: $999
 
 ### 7) Proof/risk-reduction bridge
 
@@ -61,17 +60,17 @@ Want to inspect the foundation first? You can review the starter repository befo
 
 ### 8) FAQ block
 
-**Why show $999 if generation is free right now?**
-The lifetime price stays visible so expectations are clear. It is crossed out because the generator is free while more builders test it and share feedback.
+**Why does the price increase?**
+The launch price rewards early buyers. After the first 30 paid members, Djass returns to the normal $999 lifetime price.
 
 **What exactly is included?**
 You can configure Django SaaS starter projects, queue generation, track project history, download generated ZIPs, and use the same workflow through the API or MCP.
 
-**What kind of feedback is useful?**
-Send notes about confusing fields, missing options, broken generations, slow steps, and anything you needed to change immediately after downloading the starter.
+**Can unpaid users generate projects?**
+No. Project generation, retries, downloads, API generation, and MCP project tools require paid account access.
 
-**Could pricing change later?**
-Yes. If the access model changes later, existing users will get clear notice before anything changes for their accounts.
+**Is this recurring?**
+No. The launch ladder is one-time lifetime access, not a subscription.
 
 ## Final CTA copy variants
 
@@ -79,12 +78,12 @@ Use these verbatim.
 
 ### Landing context CTA variants
 
-1. **Primary:** Review free access
-2. **Alternative:** See current access
-3. **Alternative:** See why Djass is free
+1. **Primary:** Review launch pricing
+2. **Alternative:** See launch price
+3. **Alternative:** Buy lifetime access
 
 ### App context CTA variants
 
-1. **Primary:** Create a project for free
-2. **Alternative:** Generate a starter
-3. **Alternative:** Start from django-saas-starter
+1. **Primary:** Continue to checkout
+2. **Alternative:** Unlock generation
+3. **Alternative:** Review pricing

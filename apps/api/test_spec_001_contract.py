@@ -126,7 +126,7 @@ class TestSpec001Contract:
         assert client.get("/api/v1/projects/1/download").status_code == 401
 
     def test_create_project_contract_happy_path(self, client, monkeypatch):
-        _, profile = _create_user("specuser", "specuser@example.com", subscribed=False)
+        _, profile = _create_user("specuser", "specuser@example.com", subscribed=True)
         calls = []
 
         def fake_async_task(*args, **kwargs):
@@ -174,6 +174,21 @@ class TestSpec001Contract:
             "funnel_step": "project_created",
             "entrypoint": "api",
         }
+
+    def test_create_project_requires_paid_access(self, client):
+        _, profile = _create_user("unpaid", "unpaid@example.com", subscribed=False)
+
+        response = client.post(
+            "/api/v1/projects",
+            data=CREATE_PAYLOAD,
+            content_type="application/json",
+            **_auth_headers(profile.key),
+        )
+
+        assert response.status_code == 402
+        body = response.json()
+        assert body["error"]["code"] == "subscription_required"
+        assert body["error"]["details"]["upgrade_url"] == "/pricing"
 
     def test_create_project_validation_errors(self, client, monkeypatch):
         _, subscribed_profile = _create_user("subbed", "subbed@example.com", subscribed=True)

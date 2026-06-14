@@ -21,8 +21,8 @@ class FakeStripeObject(dict):
 
 
 @override_settings(STRIPE_SECRET_KEY="sk_test_123")
-def test_setup_stripe_lifetime_price_creates_product_and_price(monkeypatch, capsys):
-    calls = {}
+def test_setup_stripe_lifetime_price_creates_product_and_launch_prices(monkeypatch, capsys):
+    calls = {"prices": []}
 
     def fake_product_list(**_kwargs):
         return FakeListObject([])
@@ -35,8 +35,8 @@ def test_setup_stripe_lifetime_price_creates_product_and_price(monkeypatch, caps
         return FakeListObject([])
 
     def fake_price_create(**kwargs):
-        calls["price_create"] = kwargs
-        return SimpleNamespace(id="price_djass_999")
+        calls["prices"].append(kwargs)
+        return SimpleNamespace(id=f"price_{kwargs['metadata']['tier']}")
 
     monkeypatch.setattr(
         "apps.core.management.commands.setup_stripe_lifetime_price.stripe.Product.list",
@@ -58,10 +58,13 @@ def test_setup_stripe_lifetime_price_creates_product_and_price(monkeypatch, caps
     call_command("setup_stripe_lifetime_price")
 
     output = capsys.readouterr().out
-    assert "STRIPE_PRICE_ID_ONE_TIME=price_djass_999" in output
-    assert calls["product_create"]["metadata"]["slug"] == "djass-lifetime"
-    assert calls["price_create"]["unit_amount"] == 99900
-    assert calls["price_create"]["currency"] == "usd"
+    assert "STRIPE_PRICE_ID_LAUNCH_10=price_launch_10" in output
+    assert "STRIPE_PRICE_ID_LAUNCH_100=price_launch_100" in output
+    assert "STRIPE_PRICE_ID_LAUNCH_200=price_launch_200" in output
+    assert "STRIPE_PRICE_ID_LAUNCH_999=price_launch_999" in output
+    assert calls["product_create"]["metadata"]["slug"] == "djass"
+    assert [price["unit_amount"] for price in calls["prices"]] == [1000, 10000, 20000, 99900]
+    assert {price["currency"] for price in calls["prices"]} == {"usd"}
 
 
 @override_settings(STRIPE_SECRET_KEY="sk_test_123")
@@ -69,26 +72,34 @@ def test_setup_stripe_lifetime_price_reuses_existing_product_and_price(monkeypat
     product = FakeStripeObject(
         {
             "id": "prod_existing",
-            "name": "Djass Lifetime Access",
-            "metadata": {"slug": "djass-lifetime"},
+            "name": "Djass",
+            "metadata": {"slug": "djass"},
         }
     )
-    price = FakeStripeObject(
-        {
-            "id": "price_existing",
-            "type": "one_time",
-            "unit_amount": 99900,
-            "currency": "usd",
-            "lookup_key": "djass-premium-usd-999",
-            "metadata": {"slug": "djass-lifetime"},
-        }
-    )
+    prices = [
+        FakeStripeObject(
+            {
+                "id": f"price_existing_{amount}",
+                "type": "one_time",
+                "unit_amount": amount,
+                "currency": "usd",
+                "lookup_key": f"djass-{tier}-usd",
+                "metadata": {"slug": "djass", "tier": tier},
+            }
+        )
+        for tier, amount in [
+            ("launch_10", 1000),
+            ("launch_100", 10000),
+            ("launch_200", 20000),
+            ("launch_999", 99900),
+        ]
+    ]
 
     def fake_product_list(**_kwargs):
         return FakeListObject([product])
 
     def fake_price_list(**_kwargs):
-        return FakeListObject([price])
+        return FakeListObject(prices)
 
     monkeypatch.setattr(
         "apps.core.management.commands.setup_stripe_lifetime_price.stripe.Product.list",
@@ -110,4 +121,5 @@ def test_setup_stripe_lifetime_price_reuses_existing_product_and_price(monkeypat
     call_command("setup_stripe_lifetime_price")
 
     output = capsys.readouterr().out
-    assert "STRIPE_PRICE_ID_ONE_TIME=price_existing" in output
+    assert "STRIPE_PRICE_ID_LAUNCH_10=price_existing_1000" in output
+    assert "STRIPE_PRICE_ID_LAUNCH_999=price_existing_99900" in output

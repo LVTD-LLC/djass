@@ -49,6 +49,8 @@ def _valid_project_post_data(**overrides):
 class TestProjectFlow:
     def test_create_project_queues_job(self, auth_client, monkeypatch, user):
         calls = []
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))
@@ -105,8 +107,10 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["project_id"] == project.id
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
-    def test_create_project_is_available_to_signed_in_users(self, auth_client, monkeypatch):
+    def test_create_project_is_available_to_paid_users(self, auth_client, monkeypatch, user):
         calls = []
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))
@@ -201,6 +205,8 @@ class TestProjectFlow:
             return "task-id"
 
         settings.PROJECT_API_MAX_PROJECTS_PER_USER = 1
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
         monkeypatch.setattr("apps.core.views.async_task", fake_async_task)
         Project.objects.create(
             user=user,
@@ -255,6 +261,8 @@ class TestProjectFlow:
         user,
     ):
         calls = []
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))
@@ -303,8 +311,10 @@ class TestProjectFlow:
         assert tracking_call[1]["properties"]["funnel_step"] == "project_create_failed"
         assert tracking_call[1]["properties"]["entrypoint"] == "ui"
 
-    def test_retry_project_is_available_to_signed_in_users(self, auth_client, user, monkeypatch):
+    def test_retry_project_is_available_to_paid_users(self, auth_client, user, monkeypatch):
         calls = []
+        user.profile.state = ProfileStates.SUBSCRIBED
+        user.profile.save(update_fields=["state"])
 
         def fake_async_task(*args, **kwargs):
             calls.append((args, kwargs))

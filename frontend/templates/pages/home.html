@@ -16,7 +16,7 @@
             {% elif project_limit_reached %}
               <span class="dj-pill dj-pill-warning">Project limit reached</span>
             {% else %}
-              <span class="dj-pill dj-pill-warning">Generation unavailable</span>
+              <span class="dj-pill dj-pill-warning">Generation locked</span>
             {% endif %}
             <span class="font-mono text-xs text-[var(--dj-soft)]">output: codebase.zip</span>
           </div>
@@ -28,7 +28,7 @@
           {% elif project_limit_reached %}
             <span class="dj-button dj-button-secondary w-full !rounded-none cursor-not-allowed opacity-70" aria-disabled="true">Project limit reached</span>
           {% else %}
-            <span class="dj-button dj-button-secondary w-full !rounded-none cursor-not-allowed opacity-70" aria-disabled="true">Generation unavailable</span>
+            <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full !rounded-none">Unlock for {{ current_price_tier.display_amount }}</a>
           {% endif %}
           <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary w-full !rounded-none">OpenAPI docs</a>
           <a href="{{ djass_mcp_docs_url }}" class="dj-button dj-button-secondary w-full !rounded-none">MCP docs</a>

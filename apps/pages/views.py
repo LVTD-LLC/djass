@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django_q.tasks import async_task
 
 from apps.core.agent_prompts import DJASS_OPENAPI_DOCS_URL
+from apps.core.pricing import LAUNCH_PRICE_TIERS, get_launch_price_tier
 from djass.utils import get_djass_logger
 
 logger = get_djass_logger(__name__)
@@ -15,6 +16,7 @@ class LandingPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["djass_openapi_docs_url"] = DJASS_OPENAPI_DOCS_URL
+        context["current_price_tier"] = get_launch_price_tier()
 
         if self.request.user.is_authenticated and settings.POSTHOG_API_KEY:
             user = self.request.user
@@ -83,6 +85,16 @@ class AccountSignupByPasskeyView(SignupTrackingMixin, SignupByPasskeyView):
 
 class PricingView(TemplateView):
     template_name = "pages/pricing.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["launch_price_tiers"] = LAUNCH_PRICE_TIERS
+        context["current_price_tier"] = get_launch_price_tier()
+        if self.request.user.is_authenticated and hasattr(self.request.user, "profile"):
+            context["has_pro_subscription"] = self.request.user.profile.has_active_subscription
+        else:
+            context["has_pro_subscription"] = False
+        return context
 
 
 class PrivacyPolicyView(TemplateView):

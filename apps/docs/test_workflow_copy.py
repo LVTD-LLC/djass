@@ -5,9 +5,11 @@ def test_premium_offer_workflow_copy_crosses_out_lifetime_price():
     content = Path("apps/docs/content/workflows/premium-offer-page-copy.md").read_text()
 
     assert "founders, solo builders, and product teams" in content
+    assert "$10" in content
+    assert "$100" in content
+    assert "$200" in content
     assert "$999" in content
-    assert "crossed out" in content
-    assert "Free access" in content
-    assert "Review free access" in content
-    assert "feedback" in content.lower()
+    assert "Launch pricing" in content
+    assert "Review launch pricing" in content
+    assert "paid members only" in content.lower()
     assert "client SaaS" not in content

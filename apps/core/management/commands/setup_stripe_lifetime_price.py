@@ -4,17 +4,13 @@ import stripe
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from apps.core.pricing import LAUNCH_PRICE_TIERS
+
 
 class Command(BaseCommand):
-    help = "Create (or fetch) the Djass one-time Stripe product + $999 premium price"
+    help = "Create (or fetch) the Djass one-time Stripe product + launch ladder prices"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--amount",
-            type=int,
-            default=99900,
-            help="Price amount in minor units (cents). Default: 99900 ($999)",
-        )
         parser.add_argument(
             "--currency",
             default="usd",
@@ -22,18 +18,13 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--product-name",
-            default="Djass Lifetime Access",
+            default="Djass",
             help="Stripe product name",
         )
         parser.add_argument(
             "--product-slug",
-            default="djass-lifetime",
+            default="djass",
             help="Slug stored in Stripe metadata for idempotency",
-        )
-        parser.add_argument(
-            "--lookup-key",
-            default="djass-premium-usd-999",
-            help="Price lookup key to keep idempotent references",
         )
         parser.add_argument(
             "--stripe-context",
@@ -53,30 +44,32 @@ class Command(BaseCommand):
         if stripe_context:
             request_options["stripe_context"] = stripe_context
 
-        amount = options["amount"]
         currency = options["currency"].lower().strip()
         product_name = options["product_name"].strip()
         product_slug = options["product_slug"].strip()
-        lookup_key = options["lookup_key"].strip()
 
         product = self._get_or_create_product(
             product_name=product_name,
             product_slug=product_slug,
             request_options=request_options,
         )
-        price = self._get_or_create_price(
-            product_id=product.id,
-            amount=amount,
-            currency=currency,
-            lookup_key=lookup_key,
-            product_slug=product_slug,
-            request_options=request_options,
-        )
+        prices = [
+            self._get_or_create_price(
+                product_id=product.id,
+                tier=tier,
+                currency=currency,
+                product_slug=product_slug,
+                request_options=request_options,
+            )
+            for tier in LAUNCH_PRICE_TIERS
+        ]
 
-        self.stdout.write(self.style.SUCCESS("Djass lifetime Stripe setup complete."))
+        self.stdout.write(self.style.SUCCESS("Djass launch ladder Stripe setup complete."))
         self.stdout.write(f"Product: {product.id} ({product.name})")
-        self.stdout.write(f"Price: {price.id} ({currency} {amount})")
-        self.stdout.write(f"STRIPE_PRICE_ID_ONE_TIME={price.id}")
+        for tier, price in zip(LAUNCH_PRICE_TIERS, prices, strict=True):
+            env_name = f"STRIPE_PRICE_ID_{tier.key.upper()}"
+            self.stdout.write(f"{tier.display_amount}: {price.id}")
+            self.stdout.write(f"{env_name}={price.id}")
 
     def _get_or_create_product(self, product_name, product_slug, request_options):
         products = stripe.Product.list(active=True, limit=100, **request_options)
@@ -90,8 +83,8 @@ class Command(BaseCommand):
         return stripe.Product.create(
             name=product_name,
             description=(
-                "Djass lifetime one-time payment for unlimited project generations "
-                "and forever updates."
+                "Djass one-time lifetime access for unlimited project generations "
+                "with launch ladder pricing."
             ),
             metadata={
                 "slug": product_slug,
@@ -104,12 +97,13 @@ class Command(BaseCommand):
     def _get_or_create_price(
         self,
         product_id,
-        amount,
+        tier,
         currency,
-        lookup_key,
         product_slug,
         request_options,
     ):
+        amount = tier.amount_cents
+        lookup_key = f"djass-{tier.key}-{currency}"
         prices = stripe.Price.list(product=product_id, active=True, limit=100, **request_options)
         for price in prices.auto_paging_iter():
             metadata = price.get("metadata", {}) or {}
@@ -117,7 +111,7 @@ class Command(BaseCommand):
                 price.get("type") == "one_time"
                 and price.get("unit_amount") == amount
                 and price.get("currency") == currency
-                and (metadata.get("slug") == product_slug or price.get("lookup_key") == lookup_key)
+                and (metadata.get("tier") == tier.key or price.get("lookup_key") == lookup_key)
             ):
                 return price
 
@@ -126,11 +120,12 @@ class Command(BaseCommand):
             unit_amount=amount,
             currency=currency,
             lookup_key=lookup_key,
-            nickname="Djass Lifetime Access",
+            nickname=f"Djass Lifetime Access {tier.display_amount}",
             metadata={
                 "slug": product_slug,
                 "plan": "one-time",
                 "app": "djass",
+                "tier": tier.key,
             },
             **request_options,
         )

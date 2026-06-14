@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import FileResponse, HttpRequest
@@ -49,6 +50,7 @@ api = NinjaAPI()
 ERROR_TAXONOMY = {
     "auth_required": {"category": "auth", "retryable": False},
     "insufficient_scope": {"category": "auth", "retryable": False},
+    "subscription_required": {"category": "quota", "retryable": False},
     "quota_exceeded": {"category": "quota", "retryable": False},
     "invalid_project_slug": {"category": "validation", "retryable": False},
     "invalid_generator_option": {"category": "validation", "retryable": False},
@@ -385,6 +387,7 @@ def get_project_options_v1(request: HttpRequest):
         201: ProjectCreateOut,
         400: ApiError,
         401: ApiError,
+        402: ApiError,
         403: ApiError,
         429: ApiError,
         500: ApiError,
@@ -420,6 +423,31 @@ def create_project_v1(request: HttpRequest, data: ProjectCreateIn):
             metadata={"error": "insufficient_scope", "required_scope": "projects:create"},
         )
         return scope_error
+
+    if getattr(settings, "PAYMENTS_ENABLED", False) and not profile.has_active_subscription:
+        _queue_profile_event(
+            profile=profile,
+            event_name="project_create_failed",
+            properties={
+                "reason": "subscription_required",
+                "funnel_step": "project_create_failed",
+                "entrypoint": "api",
+            },
+            source_function="create_project_v1",
+        )
+        log_project_api_action(
+            request,
+            action="project.create",
+            status_code=402,
+            principal=principal,
+            metadata={"error": "subscription_required"},
+        )
+        return _error(
+            402,
+            "subscription_required",
+            "Project generation requires paid Djass access.",
+            details={"upgrade_url": "/pricing"},
+        )
 
     normalized_slug = slugify(data.project_slug).replace("-", "_")
     if not normalized_slug:

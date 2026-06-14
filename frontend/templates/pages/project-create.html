@@ -26,7 +26,8 @@
         </div>
       {% else %}
         <div class="dj-alert dj-alert-warning mt-4 text-sm">
-          Generation is unavailable for this account right now.
+          Generation is locked. Pay once, currently {{ current_price_tier.display_amount }}, to unlock project generation.
+          <a href="{% url 'pricing' %}" class="font-semibold underline">Review pricing</a>.
         </div>
       {% endif %}
 
