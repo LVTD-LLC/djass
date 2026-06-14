@@ -71,7 +71,7 @@ def test_enabled_checkout_route_uses_current_launch_tier(auth_client, user, monk
     assert captured["line_items"][0]["price"] == "price_launch_10"
     assert captured["metadata"]["plan"] == "one-time"
     assert captured["metadata"]["price_tier"] == "launch_10"
-    assert captured["metadata"]["price_amount"] == 10
+    assert captured["metadata"]["price_amount_dollars"] == 10
     assert captured["success_url"].endswith(f"{reverse('project_new')}?checkout=success")
     assert captured["cancel_url"].endswith(f"{reverse('free_access')}?checkout=canceled")
     tracking_call = next(
@@ -128,7 +128,7 @@ def test_enabled_checkout_route_moves_to_next_launch_tier(
     assert response.status_code == 302
     assert captured["line_items"][0]["price"] == "price_launch_100"
     assert captured["metadata"]["price_tier"] == "launch_100"
-    assert captured["metadata"]["price_amount"] == 100
+    assert captured["metadata"]["price_amount_dollars"] == 100
 
 
 def test_get_launch_price_tier_boundaries():
@@ -235,6 +235,7 @@ def test_enabled_checkout_counts_pending_launch_reservations(
     assert response.status_code == 302
     assert captured["line_items"][0]["price"] == "price_launch_100"
     assert captured["metadata"]["price_tier"] == "launch_100"
+    assert captured["metadata"]["price_amount_dollars"] == 100
 
 
 @override_settings(
@@ -293,6 +294,41 @@ def test_enabled_checkout_replaces_same_user_pending_reservation(
         user=user,
         status=LaunchPriceReservation.Status.PENDING,
     ).count() == 1
+
+
+@override_settings(
+    PAYMENTS_ENABLED=True,
+    STRIPE_PRICE_IDS=LAUNCH_PRICE_IDS,
+)
+@pytest.mark.django_db
+def test_enabled_checkout_rejects_stale_pricing_page_tier(
+    auth_client, user, django_user_model, monkeypatch
+):
+    user.profile.state = ProfileStates.STRANGER
+    user.profile.save(update_fields=["state"])
+    for index in range(10):
+        paid_user = django_user_model.objects.create_user(
+            username=f"paid-stale-{index}",
+            email=f"paid-stale-{index}@example.com",
+            password="password123",
+        )
+        paid_user.profile.state = ProfileStates.SUBSCRIBED
+        paid_user.profile.save(update_fields=["state"])
+
+    monkeypatch.setattr(
+        "apps.core.views.stripe.checkout.Session.create",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("Checkout should not be started when pricing is stale")
+        ),
+    )
+
+    response = auth_client.post(
+        reverse("user_upgrade_checkout_session", args=[1, "one-time"]),
+        data={"price_tier": "launch_10"},
+    )
+
+    assert response.status_code == 302
+    assert response.url == reverse("pricing")
 
 
 @override_settings(

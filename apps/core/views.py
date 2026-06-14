@@ -599,6 +599,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
     user = request.user
     profile = user.profile
     plan_key = (plan or "").lower()
+    requested_tier_key = (request.POST.get("price_tier") or "").strip()
 
     if plan_key != "one-time":
         logger.warning(
@@ -614,6 +615,14 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
         return redirect("project_new")
 
     current_tier, price_reservation = reserve_launch_price_tier(user)
+    if requested_tier_key and requested_tier_key != current_tier.key:
+        cancel_launch_price_reservation(price_reservation, "stale_pricing_page_tier")
+        messages.error(
+            request,
+            "Pricing moved. Please review the current tier and try again.",
+        )
+        return redirect("pricing")
+
     price_id = get_price_id_for_tier(current_tier)
     if not price_id:
         cancel_launch_price_reservation(price_reservation, "missing_price_id")
@@ -734,7 +743,7 @@ def create_checkout_session(request, pk, plan):  # noqa: C901
             "price_id": price_id,
             "plan": "one-time",
             "price_tier": current_tier.key,
-            "price_amount": current_tier.amount,
+            "price_amount_dollars": current_tier.amount,
         },
     }
 
