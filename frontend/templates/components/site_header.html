@@ -76,6 +76,8 @@
                         <button type="button"
                                 class="dj-nav-menu-button"
                                 aria-label="Open account menu"
+                                aria-expanded="false"
+                                aria-controls="account-menu"
                                 data-action="dropdown#toggle click@window->dropdown#hide">
                             <span>Account</span>
                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +92,7 @@
                                 <path d="m6 9 6 6 6-6" />
                             </svg>
                         </button>
-                        <div data-dropdown-target="menu" class="dj-nav-menu hidden">
+                        <div id="account-menu" data-dropdown-target="menu" class="dj-nav-menu hidden" hidden>
                             <a href="{% url 'settings' %}" class="dj-nav-menu-item">Settings</a>
                             {% if user.is_superuser %}
                                 <a href="{% url 'admin_panel' %}" class="dj-nav-menu-item">Admin</a>
@@ -108,14 +110,17 @@
                 {% endif %}
             </div>
             <div class="ml-auto lg:hidden" data-controller="dropdown">
-                <button class="dj-menu-button"
+                <button type="button"
+                        class="dj-menu-button"
                         aria-label="Toggle mobile menu"
+                        aria-expanded="false"
+                        aria-controls="mobile-menu"
                         data-action="dropdown#toggle click@window->dropdown#hide">
                     <span class="absolute left-1/2 top-[14px] h-[2px] w-4 -translate-x-1/2 rounded-full bg-current"></span>
                     <span class="absolute left-1/2 top-1/2 h-[2px] w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-current"></span>
                     <span class="absolute bottom-[14px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-current"></span>
                 </button>
-                <div data-dropdown-target="menu" class="dj-mobile-menu hidden">
+                <div id="mobile-menu" data-dropdown-target="menu" class="dj-mobile-menu hidden" hidden>
                     <nav aria-label="Mobile navigation">
                         <ul class="divide-y divide-[var(--dj-border)] px-2 py-2">
                             {% if user.is_authenticated %}

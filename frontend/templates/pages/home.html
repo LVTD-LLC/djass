@@ -1,229 +1,257 @@
 {% extends "base_app.html" %}
-
 {% block content %}
-  <section class="pb-16 pt-8">
-    <div class="dj-container-wide">
-      <div class="grid items-stretch gap-[clamp(1.5rem,4vw,3rem)] rounded-[4px] border border-[var(--dj-border)] bg-[var(--dj-panel-solid)] p-[clamp(1.25rem,3vw,2rem)] lg:grid-cols-[minmax(0,0.8fr)_minmax(20rem,0.2fr)]">
-        <div>
-          <p class="dj-kicker">Project dashboard</p>
-          <h1 class="mt-3 text-4xl font-semibold text-[var(--dj-heading)]">Generate Django SaaS repos</h1>
-          <p class="mt-3 max-w-2xl text-sm leading-6 text-[var(--dj-muted)]">
-            Create a Django SaaS starter through the UI, API, or MCP. Djass queues the build, tracks status, and gives you a ZIP when the repo is ready.
-          </p>
-          <div class="flex flex-wrap items-center gap-3 border-t border-[var(--dj-border)] pt-4">
-            {% if can_generate %}
-              <span class="dj-pill dj-pill-success">Generation available</span>
-            {% elif project_limit_reached %}
-              <span class="dj-pill dj-pill-warning">Project limit reached</span>
-            {% else %}
-              <span class="dj-pill dj-pill-warning">Generation locked</span>
-            {% endif %}
-            <span class="font-mono text-xs text-[var(--dj-soft)]">output: codebase.zip</span>
-          </div>
-        </div>
-
-        <div class="grid gap-px self-start border border-[var(--dj-border)] bg-[var(--dj-border)]">
-          {% if can_generate %}
-            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary w-full !rounded-none">Create project</a>
-          {% elif project_limit_reached %}
-            <span class="dj-button dj-button-secondary w-full !rounded-none cursor-not-allowed opacity-70" aria-disabled="true">Project limit reached</span>
-          {% else %}
-            <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full !rounded-none">Unlock for {{ current_price_tier.display_amount }}</a>
-          {% endif %}
-          <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary w-full !rounded-none">OpenAPI docs</a>
-          <a href="{{ djass_mcp_docs_url }}" class="dj-button dj-button-secondary w-full !rounded-none">MCP docs</a>
-        </div>
-      </div>
-
-      <section class="dj-panel mt-4 p-6 sm:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p class="dj-kicker">Generation paths</p>
-            <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Three ways to generate a repo</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--dj-muted)]">
-              Pick the entrypoint that matches how you work. Every path creates the same kind of downloadable repo ZIP.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 grid gap-px border border-[var(--dj-border)] bg-[var(--dj-border)] md:grid-cols-3">
-          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
-            <p class="dj-method-number">01</p>
-            <div>
-              <p class="dj-kicker">UI</p>
-              <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Open the guided form</h3>
-            </div>
-            <p class="text-sm leading-6 text-[var(--dj-muted)]">Choose modules by hand, submit the job, then download the ZIP from this dashboard.</p>
-            <a href="{% url 'project_new' %}" class="dj-button dj-button-secondary mt-auto w-full">Create from UI</a>
-          </article>
-
-          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5">
-            <p class="dj-method-number">02</p>
-            <div>
-              <p class="dj-kicker">API</p>
-              <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Send a project spec</h3>
-            </div>
-            <p class="text-sm leading-6 text-[var(--dj-muted)]">Create projects, poll status, and download artifacts from your own scripts or internal tools.</p>
-            <a href="{{ projects_openapi_docs_url }}" class="dj-button dj-button-secondary mt-auto w-full">OpenAPI docs</a>
-          </article>
-
-          <article class="grid content-start gap-4 bg-[var(--dj-panel-solid)] p-[clamp(1rem,2.5vw,1.35rem)] motion-safe:transition-[transform,background-color,border-color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5" {% if agent_prompt_available %}data-controller="clipboard"{% endif %}>
-            <p class="dj-method-number">03</p>
-            <div>
-              <p class="dj-kicker">MCP</p>
-              <h3 class="mt-2 text-lg font-semibold text-[var(--dj-heading)]">Give the agent one prompt</h3>
-            </div>
-            <p class="text-sm leading-6 text-[var(--dj-muted)]">Copy a ready-to-paste prompt that tells your AI agent to prefer Djass MCP tools before HTTP fallback.</p>
-            {% if agent_prompt_available %}
-              <p class="text-sm font-semibold leading-6 text-[var(--dj-danger)]">This prompt includes your Djass API key. Share it only with agents and workspaces you trust.</p>
-              <textarea
-                id="djass-agent-prompt"
-                hidden
-                readonly
-                spellcheck="false"
-                data-clipboard-target="source"
-              >{{ djass_agent_prompt }}</textarea>
-              <div class="mt-4 flex flex-wrap items-center gap-3">
-                <button type="button" data-action="clipboard#copy" class="dj-button dj-button-primary">
-                  Copy prompt
-                </button>
-                <p class="text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
-              </div>
-            {% endif %}
-          </article>
-        </div>
-      </section>
-
-      <section class="dj-panel mt-4 overflow-hidden">
-        <div class="flex flex-col gap-3 border-b border-[var(--dj-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p class="dj-kicker">Artifacts</p>
-            <h2 class="mt-2 text-xl font-semibold text-[var(--dj-heading)]">Your projects</h2>
-            <p class="mt-1 text-sm text-[var(--dj-muted)]">Download generated ZIPs, retry failed builds, or check running jobs.</p>
-          </div>
-          {% if can_generate %}
-            <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create project</a>
-          {% else %}
-            <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary">API docs</a>
-          {% endif %}
-        </div>
-        <div class="overflow-x-auto">
-          <table class="dj-table min-w-[760px]">
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for project in projects %}
-                <tr>
-                  <td>
-                    <p class="font-semibold text-[var(--dj-heading)]">
-                      <a href="{% url 'project_detail' project.id %}" class="hover:underline">{{ project.name }}</a>
-                    </p>
-                    <p class="mt-1 font-mono text-xs">{{ project.slug }}</p>
-                  </td>
-                  <td>
-                    {% if project.status == "ready" %}
-                      <span class="dj-pill dj-pill-success">Ready</span>
-                    {% endif %}
-                    {% if project.status == "queued" or project.status == "generating" %}
-                      <span class="dj-pill dj-pill-warning">Generating...</span>
-                    {% endif %}
-                    {% if project.status == "failed" %}
-                      <span class="dj-pill dj-pill-danger">Failed</span>
-                    {% endif %}
-                  </td>
-                  <td>{{ project.created_at }}</td>
-                  <td>
-                    {% if project.status == "ready" and project.artifact %}
-                      <div class="flex flex-wrap gap-2">
-                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
-                        <a href="{% url 'project_download' project.id %}" class="dj-button dj-button-secondary">Download ZIP</a>
-                      </div>
-                    {% elif project.status == "failed" %}
-                      <div class="space-y-3">
-                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
-                        <p class="max-w-md text-sm text-[var(--dj-muted)]">We've been notified of the error and are working on it.</p>
-                        {% if project.error_message %}
-                          <p class="max-w-md font-mono text-xs text-[var(--dj-danger)]">{{ project.error_message }}</p>
-                        {% endif %}
-                        {% if can_generate %}
-                          <form method="post" action="{% url 'project_retry' project.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="dj-button dj-button-secondary">Retry generation</button>
-                          </form>
-                        {% endif %}
-                      </div>
-                    {% else %}
-                      <div class="flex flex-wrap items-center gap-2">
-                        <a href="{% url 'project_detail' project.id %}" class="dj-button dj-button-secondary">Details</a>
-                        <span class="font-mono text-sm text-[var(--dj-soft)]">Generating...</span>
-                      </div>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="4" class="py-10 text-center text-[var(--dj-muted)]">
-                    <div class="mx-auto max-w-sm">
-                      <p class="font-semibold text-[var(--dj-heading)]">No projects yet.</p>
-                      <p class="mt-2 text-sm">Create your first starter to see build status, artifacts, and downloads here.</p>
-                      {% if can_generate %}
-                        <a href="{% url 'project_new' %}" class="dj-button dj-button-primary mt-5">Create project</a>
-                      {% endif %}
+    <section class="pb-16 pt-8">
+        <div class="dj-container-wide">
+            <section class="dj-panel p-[clamp(1.25rem,3vw,2rem)]"
+                     aria-labelledby="dashboard-heading">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="max-w-[68ch]">
+                        <h1 id="dashboard-heading"
+                            class="text-4xl font-semibold text-[var(--dj-heading)]">Project artifacts</h1>
+                        <p class="mt-3 max-w-[52ch] text-sm leading-6 text-[var(--dj-muted)]">
+                            Generate Django SaaS starter repos, track build status, and download the ZIP when the artifact is ready.
+                        </p>
+                        <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-[var(--dj-border)] pt-4">
+                            {% if can_generate %}
+                                <span class="dj-pill dj-pill-success">Generation available</span>
+                            {% elif project_limit_reached %}
+                                <span class="dj-pill dj-pill-warning">Project limit reached</span>
+                            {% else %}
+                                <span class="dj-pill dj-pill-warning">Generation locked</span>
+                            {% endif %}
+                            <span class="font-mono text-xs text-[var(--dj-soft)]">output: codebase.zip</span>
+                        </div>
                     </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                    <div class="flex w-full flex-col gap-2 sm:w-auto sm:min-w-56">
+                        {% if can_generate %}
+                            <a href="{% url 'project_new' %}"
+                               class="dj-button dj-button-primary w-full">Create project</a>
+                        {% elif project_limit_reached %}
+                            <span class="dj-button dj-button-secondary w-full cursor-not-allowed opacity-70"
+                                  aria-disabled="true">Project limit reached</span>
+                        {% else %}
+                            <a href="{% url 'pricing' %}" class="dj-button dj-button-primary w-full">Unlock for {{ current_price_tier.display_amount }}</a>
+                        {% endif %}
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            <a href="{{ projects_openapi_docs_url }}"
+                               class="dj-button dj-button-secondary w-full">OpenAPI docs</a>
+                            <a href="{{ djass_mcp_docs_url }}"
+                               class="dj-button dj-button-secondary w-full">MCP docs</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="dj-panel mt-4 overflow-hidden"
+                     aria-labelledby="projects-heading">
+                <div class="flex flex-col gap-3 border-b border-[var(--dj-border)] p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 id="projects-heading"
+                            class="text-xl font-semibold text-[var(--dj-heading)]">Your projects</h2>
+                        <p class="mt-1 text-sm text-[var(--dj-muted)]">
+                            Download generated ZIPs, retry failed builds, or open details for saved project specs.
+                        </p>
+                    </div>
+                    {% if can_generate %}
+                        <a href="{% url 'project_new' %}" class="dj-button dj-button-primary">Create project</a>
+                    {% else %}
+                        <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}"
+                           class="dj-button dj-button-secondary">API docs</a>
+                    {% endif %}
+                </div>
+                <div class="divide-y divide-[var(--dj-border)] md:hidden">
+                    {% for project in projects %}
+                        <article class="p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div class="min-w-0">
+                                    <h3 class="font-semibold text-[var(--dj-heading)]">
+                                        <a href="{% url 'project_detail' project.id %}"
+                                           class="break-words hover:underline">{{ project.name }}</a>
+                                    </h3>
+                                    <p class="mt-1 break-all font-mono text-xs text-[var(--dj-muted)]">{{ project.slug }}</p>
+                                </div>
+                                <div class="shrink-0">
+                                    {% if project.status == "ready" %}<span class="dj-pill dj-pill-success">Ready</span>{% endif %}
+                                    {% if project.status == "queued" or project.status == "generating" %}
+                                        <span class="dj-pill dj-pill-warning">Generating...</span>
+                                    {% endif %}
+                                    {% if project.status == "failed" %}<span class="dj-pill dj-pill-danger">Failed</span>{% endif %}
+                                </div>
+                            </div>
+                            <dl class="mt-4 grid gap-2 text-sm">
+                                <div>
+                                    <dt class="font-semibold text-[var(--dj-heading)]">Created</dt>
+                                    <dd class="mt-1 text-[var(--dj-muted)]">
+                                        {{ project.created_at }}
+                                    </dd>
+                                </div>
+                            </dl>
+                            <div class="mt-4">
+                                {% include "components/project_actions.html" with project=project can_generate=can_generate action_layout="card" only %}
+                            </div>
+                        </article>
+                    {% empty %}
+                        <div class="p-8 text-center text-[var(--dj-muted)]">
+                            <p class="font-semibold text-[var(--dj-heading)]">No projects yet.</p>
+                            <p class="mt-2 text-sm">Create your first starter to see build status, artifacts, and downloads here.</p>
+                            {% if can_generate %}
+                                <a href="{% url 'project_new' %}"
+                                   class="dj-button dj-button-primary mt-5">Create project</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="hidden overflow-x-auto md:block">
+                    <table class="dj-table min-w-[760px]">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                                <tr>
+                                    <td>
+                                        <p class="font-semibold text-[var(--dj-heading)]">
+                                            <a href="{% url 'project_detail' project.id %}" class="hover:underline">{{ project.name }}</a>
+                                        </p>
+                                        <p class="mt-1 max-w-[48ch] break-all font-mono text-xs">{{ project.slug }}</p>
+                                    </td>
+                                    <td>
+                                        {% if project.status == "ready" %}<span class="dj-pill dj-pill-success">Ready</span>{% endif %}
+                                        {% if project.status == "queued" or project.status == "generating" %}
+                                            <span class="dj-pill dj-pill-warning">Generating...</span>
+                                        {% endif %}
+                                        {% if project.status == "failed" %}<span class="dj-pill dj-pill-danger">Failed</span>{% endif %}
+                                    </td>
+                                    <td>{{ project.created_at }}</td>
+                                    <td>
+                                        {% include "components/project_actions.html" with project=project can_generate=can_generate action_layout="table" only %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="py-10 text-center text-[var(--dj-muted)]">
+                                        <div class="mx-auto max-w-sm">
+                                            <p class="font-semibold text-[var(--dj-heading)]">No projects yet.</p>
+                                            <p class="mt-2 text-sm">Create your first starter to see build status, artifacts, and downloads here.</p>
+                                            {% if can_generate %}
+                                                <a href="{% url 'project_new' %}"
+                                                   class="dj-button dj-button-primary mt-5">Create project</a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <details class="dj-panel mt-4 p-5 sm:p-6">
+                <summary class="flex cursor-pointer list-none flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                        <span class="block text-2xl font-semibold text-[var(--dj-heading)]">Three ways to generate a repo</span>
+                        <span class="mt-1 block max-w-[65ch] text-sm leading-6 text-[var(--dj-muted)]">Use the form, API, or MCP when you need another project ZIP.</span>
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="dj-pill">Generation paths</span>
+                        <span class="dj-disclosure-indicator" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+                <div class="mt-6 grid gap-6 lg:grid-cols-3">
+                    <div class="min-w-0">
+                        <span class="dj-pill dj-pill-accent">UI</span>
+                        <h3 class="mt-3 text-lg font-semibold text-[var(--dj-heading)]">Open the guided form</h3>
+                        <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                            Choose starter modules by hand, submit the job, then return here for status and downloads.
+                        </p>
+                        <a href="{% url 'project_new' %}"
+                           class="dj-button dj-button-secondary mt-4 w-full">Create from UI</a>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="dj-pill dj-pill-info">API</span>
+                        <h3 class="mt-3 text-lg font-semibold text-[var(--dj-heading)]">Send a project spec</h3>
+                        <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                            Create projects, poll status, and download artifacts from your own scripts or internal tools.
+                        </p>
+                        <a href="{{ projects_openapi_docs_url }}"
+                           class="dj-button dj-button-secondary mt-4 w-full">OpenAPI docs</a>
+                    </div>
+                    <div class="min-w-0"
+                         {% if agent_prompt_available %}data-controller="clipboard"{% endif %}>
+                        <span class="dj-pill dj-pill-agent">MCP</span>
+                        <h3 class="mt-3 text-lg font-semibold text-[var(--dj-heading)]">Give the agent one prompt</h3>
+                        <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                            Copy a prompt that tells your AI agent to prefer Djass MCP tools before HTTP fallback.
+                        </p>
+                        {% if agent_prompt_available %}
+                            <p class="mt-3 text-sm font-semibold leading-6 text-[var(--dj-danger)]">
+                                This prompt includes your Djass API key. Share it only with agents and workspaces you trust.
+                            </p>
+                            <textarea id="djass-agent-prompt"
+                                      hidden
+                                      readonly
+                                      spellcheck="false"
+                                      data-clipboard-target="source">{{ djass_agent_prompt }}</textarea>
+                            <div class="mt-4 flex flex-wrap items-center gap-3">
+                                <button type="button"
+                                        data-action="clipboard#copy"
+                                        class="dj-button dj-button-primary">Copy prompt</button>
+                                <p class="text-sm font-medium text-[var(--dj-success)]"
+                                   data-clipboard-target="status"
+                                   aria-live="polite"></p>
+                            </div>
+                        {% else %}
+                            <a href="{{ djass_mcp_docs_url }}"
+                               class="dj-button dj-button-secondary mt-4 w-full">MCP docs</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+            <details class="dj-panel mt-4 p-5 sm:p-6">
+                <summary class="flex cursor-pointer list-none flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                        <span class="block text-2xl font-semibold text-[var(--dj-heading)]">Generated repo baseline</span>
+                        <span class="mt-1 block max-w-[65ch] text-sm leading-6 text-[var(--dj-muted)]">The form, API, and MCP paths expose the same starter modules.</span>
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="dj-pill">Pre-installed</span>
+                        <span class="dj-disclosure-indicator" aria-hidden="true">+</span>
+                    </span>
+                </summary>
+                <div class="dj-tag-list mt-6">
+                    <span class="dj-stack-tag">Django 6</span>
+                    <span class="dj-stack-tag">Python 3.14</span>
+                    <span class="dj-stack-tag">Postgres 18</span>
+                    <span class="dj-stack-tag">pgvector</span>
+                    <span class="dj-stack-tag">Tailwind</span>
+                    <span class="dj-stack-tag">HTMX</span>
+                    <span class="dj-stack-tag">Alpine</span>
+                    <span class="dj-stack-tag">django-allauth</span>
+                    <span class="dj-stack-tag">django-ninja</span>
+                    <span class="dj-stack-tag">Django-Q2</span>
+                    <span class="dj-stack-tag">Sentry</span>
+                    <span class="dj-stack-tag">PostHog</span>
+                    <span class="dj-stack-tag">Logfire</span>
+                    <span class="dj-stack-tag">Stripe</span>
+                    <span class="dj-stack-tag">S3</span>
+                    <span class="dj-stack-tag">MCP option</span>
+                    <span class="dj-stack-tag">GitHub Actions</span>
+                    <span class="dj-stack-tag">DigitalOcean option</span>
+                </div>
+            </details>
         </div>
-      </section>
-
-      <section class="dj-panel mt-4 p-6 sm:p-8">
-        <div class="grid gap-6 lg:grid-cols-[0.3fr_0.7fr]">
-          <div>
-            <p class="dj-kicker">Pre-installed</p>
-            <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Generated repo baseline</h2>
-            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">The form, API, and MCP paths expose the same starter modules.</p>
-          </div>
-          <div class="dj-tag-list">
-            <span class="dj-stack-tag">Django 6</span>
-            <span class="dj-stack-tag">Python 3.14</span>
-            <span class="dj-stack-tag">Postgres 18</span>
-            <span class="dj-stack-tag">pgvector</span>
-            <span class="dj-stack-tag">Tailwind</span>
-            <span class="dj-stack-tag">HTMX</span>
-            <span class="dj-stack-tag">Alpine</span>
-            <span class="dj-stack-tag">django-allauth</span>
-            <span class="dj-stack-tag">django-ninja</span>
-            <span class="dj-stack-tag">Django-Q2</span>
-            <span class="dj-stack-tag">Sentry</span>
-            <span class="dj-stack-tag">PostHog</span>
-            <span class="dj-stack-tag">Logfire</span>
-            <span class="dj-stack-tag">Stripe</span>
-            <span class="dj-stack-tag">S3</span>
-            <span class="dj-stack-tag">MCP option</span>
-            <span class="dj-stack-tag">GitHub Actions</span>
-            <span class="dj-stack-tag">DigitalOcean option</span>
-          </div>
-        </div>
-      </section>
-    </div>
-  </section>
-
-  {% if show_confetti %}
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <script>
+    </section>
+    {% if show_confetti %}
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+        <script>
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
-    </script>
-  {% endif %}
+        </script>
+    {% endif %}
 {% endblock content %}

@@ -34,7 +34,7 @@ function addCodeCopyButtons(page) {
 
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "absolute right-3 top-3 rounded-lg border border-gray-700 bg-gray-900/90 px-2.5 py-1 text-xs font-semibold text-gray-200 opacity-0 shadow-sm transition hover:bg-gray-800 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 group-hover:opacity-100";
+    button.className = "dj-code-copy-button";
     button.textContent = "Copy";
     button.addEventListener("click", () => copyCode(code.textContent, button));
     wrapper.appendChild(button);
@@ -83,7 +83,7 @@ function buildTableOfContents(page) {
     link.textContent = headingText;
     link.dataset.tocLink = "";
     link.dataset.section = headingId;
-    link.className = "block border-l-2 border-gray-200 py-1.5 pl-3 text-sm text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100";
+    link.className = "dj-toc-link";
     link.addEventListener("click", (event) => {
       event.preventDefault();
       scrollToSection(headingId);
@@ -138,10 +138,6 @@ function scrollToSection(sectionId) {
 function updateActiveLink(page, activeSectionId) {
   page.querySelectorAll("[data-toc-link]").forEach((link) => {
     const isActive = link.dataset.section === activeSectionId;
-    link.classList.toggle("border-[var(--dj-accent-strong)]", isActive);
-    link.classList.toggle("text-[var(--dj-accent-strong)]", isActive);
-    link.classList.toggle("font-medium", isActive);
-    link.classList.toggle("border-gray-200", !isActive);
-    link.classList.toggle("text-gray-600", !isActive);
+    link.classList.toggle("dj-toc-link-active", isActive);
   });
 }

@@ -23,14 +23,14 @@ Use CSS variables:
 - Background and panels: `--dj-bg`, `--dj-bg-muted`, `--dj-panel`, `--dj-panel-solid`, `--dj-panel-elevated`
 - Text: `--dj-text`, `--dj-heading`, `--dj-muted`, `--dj-soft`
 - Borders: `--dj-border`, `--dj-border-strong`
-- Accent and state: `--dj-accent`, `--dj-accent-strong`, `--dj-accent-soft`, `--dj-success`, `--dj-warning`, `--dj-danger`
+- Accent, wayfinding, and state: `--dj-accent`, `--dj-accent-strong`, `--dj-accent-soft`, `--dj-info`, `--dj-info-soft`, `--dj-agent`, `--dj-agent-soft`, `--dj-success`, `--dj-warning`, `--dj-danger`
 
 Use existing primitives:
 
 - Layout: `.dj-page-shell`, `.dj-main`, `.dj-container`, `.dj-container-narrow`, `.dj-container-wide`
 - Navigation: `.dj-nav`, `.dj-brand`, `.dj-nav-link`, `.dj-nav-link-active`, `.dj-icon-button`, `.dj-menu-button`
 - Buttons: `.dj-button`, `.dj-button-primary`, `.dj-button-secondary`, `.dj-button-subtle`, `.dj-button-danger`, `.dj-button-warning`
-- Status: `.dj-pill`, `.dj-pill-accent`, `.dj-pill-success`, `.dj-pill-warning`, `.dj-pill-danger`
+- Status and wayfinding: `.dj-pill`, `.dj-pill-accent`, `.dj-pill-info`, `.dj-pill-agent`, `.dj-pill-success`, `.dj-pill-warning`, `.dj-pill-danger`. Variant hue belongs in the border and soft fill; pill label text stays on `--dj-heading` for contrast.
 - Surfaces: `.dj-panel`, `.dj-panel-solid`, `.dj-feature-card`, `.dj-alert`
 - Content: `.dj-kicker`, `.dj-section-title`, `.dj-section-copy`, `.dj-prose`, `.dj-table`, `.dj-tag-list`, `.dj-stack-tag`
 
@@ -43,6 +43,7 @@ Use existing primitives:
 - Avoid decorative gradient blobs, orbs, and large stock-like hero imagery.
 - Preserve light/dark theme support. Add both normal and `.dark` token behavior when a new global color is needed.
 - Keep states explicit: queued/generating uses warning, ready uses success, failed/destructive uses danger.
+- Keep color roles explicit: orange is for primary action and product emphasis, info blue is for docs/API/help wayfinding, agent violet is for MCP/agent workflow wayfinding, and semantic colors stay reserved for state.
 - Make long project names, slugs, artifact paths, and SHA-256 values wrap safely with `break-all` or constrained monospace blocks.
 
 ## Interaction Rules

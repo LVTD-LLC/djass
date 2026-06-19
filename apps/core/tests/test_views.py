@@ -226,8 +226,12 @@ def test_settings_shows_copyable_agent_api_key(auth_client, user):
     content = response.content.decode()
     assert "Agent API key" in content
     assert "Copy key" in content
+    assert "Show key" in content
     assert "X-API-Key" in content
     assert "Authorization: Bearer" in content
+    assert 'type="password"' in content
+    assert "X-API-Key: &lt;your-api-key&gt;" in content
+    assert "Authorization: Bearer &lt;your-api-key&gt;" in content
     assert f'value="{user.profile.key}"' in content
 
 

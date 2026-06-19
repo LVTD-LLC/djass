@@ -1,207 +1,228 @@
 {% extends 'base_app.html' %}
 {% load static %}
 {% load widget_tweaks %}
-
 {% block meta %}
-  <title>Account settings | Djass</title>
+    <title>Account settings | Djass</title>
 {% endblock meta %}
-
 {% block content %}
-  <section class="pb-16 pt-8">
-    <div class="dj-container">
-      {% include "components/confirm-email.html" with email_verified=email_verified %}
-
-      <div class="grid gap-4 lg:grid-cols-[0.34fr_0.66fr]">
-        <aside class="dj-panel p-6">
-          <p class="dj-kicker">Account</p>
-          <h1 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">Account settings</h1>
-          <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
-            Manage profile details, passkeys, your agent API key, and account controls from one place.
-          </p>
-
-          {% if has_subscription %}
-            <div class="dj-alert dj-alert-success mt-6">
-              <h2 class="font-semibold text-[var(--dj-heading)]">Paid access is active</h2>
-              <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Project generation, API access, and MCP workflows are unlocked for this account.</p>
-            </div>
-          {% else %}
-            <div class="dj-alert dj-alert-warning mt-6">
-              <h2 class="font-semibold text-[var(--dj-heading)]">Generation is locked</h2>
-              <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">Unlock lifetime access with a one-time payment. The current launch tier is {{ current_price_tier.display_amount }}.</p>
-              <a href="{% url 'pricing' %}" class="dj-button dj-button-primary mt-4 w-full">Review launch pricing</a>
-            </div>
-          {% endif %}
-        </aside>
-
-        <div class="space-y-4">
-          <section class="dj-panel p-6" aria-labelledby="passkey-settings-heading">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p class="dj-kicker">Security</p>
-                <h2 id="passkey-settings-heading" class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h2>
-                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  Add a passkey to sign in faster without typing your password.
-                  {% if passkey_count %}You have {{ passkey_count }} passkey{{ passkey_count|pluralize }} set up.{% endif %}
-                </p>
-              </div>
-              <div class="flex flex-col gap-2 sm:flex-row">
-                {% if email_verified %}
-                  <a href="{% url 'mfa_add_webauthn' %}" class="dj-button dj-button-primary">
-                    Add passkey
-                  </a>
-                {% else %}
-                  <button type="button" disabled aria-disabled="true" class="dj-button dj-button-secondary cursor-not-allowed opacity-60">
-                    Confirm email to add passkey
-                  </button>
-                {% endif %}
-                {% if passkey_count %}
-                  <a href="{% url 'mfa_list_webauthn' %}" class="dj-button dj-button-secondary">
-                    Manage passkeys
-                  </a>
-                  {% if has_recovery_codes %}
-                    <a href="{% url 'mfa_view_recovery_codes' %}" class="dj-button dj-button-secondary">
-                      View recovery codes
-                    </a>
-                  {% else %}
-                    <a href="{% url 'mfa_generate_recovery_codes' %}" class="dj-button dj-button-secondary border-[var(--dj-warning)] text-[var(--dj-warning)]">
-                      Generate recovery codes
-                    </a>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </div>
-          </section>
-
-          <section class="dj-panel p-6" data-controller="clipboard">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p class="dj-kicker">Automation</p>
-                <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent API key</h2>
-                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  Give this key to your coding agent so it can create, check, and download Djass projects for you. Treat it like a password.
-                </p>
-              </div>
-              <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}" class="dj-button dj-button-secondary min-w-24">API docs</a>
-            </div>
-
-            <label for="agent-api-key" class="mt-5 block text-sm font-semibold text-[var(--dj-heading)]">API key</label>
-            <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-              <input
-                id="agent-api-key"
-                type="text"
-                readonly
-                spellcheck="false"
-                autocomplete="off"
-                value="{{ api_key }}"
-                data-clipboard-target="source"
-                class="dj-input block w-full font-mono text-sm"
-              />
-              <button type="button" data-action="clipboard#copy" class="dj-button dj-button-primary shrink-0">
-                Copy key
-              </button>
-            </div>
-            <p class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">
-              Agents can send it as <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">X-API-Key: {{ api_key }}</code>
-              or <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">Authorization: Bearer {{ api_key }}</code>.
-            </p>
-            <p class="mt-2 text-sm font-medium text-[var(--dj-success)]" data-clipboard-target="status" aria-live="polite"></p>
-          </section>
-
-          <section class="dj-panel p-6">
-            <div>
-              <p class="dj-kicker">Profile</p>
-              <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Profile details</h2>
-            </div>
-            <form id="settings-form" action="" method="post" class="mt-6">
-              {% csrf_token %}
-              {{ form.non_field_errors }}
-              <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  {{ form.first_name.errors | safe }}
-                  <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-semibold text-[var(--dj-heading)]">First name</label>
-                  {% render_field form.first_name id="first-name" name="first-name" type="text" autocomplete="given-name" class="dj-input mt-2 block w-full text-sm" %}
-                </div>
-
-                <div>
-                  {{ form.last_name.errors | safe }}
-                  <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-semibold text-[var(--dj-heading)]">Last name</label>
-                  {% render_field form.last_name id="last-name" name="last-name" type="text" autocomplete="family-name" class="dj-input mt-2 block w-full text-sm" %}
-                </div>
-              </div>
-
-              <div class="mt-6 border-t border-[var(--dj-border)] pt-6 text-right">
-                <button type="submit" class="dj-button dj-button-primary">Save changes</button>
-              </div>
-            </form>
-          </section>
-
-          <section class="dj-alert dj-alert-danger" data-controller="delete-account">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h2>
-                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                  This is permanent. Deleting your account removes your user record and related data from the database.
-                </p>
-              </div>
-              <button type="button" data-action="delete-account#open" class="dj-button dj-button-danger shrink-0">
-                Delete account
-              </button>
-            </div>
-
-            <div
-              data-delete-account-target="modal"
-              class="fixed inset-0 z-50 hidden items-center justify-center"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Delete account confirmation"
-            >
-              <div class="absolute inset-0 bg-black/60" data-action="click->delete-account#close"></div>
-
-              <div class="dj-panel-solid relative mx-4 w-full max-w-lg p-6">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h3>
-                    <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
-                      To confirm this permanent action, type <span class="font-mono font-semibold text-[var(--dj-heading)]">DELETE</span> below.
+    <section class="pb-16 pt-8">
+        <div class="dj-container">
+            {% include "components/confirm-email.html" with email_verified=email_verified %}
+            <div class="grid gap-4 lg:grid-cols-[0.34fr_0.66fr]">
+                <aside class="dj-panel p-6">
+                    <p class="dj-kicker">Account</p>
+                    <h1 class="mt-3 text-3xl font-semibold text-[var(--dj-heading)]">Account settings</h1>
+                    <p class="mt-3 text-sm leading-6 text-[var(--dj-muted)]">
+                        Manage profile details, passkeys, your agent API key, and account controls from one place.
                     </p>
-                  </div>
-                  <button type="button" class="dj-icon-button" data-action="delete-account#close" aria-label="Close">
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                    {% if has_subscription %}
+                        <div class="dj-alert dj-alert-success mt-6">
+                            <h2 class="font-semibold text-[var(--dj-heading)]">Paid access is active</h2>
+                            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                Project generation, API access, and MCP workflows are unlocked for this account.
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="dj-alert dj-alert-warning mt-6">
+                            <h2 class="font-semibold text-[var(--dj-heading)]">Generation is locked</h2>
+                            <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                Unlock lifetime access with a one-time payment. The current launch tier is {{ current_price_tier.display_amount }}.
+                            </p>
+                            <a href="{% url 'pricing' %}"
+                               class="dj-button dj-button-primary mt-4 w-full">Review launch pricing</a>
+                        </div>
+                    {% endif %}
+                </aside>
+                <div class="space-y-4">
+                    <section class="dj-panel p-6" aria-labelledby="passkey-settings-heading">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p class="dj-kicker">Security</p>
+                                <h2 id="passkey-settings-heading"
+                                    class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Passkeys</h2>
+                                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                    Add a passkey to sign in faster without typing your password.
+                                    {% if passkey_count %}You have {{ passkey_count }} passkey{{ passkey_count|pluralize }} set up.{% endif %}
+                                </p>
+                            </div>
+                            <div class="flex flex-col gap-2 sm:flex-row">
+                                {% if email_verified %}
+                                    <a href="{% url 'mfa_add_webauthn' %}"
+                                       class="dj-button dj-button-primary">Add passkey</a>
+                                {% else %}
+                                    <button type="button"
+                                            disabled
+                                            aria-disabled="true"
+                                            class="dj-button dj-button-secondary cursor-not-allowed opacity-60">
+                                        Confirm email to add passkey
+                                    </button>
+                                {% endif %}
+                                {% if passkey_count %}
+                                    <a href="{% url 'mfa_list_webauthn' %}"
+                                       class="dj-button dj-button-secondary">Manage passkeys</a>
+                                    {% if has_recovery_codes %}
+                                        <a href="{% url 'mfa_view_recovery_codes' %}"
+                                           class="dj-button dj-button-secondary">View recovery codes</a>
+                                    {% else %}
+                                        <a href="{% url 'mfa_generate_recovery_codes' %}"
+                                           class="dj-button dj-button-secondary border-[var(--dj-warning)] text-[var(--dj-warning)]">
+                                            Generate recovery codes
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </section>
+                    <section class="dj-panel p-6" data-controller="clipboard secret-reveal">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p class="dj-kicker">Automation</p>
+                                <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Agent API key</h2>
+                                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                    Give this key to your coding agent so it can create, check, and download Djass projects for you. Treat it like a password.
+                                </p>
+                            </div>
+                            <a href="{% url 'docs_page' category='api' page='projects-api-v1' %}"
+                               class="dj-button dj-button-secondary min-w-24">API docs</a>
+                        </div>
+                        <label for="agent-api-key"
+                               class="mt-5 block text-sm font-semibold text-[var(--dj-heading)]">API key</label>
+                        <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+                            <input id="agent-api-key"
+                                   type="password"
+                                   readonly
+                                   spellcheck="false"
+                                   autocomplete="off"
+                                   value="{{ api_key }}"
+                                   data-clipboard-target="source"
+                                   data-secret-reveal-target="input"
+                                   aria-describedby="agent-api-key-help"
+                                   class="dj-input block w-full font-mono text-sm" />
+                            <button type="button"
+                                    data-secret-reveal-target="toggle"
+                                    class="dj-button dj-button-secondary min-w-28 shrink-0"
+                                    aria-pressed="false">Show key</button>
+                            <button type="button"
+                                    data-action="clipboard#copy"
+                                    class="dj-button dj-button-primary shrink-0">Copy key</button>
+                        </div>
+                        <p id="agent-api-key-help"
+                           class="mt-3 text-xs leading-5 text-[var(--dj-muted)]">
+                            Copy the key when configuring an agent. Reveal it only when you need to inspect the value.
+                        </p>
+                        <p class="mt-2 text-xs leading-5 text-[var(--dj-muted)]">
+                            Agents can send it as <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">X-API-Key: &lt;your-api-key&gt;</code>
+                            or <code class="rounded bg-[var(--dj-accent-soft)] px-1 py-0.5 font-mono">Authorization: Bearer &lt;your-api-key&gt;</code>.
+                        </p>
+                        <p class="mt-2 text-sm font-medium text-[var(--dj-success)]"
+                           data-clipboard-target="status"
+                           aria-live="polite"></p>
+                    </section>
+                    <section class="dj-panel p-6">
+                        <div>
+                            <p class="dj-kicker">Profile</p>
+                            <h2 class="mt-2 text-2xl font-semibold text-[var(--dj-heading)]">Profile details</h2>
+                        </div>
+                        <form id="settings-form" action="" method="post" class="mt-6">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+                            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <div>
+                                    {{ form.first_name.errors | safe }}
+                                    <label for="{{ form.first_name.id_for_label }}"
+                                           class="block text-sm font-semibold text-[var(--dj-heading)]">
+                                        First name
+                                    </label>
+                                    {% render_field form.first_name type="text" autocomplete="given-name" class="dj-input mt-2 block w-full text-sm" %}
+                                </div>
+                                <div>
+                                    {{ form.last_name.errors | safe }}
+                                    <label for="{{ form.last_name.id_for_label }}"
+                                           class="block text-sm font-semibold text-[var(--dj-heading)]">
+                                        Last name
+                                    </label>
+                                    {% render_field form.last_name type="text" autocomplete="family-name" class="dj-input mt-2 block w-full text-sm" %}
+                                </div>
+                            </div>
+                            <div class="mt-6 border-t border-[var(--dj-border)] pt-6 text-right">
+                                <button type="submit" class="dj-button dj-button-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </section>
+                    <section class="dj-alert dj-alert-danger" data-controller="delete-account">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h2>
+                                <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                    This is permanent. Deleting your account removes your user record and related data from the database.
+                                </p>
+                            </div>
+                            <button type="button"
+                                    data-action="delete-account#open"
+                                    class="dj-button dj-button-danger shrink-0">Delete account</button>
+                        </div>
+                        <div data-delete-account-target="modal"
+                             class="fixed inset-0 z-50 hidden items-center justify-center"
+                             role="dialog"
+                             aria-modal="true"
+                             aria-label="Delete account confirmation"
+                             aria-hidden="true">
+                            <div class="absolute inset-0 bg-black/60"
+                                 data-action="click->delete-account#close"></div>
+                            <div class="dj-panel-solid relative mx-4 w-full max-w-lg p-6">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-[var(--dj-heading)]">Delete account</h3>
+                                        <p class="mt-2 text-sm leading-6 text-[var(--dj-muted)]">
+                                            To confirm this permanent action, type <span class="font-mono font-semibold text-[var(--dj-heading)]">DELETE</span> below.
+                                        </p>
+                                    </div>
+                                    <button type="button"
+                                            class="dj-icon-button"
+                                            data-action="delete-account#close"
+                                            aria-label="Close">
+                                        <svg class="h-5 w-5"
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 24 24"
+                                             stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <form method="post"
+                                      action="{% url 'delete_account' %}"
+                                      class="mt-6 space-y-4">
+                                    {% csrf_token %}
+                                    <div>
+                                        <label for="delete-confirmation"
+                                               class="block text-sm font-semibold text-[var(--dj-heading)]">
+                                            Confirmation
+                                        </label>
+                                        <input id="delete-confirmation"
+                                               name="confirmation"
+                                               type="text"
+                                               autocomplete="off"
+                                               data-delete-account-target="confirmation"
+                                               data-action="input->delete-account#update"
+                                               placeholder="Type DELETE"
+                                               class="dj-input mt-2 block w-full" />
+                                    </div>
+                                    <div class="flex items-center justify-end gap-3">
+                                        <button type="button"
+                                                class="dj-button dj-button-secondary"
+                                                data-action="delete-account#close">Cancel</button>
+                                        <button type="submit"
+                                                data-delete-account-target="submit"
+                                                disabled
+                                                class="dj-button dj-button-danger">Yes, delete my account</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-
-                <form method="post" action="{% url 'delete_account' %}" class="mt-6 space-y-4">
-                  {% csrf_token %}
-                  <div>
-                    <label for="delete-confirmation" class="block text-sm font-semibold text-[var(--dj-heading)]">Confirmation</label>
-                    <input
-                      id="delete-confirmation"
-                      name="confirmation"
-                      type="text"
-                      autocomplete="off"
-                      data-delete-account-target="confirmation"
-                      data-action="input->delete-account#update"
-                      placeholder="Type DELETE"
-                      class="dj-input mt-2 block w-full"
-                    />
-                  </div>
-
-                  <div class="flex items-center justify-end gap-3">
-                    <button type="button" class="dj-button dj-button-secondary" data-action="delete-account#close">
-                      Cancel
-                    </button>
-                    <button type="submit" data-delete-account-target="submit" disabled class="dj-button dj-button-danger">
-                      Yes, delete my account
-                    </button>
-                  </div>
-                </form>
-              </div>
             </div>
-          </section>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 {% endblock content %}
