@@ -16,47 +16,15 @@ Canonical context files:
 
 ## Local Workflow
 
-Use the executable config as truth. `.python-version` is `3.14.5`; `.nvmrc` is `24.15.0`.
+Use `TECH.md` as the canonical command reference. Read runtime pins from `.python-version` and `.nvmrc`; the expanded runtime table also lives in `TECH.md`.
 
-Setup and run the Dockerized local stack:
+Before opening or updating a PR, choose the smallest relevant command set from `TECH.md`:
 
-```bash
-cp .env.example .env
-make serve
-```
+- Dockerized local development for app boot, migrations, shell access, and Docker-backed pytest.
+- Host-side dependency and checks for CI-equivalent verification.
+- Frontend, formatting, and targeted test commands for narrower changes.
 
-Useful local commands:
-
-```bash
-make restart-worker
-make manage migrate
-make manage createsuperuser
-make shell
-make test
-```
-
-Host-side CI-equivalent checks:
-
-```bash
-uv sync
-npm ci
-npm run build
-npm run lint
-uv run python manage.py check
-uv run python manage.py sync_cookiecutter_options --check --skip-on-network-error
-uv run pytest -q
-```
-
-Additional targeted checks:
-
-```bash
-uv run ruff check .
-uv run ruff format .
-uv run djlint frontend/templates
-make test apps/core/tests/test_generator_options.py
-make test apps/api/test_spec_001_contract.py
-make test apps/mcp/tests.py
-```
+For documentation-only changes, at minimum run `git diff --check` and verify every path or command mentioned against the repo source files.
 
 ## Implementation Rules
 
@@ -72,10 +40,7 @@ make test apps/mcp/tests.py
 
 ## Frontend Rules
 
-- Django templates are the UI layer. Do not introduce React, Vue, a bundler, or SPA routing unless the product intentionally changes frontend architecture.
-- Use HTMX for fresh server-rendered HTML and Alpine.js for local browser state only.
-- Reuse `.dj-*` primitives and CSS variables from `frontend/src/styles/index.css` before adding new component CSS.
-- Build static assets with `npm run build` after changing `frontend/src/styles`, `frontend/src/js`, vendor-copy scripts, or templates that depend on generated static files.
+Use `DESIGN.md` as the canonical source for UI architecture, tokens, component primitives, interaction rules, and frontend verification.
 
 ## Test Expectations
 
