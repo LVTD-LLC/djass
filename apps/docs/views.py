@@ -1,4 +1,5 @@
 import re
+from functools import lru_cache
 from pathlib import Path
 
 import frontmatter
@@ -27,6 +28,10 @@ DOCS_TITLE_ACRONYMS = {
 
 def get_docs_content_dir():
     return Path(settings.BASE_DIR) / "apps" / "docs" / "content"
+
+
+def get_docs_navigation_file():
+    return Path(settings.BASE_DIR) / "apps" / "docs" / "navigation.yaml"
 
 
 def validate_docs_slug(value):
@@ -84,21 +89,21 @@ def get_docs_page_title(markdown_file, page_slug):
 
 
 def render_docs_markdown(post, default_page_title):
-    page_title = post.get("title") or extract_markdown_h1(post.content) or default_page_title
     content = post.content.strip()
 
     if content.startswith("# "):
         return f"{content}\n"
 
+    page_title = post.get("title") or extract_markdown_h1(content) or default_page_title
     return f"# {page_title}\n\n{content}\n"
 
 
-def load_navigation_config():
+def load_navigation_config(navigation_file=None):
     """
     Load navigation configuration from YAML file.
     Returns empty dict if file doesn't exist or has errors.
     """
-    navigation_file = Path(settings.BASE_DIR) / "apps" / "docs" / "navigation.yaml"
+    navigation_file = navigation_file or get_docs_navigation_file()
 
     if not navigation_file.exists():
         return {}
@@ -111,13 +116,50 @@ def load_navigation_config():
         return {}
 
 
-def get_docs_navigation():  # noqa: C901
+def get_docs_file_mtime_ns(path):
+    try:
+        return path.stat().st_mtime_ns
+    except OSError:
+        return 0
+
+
+def get_docs_navigation_cache_key(content_dir, navigation_file):
+    markdown_files = []
+    if content_dir.exists():
+        for markdown_file in sorted(content_dir.glob("*/*.md")):
+            markdown_files.append(
+                (
+                    markdown_file.relative_to(content_dir).as_posix(),
+                    get_docs_file_mtime_ns(markdown_file),
+                )
+            )
+
+    return (
+        get_docs_file_mtime_ns(navigation_file),
+        tuple(markdown_files),
+    )
+
+
+def get_docs_navigation():
+    content_dir = get_docs_content_dir()
+    navigation_file = get_docs_navigation_file()
+    cache_key = get_docs_navigation_cache_key(content_dir, navigation_file)
+    return get_docs_navigation_cached(
+        str(content_dir),
+        str(navigation_file),
+        cache_key,
+    )
+
+
+@lru_cache(maxsize=8)
+def get_docs_navigation_cached(content_dir_value, navigation_file_value, cache_key):  # noqa: C901, ARG001
     """
     Build navigation structure from the docs/content directory.
     Uses custom ordering from navigation.yaml if defined, otherwise uses alphabetical order.
     Returns a list of dicts with category names and their pages.
     """
-    content_dir = get_docs_content_dir()
+    content_dir = Path(content_dir_value)
+    navigation_file = Path(navigation_file_value)
     navigation = []
 
     if not content_dir.exists():
@@ -129,7 +171,7 @@ def get_docs_navigation():  # noqa: C901
             category_slug = category_dir.name
             all_categories[category_slug] = category_dir
 
-    navigation_config = load_navigation_config()
+    navigation_config = load_navigation_config(navigation_file)
 
     ordered_categories = []
     for category_slug in navigation_config.keys():
@@ -241,7 +283,8 @@ def docs_page_view(request, category, page):
 
         default_page_title = titleize_docs_slug(page)
         default_category_title = titleize_docs_slug(category)
-        page_title = post.get("title") or extract_markdown_h1(post.content) or default_page_title
+        h1_from_content = extract_markdown_h1(post.content)
+        page_title = post.get("title") or h1_from_content or default_page_title
 
         context = {
             "content": markdown_html,
@@ -250,7 +293,7 @@ def docs_page_view(request, category, page):
             "current_page": page,
             "page_title": page_title,
             "category_title": default_category_title,
-            "render_page_heading": not bool(extract_markdown_h1(post.content)),
+            "render_page_heading": not bool(h1_from_content),
             "meta_description": post.get("description", ""),
             "meta_keywords": post.get("keywords", ""),
             "author": post.get("author", ""),

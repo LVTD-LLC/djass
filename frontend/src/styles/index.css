@@ -800,7 +800,11 @@ details[open] > summary .dj-disclosure-indicator {
 .dj-toc-link:focus-visible {
   border-color: color-mix(in srgb, var(--dj-info) 44%, transparent);
   color: var(--dj-heading);
-  outline: none;
+}
+
+.dj-toc-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dj-info) 62%, transparent);
+  outline-offset: 2px;
 }
 
 .dj-toc-link-active {
