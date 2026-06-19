@@ -86,48 +86,7 @@
                                 </div>
                             </dl>
                             <div class="mt-4">
-                                {% if project.status == "ready" and project.artifact %}
-                                    <div class="grid gap-2 sm:grid-cols-2">
-                                        <a href="{% url 'project_detail' project.id %}"
-                                           class="dj-button dj-button-secondary">Details</a>
-                                        <a href="{% url 'project_download' project.id %}"
-                                           class="dj-button dj-button-secondary">Download ZIP</a>
-                                    </div>
-                                {% elif project.status == "ready" %}
-                                    <div class="space-y-3">
-                                        <a href="{% url 'project_detail' project.id %}"
-                                           class="dj-button dj-button-secondary w-full">Details</a>
-                                        <p class="text-sm text-[var(--dj-muted)]">
-                                            The build finished, but ZIP metadata is still being attached. Open details to check the latest status.
-                                        </p>
-                                    </div>
-                                {% elif project.status == "failed" %}
-                                    <div class="space-y-3">
-                                        <a href="{% url 'project_detail' project.id %}"
-                                           class="dj-button dj-button-secondary w-full">Details</a>
-                                        <p class="text-sm text-[var(--dj-muted)]">
-                                            Generation stopped before the ZIP was created. Review details or retry with the saved options.
-                                        </p>
-                                        {% if project.error_message %}
-                                            <details class="text-sm">
-                                                <summary class="cursor-pointer font-semibold text-[var(--dj-heading)]">Show diagnostic detail</summary>
-                                                <p class="mt-2 break-all font-mono text-xs text-[var(--dj-danger)]">{{ project.error_message }}</p>
-                                            </details>
-                                        {% endif %}
-                                        {% if can_generate %}
-                                            <form method="post" action="{% url 'project_retry' project.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="dj-button dj-button-secondary w-full">Retry generation</button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                {% else %}
-                                    <div class="flex flex-col gap-2">
-                                        <a href="{% url 'project_detail' project.id %}"
-                                           class="dj-button dj-button-secondary">Details</a>
-                                        <span class="font-mono text-sm text-[var(--dj-muted)]">Build running...</span>
-                                    </div>
-                                {% endif %}
+                                {% include "components/project_actions.html" with project=project can_generate=can_generate action_layout="card" only %}
                             </div>
                         </article>
                     {% empty %}
@@ -169,48 +128,7 @@
                                     </td>
                                     <td>{{ project.created_at }}</td>
                                     <td>
-                                        {% if project.status == "ready" and project.artifact %}
-                                            <div class="flex flex-wrap gap-2">
-                                                <a href="{% url 'project_detail' project.id %}"
-                                                   class="dj-button dj-button-secondary">Details</a>
-                                                <a href="{% url 'project_download' project.id %}"
-                                                   class="dj-button dj-button-secondary">Download ZIP</a>
-                                            </div>
-                                        {% elif project.status == "ready" %}
-                                            <div class="space-y-3">
-                                                <a href="{% url 'project_detail' project.id %}"
-                                                   class="dj-button dj-button-secondary">Details</a>
-                                                <p class="max-w-md text-sm text-[var(--dj-muted)]">
-                                                    The build finished, but ZIP metadata is still being attached. Open details to check the latest status.
-                                                </p>
-                                            </div>
-                                        {% elif project.status == "failed" %}
-                                            <div class="space-y-3">
-                                                <a href="{% url 'project_detail' project.id %}"
-                                                   class="dj-button dj-button-secondary">Details</a>
-                                                <p class="max-w-md text-sm text-[var(--dj-muted)]">
-                                                    Generation stopped before the ZIP was created. Review details or retry with the saved options.
-                                                </p>
-                                                {% if project.error_message %}
-                                                    <details class="max-w-md text-sm">
-                                                        <summary class="cursor-pointer font-semibold text-[var(--dj-heading)]">Show diagnostic detail</summary>
-                                                        <p class="mt-2 break-all font-mono text-xs text-[var(--dj-danger)]">{{ project.error_message }}</p>
-                                                    </details>
-                                                {% endif %}
-                                                {% if can_generate %}
-                                                    <form method="post" action="{% url 'project_retry' project.id %}">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="dj-button dj-button-secondary">Retry generation</button>
-                                                    </form>
-                                                {% endif %}
-                                            </div>
-                                        {% else %}
-                                            <div class="flex flex-wrap items-center gap-2">
-                                                <a href="{% url 'project_detail' project.id %}"
-                                                   class="dj-button dj-button-secondary">Details</a>
-                                                <span class="font-mono text-sm text-[var(--dj-soft)]">Build running...</span>
-                                            </div>
-                                        {% endif %}
+                                        {% include "components/project_actions.html" with project=project can_generate=can_generate action_layout="table" only %}
                                     </td>
                                 </tr>
                             {% empty %}
