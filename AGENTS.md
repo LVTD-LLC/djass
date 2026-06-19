@@ -41,6 +41,7 @@ Host-side CI-equivalent checks:
 uv sync
 npm ci
 npm run build
+npm run lint
 uv run python manage.py check
 uv run python manage.py sync_cookiecutter_options --check --skip-on-network-error
 uv run pytest -q
@@ -49,7 +50,6 @@ uv run pytest -q
 Additional targeted checks:
 
 ```bash
-npm run lint
 uv run ruff check .
 uv run ruff format .
 uv run djlint frontend/templates
