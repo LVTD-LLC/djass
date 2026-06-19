@@ -1,59 +1,55 @@
 {% extends 'docs/base_docs.html' %}
-
 {% block meta %}
-<title>{{ page_title }} - {{ category_title }} | Djass Documentation</title>
-<meta name="description" content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
-{% if meta_keywords %}<meta name="keywords" content="{{ meta_keywords }}" />{% endif %}
-{% if author %}<meta name="author" content="{{ author }}" />{% endif %}
-<meta name="robots" content="index, follow" />
-{% if canonical_url %}
-<link rel="canonical" href="{{ canonical_url }}" />
-{% else %}
-<link rel="canonical" href="https://{{ request.get_host }}{% url 'docs_page' category=current_category page=current_page %}" />
-{% endif %}
-
-<meta property="og:type" content="article" />
-<meta property="og:title" content="{{ page_title }} - {{ category_title }} | Djass Documentation" />
-<meta property="og:url" content="https://{{ request.get_host }}{% url 'docs_page' category=current_category page=current_page %}" />
-<meta property="og:description" content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
-<meta property="og:site_name" content="Djass" />
-
-<meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="{{ page_title }} - {{ category_title }} | Djass Documentation" />
-<meta name="twitter:description" content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
+    <title>{{ page_title }} - {{ category_title }} | Djass Documentation</title>
+    <meta name="description"
+          content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
+    {% if meta_keywords %}<meta name="keywords" content="{{ meta_keywords }}" />{% endif %}
+    {% if author %}<meta name="author" content="{{ author }}" />{% endif %}
+    <meta name="robots" content="index, follow" />
+    {% if canonical_url %}
+        <link rel="canonical" href="{{ canonical_url }}" />
+    {% else %}
+        <link rel="canonical"
+              href="https://{{ request.get_host }}{% url 'docs_page' category=current_category page=current_page %}" />
+    {% endif %}
+    <meta property="og:type" content="article" />
+    <meta property="og:title"
+          content="{{ page_title }} - {{ category_title }} | Djass Documentation" />
+    <meta property="og:url"
+          content="https://{{ request.get_host }}{% url 'docs_page' category=current_category page=current_page %}" />
+    <meta property="og:description"
+          content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
+    <meta property="og:site_name" content="Djass" />
+    <meta name="twitter:card" content="summary" />
+    <meta property="twitter:title"
+          content="{{ page_title }} - {{ category_title }} | Djass Documentation" />
+    <meta name="twitter:description"
+          content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for Djass{% endif %}" />
 {% endblock meta %}
-
 {% block docs_content %}
-<h1>{{ page_title }}</h1>
-{{ content|safe }}
-
-<nav class="not-prose mt-12 border-t border-[var(--dj-border)] pt-8" aria-label="Docs pages navigation">
-    <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex-1">
-            {% if previous_page %}
-            <a href="{{ previous_page.url }}" class="dj-panel block p-4 no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
-                <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">
-                    Previous
-                </div>
-                <div class="text-base font-semibold text-[var(--dj-heading)]">
-                    {{ previous_page.page_title }}
-                </div>
-            </a>
-            {% endif %}
+    {% if render_page_heading %}<h1>{{ page_title }}</h1>{% endif %}
+    {{ content|safe }}
+    <nav class="not-prose mt-12 border-t border-[var(--dj-border)] pt-8"
+         aria-label="Docs pages navigation">
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="flex-1">
+                {% if previous_page %}
+                    <a href="{{ previous_page.url }}"
+                       class="dj-panel block p-4 no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
+                        <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">Previous</div>
+                        <div class="text-base font-semibold text-[var(--dj-heading)]">{{ previous_page.page_title }}</div>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                {% if next_page %}
+                    <a href="{{ next_page.url }}"
+                       class="dj-panel block p-4 text-right no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
+                        <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">Next</div>
+                        <div class="text-base font-semibold text-[var(--dj-heading)]">{{ next_page.page_title }}</div>
+                    </a>
+                {% endif %}
+            </div>
         </div>
-
-        <div class="flex-1">
-            {% if next_page %}
-            <a href="{{ next_page.url }}" class="dj-panel block p-4 text-right no-underline transition-colors group hover:border-[var(--dj-border-strong)]">
-                <div class="mb-1 text-xs font-semibold uppercase text-[var(--dj-soft)]">
-                    Next
-                </div>
-                <div class="text-base font-semibold text-[var(--dj-heading)]">
-                    {{ next_page.page_title }}
-                </div>
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</nav>
+    </nav>
 {% endblock docs_content %}

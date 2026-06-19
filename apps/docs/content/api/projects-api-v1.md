@@ -1,3 +1,10 @@
+---
+title: Projects API v1
+description: Create, poll, and download Djass project artifacts through the Projects API.
+keywords: Djass, Projects API, project generation, API keys, agent workflow
+author: Rasul
+---
+
 # Djass Projects API (v1)
 
 **Base URL:** `https://djass.dev/api/v1`

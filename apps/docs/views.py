@@ -13,6 +13,16 @@ from djass.utils import get_djass_logger
 logger = get_djass_logger(__name__)
 
 DOCS_SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+DOCS_TITLE_ACRONYMS = {
+    "ai": "AI",
+    "api": "API",
+    "ci": "CI",
+    "mcp": "MCP",
+    "q2": "Q2",
+    "s3": "S3",
+    "ui": "UI",
+    "v1": "v1",
+}
 
 
 def get_docs_content_dir():
@@ -48,8 +58,33 @@ def load_docs_post(category, page):
         return frontmatter.load(file)
 
 
+def titleize_docs_slug(value):
+    words = value.replace("-", " ").split()
+    return " ".join(DOCS_TITLE_ACRONYMS.get(word, word.title()) for word in words)
+
+
+def extract_markdown_h1(content):
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# ") and not stripped.startswith("## "):
+            return stripped.removeprefix("# ").strip()
+
+    return ""
+
+
+def get_docs_page_title(markdown_file, page_slug):
+    fallback = titleize_docs_slug(page_slug)
+    try:
+        with open(markdown_file, encoding="utf-8") as file:
+            post = frontmatter.load(file)
+    except Exception:
+        return fallback
+
+    return post.get("title") or extract_markdown_h1(post.content) or fallback
+
+
 def render_docs_markdown(post, default_page_title):
-    page_title = post.get("title", default_page_title)
+    page_title = post.get("title") or extract_markdown_h1(post.content) or default_page_title
     content = post.content.strip()
 
     if content.startswith("# "):
@@ -106,7 +141,7 @@ def get_docs_navigation():  # noqa: C901
 
     for category_slug in ordered_categories:
         category_dir = all_categories[category_slug]
-        category_name = category_slug.replace("-", " ").title()
+        category_name = titleize_docs_slug(category_slug)
 
         all_pages = {}
         for markdown_file in category_dir.glob("*.md"):
@@ -125,7 +160,7 @@ def get_docs_navigation():  # noqa: C901
 
         pages = []
         for page_slug in ordered_pages:
-            page_title = page_slug.replace("-", " ").title()
+            page_title = get_docs_page_title(all_pages[page_slug], page_slug)
             pages.append(
                 {
                     "slug": page_slug,
@@ -204,16 +239,18 @@ def docs_page_view(request, category, page):
         navigation = get_docs_navigation()
         previous_page, next_page = get_previous_and_next_pages(navigation, category, page)
 
-        default_page_title = page.replace("-", " ").title()
-        default_category_title = category.replace("-", " ").title()
+        default_page_title = titleize_docs_slug(page)
+        default_category_title = titleize_docs_slug(category)
+        page_title = post.get("title") or extract_markdown_h1(post.content) or default_page_title
 
         context = {
             "content": markdown_html,
             "navigation": navigation,
             "current_category": category,
             "current_page": page,
-            "page_title": post.get("title", default_page_title),
+            "page_title": page_title,
             "category_title": default_category_title,
+            "render_page_heading": not bool(extract_markdown_h1(post.content)),
             "meta_description": post.get("description", ""),
             "meta_keywords": post.get("keywords", ""),
             "author": post.get("author", ""),
@@ -236,7 +273,7 @@ def docs_markdown_view(request, category, page):
     """
     try:
         post = load_docs_post(category, page)
-        default_page_title = page.replace("-", " ").title()
+        default_page_title = titleize_docs_slug(page)
         markdown_content = render_docs_markdown(post, default_page_title)
 
         return HttpResponse(markdown_content, content_type="text/markdown; charset=utf-8")

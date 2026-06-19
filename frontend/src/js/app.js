@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLegacyDropdowns();
   initDeleteAccountControls();
   initLegacyFeedbackControls();
+  initSecretRevealControls();
 });
 
 function getCookie(name) {
@@ -60,6 +61,59 @@ function getCookie(name) {
   return "";
 }
 
+function setDisclosureState(button, menu, isOpen) {
+  menu.hidden = !isOpen;
+  menu.classList.toggle("hidden", !isOpen);
+  button?.setAttribute("aria-expanded", String(isOpen));
+}
+
+function isOpenElement(element) {
+  return element && !element.hidden && !element.classList.contains("hidden");
+}
+
+function focusableElements(container) {
+  return Array.from(
+    container.querySelectorAll(
+      [
+        "a[href]",
+        "button:not([disabled])",
+        "input:not([disabled]):not([type='hidden'])",
+        "select:not([disabled])",
+        "textarea:not([disabled])",
+        "summary",
+        "[tabindex]:not([tabindex='-1'])",
+      ].join(",")
+    )
+  ).filter((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+  });
+}
+
+function trapFocus(container, event) {
+  if (event.key !== "Tab") {
+    return;
+  }
+
+  const focusable = focusableElements(container);
+  if (focusable.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function initLegacyDropdowns(root = document) {
   root.querySelectorAll('[data-controller~="dropdown"]').forEach((controller) => {
     if (controller.dataset.dropdownBound === "true") {
@@ -73,19 +127,32 @@ function initLegacyDropdowns(root = document) {
       return;
     }
 
-    const hide = () => menu.classList.add("hidden");
+    setDisclosureState(button, menu, false);
+
+    const hide = (restoreFocus = false) => {
+      if (!isOpenElement(menu)) {
+        return;
+      }
+
+      setDisclosureState(button, menu, false);
+      if (restoreFocus) {
+        button.focus();
+      }
+    };
+
     button.addEventListener("click", (event) => {
       event.stopPropagation();
-      menu.classList.toggle("hidden");
+      setDisclosureState(button, menu, !isOpenElement(menu));
     });
+
     document.addEventListener("click", (event) => {
       if (!controller.contains(event.target)) {
         hide();
       }
     });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        hide();
+      if (event.key === "Escape" && isOpenElement(menu)) {
+        hide(true);
       }
     });
   });
@@ -105,18 +172,34 @@ function initDeleteAccountControls(root = document) {
       return;
     }
 
-    const open = () => {
+    let previouslyFocused = null;
+
+    const open = (event) => {
+      previouslyFocused = event.currentTarget;
       modal.classList.remove("hidden");
       modal.classList.add("flex");
+      modal.setAttribute("aria-hidden", "false");
+      window.requestAnimationFrame(() => {
+        const first = confirmation || focusableElements(modal)[0];
+        first?.focus();
+      });
       if (confirmation) {
         confirmation.value = "";
-        confirmation.focus();
       }
       updateDeleteSubmit(confirmation, submit);
     };
-    const close = () => {
+
+    const close = (restoreFocus = true) => {
+      if (!isOpenElement(modal)) {
+        return;
+      }
+
       modal.classList.add("hidden");
       modal.classList.remove("flex");
+      modal.setAttribute("aria-hidden", "true");
+      if (restoreFocus) {
+        previouslyFocused?.focus();
+      }
     };
 
     controller.querySelectorAll('[data-action*="delete-account#open"]').forEach((button) => {
@@ -126,8 +209,9 @@ function initDeleteAccountControls(root = document) {
       button.addEventListener("click", close);
     });
     confirmation?.addEventListener("input", () => updateDeleteSubmit(confirmation, submit));
+    modal.addEventListener("keydown", (event) => trapFocus(modal, event));
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && isOpenElement(modal)) {
         close();
       }
     });
@@ -141,6 +225,30 @@ function updateDeleteSubmit(confirmation, submit) {
   submit.disabled = confirmation.value !== "DELETE";
 }
 
+function initSecretRevealControls(root = document) {
+  root.querySelectorAll('[data-controller~="secret-reveal"]').forEach((controller) => {
+    if (controller.dataset.secretRevealBound === "true") {
+      return;
+    }
+
+    controller.dataset.secretRevealBound = "true";
+    const input = controller.querySelector('[data-secret-reveal-target~="input"]');
+    const button = controller.querySelector('[data-secret-reveal-target~="toggle"]');
+    if (!input || !button) {
+      return;
+    }
+
+    const setVisible = (isVisible) => {
+      input.type = isVisible ? "text" : "password";
+      button.setAttribute("aria-pressed", String(isVisible));
+      button.textContent = isVisible ? "Hide key" : "Show key";
+    };
+
+    setVisible(false);
+    button.addEventListener("click", () => setVisible(input.type === "password"));
+  });
+}
+
 function initLegacyFeedbackControls(root = document) {
   root.querySelectorAll('[data-controller~="feedback"]').forEach((controller) => {
     if (controller.dataset.feedbackBound === "true") {
@@ -151,15 +259,21 @@ function initLegacyFeedbackControls(root = document) {
     const overlay = controller.querySelector('[data-feedback-target~="overlay"]');
     const formContainer = controller.querySelector('[data-feedback-target~="formContainer"]');
     const input = controller.querySelector('[data-feedback-target~="feedbackInput"]');
+    const toggleButton = controller.querySelector('[data-feedback-target~="toggleButton"]');
     const form = controller.querySelector("form");
     let open = false;
+    let previouslyFocused = null;
 
-    const show = () => {
+    const show = (event) => {
       if (!overlay || !formContainer || !input) {
         return;
       }
+
+      previouslyFocused = event?.currentTarget || document.activeElement;
       overlay.classList.remove("pointer-events-none", "opacity-0");
       overlay.classList.add("pointer-events-auto", "opacity-100");
+      overlay.setAttribute("aria-hidden", "false");
+      toggleButton?.setAttribute("aria-expanded", "true");
       window.setTimeout(() => {
         formContainer.classList.remove("scale-95");
         formContainer.classList.add("scale-100");
@@ -167,21 +281,28 @@ function initLegacyFeedbackControls(root = document) {
       }, 10);
       open = true;
     };
-    const hide = () => {
+
+    const hide = (restoreFocus = true) => {
       if (!overlay || !formContainer) {
         return;
       }
+
       formContainer.classList.remove("scale-100");
       formContainer.classList.add("scale-95");
+      overlay.setAttribute("aria-hidden", "true");
+      toggleButton?.setAttribute("aria-expanded", "false");
       window.setTimeout(() => {
         overlay.classList.remove("pointer-events-auto", "opacity-100");
         overlay.classList.add("pointer-events-none", "opacity-0");
       }, 100);
       open = false;
+      if (restoreFocus) {
+        previouslyFocused?.focus();
+      }
     };
 
     controller.querySelectorAll('[data-action*="feedback#toggleFeedback"]').forEach((button) => {
-      button.addEventListener("click", () => (open ? hide() : show()));
+      button.addEventListener("click", (event) => (open ? hide() : show(event)));
     });
     controller.querySelectorAll('[data-action*="feedback#closeFeedback"]').forEach((button) => {
       button.addEventListener("click", hide);
@@ -196,6 +317,7 @@ function initLegacyFeedbackControls(root = document) {
         hide();
       }
     });
+    formContainer?.addEventListener("keydown", (event) => trapFocus(formContainer, event));
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submitButton = form.querySelector('button[type="submit"]');
