@@ -17,6 +17,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [Unreleased]
 
 ### Added
+- ReviewGate now runs on pull requests in report mode when `OPENROUTER_API_KEY` is configured.
 - Launch ladder billing for Djass lifetime access: first 10 paid members at $10,
   next 10 at $100, next 10 at $200, then $999 forever.
 - Stripe setup command now creates the Djass product and all launch ladder one-time prices.
