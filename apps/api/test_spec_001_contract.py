@@ -38,7 +38,6 @@ CREATE_PAYLOAD = {
     "use_mjml": "y",
     "use_keyboard_shortcuts": "y",
     "use_ai": "y",
-    "use_logfire": "y",
     "use_healthchecks": "y",
     "use_apprise": "n",
     "use_mcp": "n",
@@ -82,14 +81,17 @@ def test_project_options_endpoint_contract(client):
     assert body["defaults"]["use_apprise"] == "n"
     assert body["defaults"]["use_mcp"] == "n"
     assert body["defaults"]["use_digitalocean"] == "n"
+    assert "use_logfire" not in body["defaults"]
 
     groups = {group["key"]: group for group in body["groups"]}
     assert {option["key"] for option in groups["monitoring"]["options"]} >= {
         "use_posthog",
         "use_sentry",
-        "use_logfire",
         "use_healthchecks",
         "use_apprise",
+    }
+    assert "use_logfire" not in {
+        option["key"] for option in groups["monitoring"]["options"]
     }
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",

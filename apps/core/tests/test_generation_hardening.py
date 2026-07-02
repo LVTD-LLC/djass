@@ -101,7 +101,6 @@ def _read_artifact_zip(project):
             use_mjml="n",
             use_keyboard_shortcuts="n",
             use_ai="n",
-            use_logfire="n",
             use_healthchecks="n",
             use_apprise="n",
             use_mcp="n",

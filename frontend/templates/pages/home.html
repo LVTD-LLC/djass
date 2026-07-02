@@ -234,7 +234,6 @@
                     <span class="dj-stack-tag">Django-Q2</span>
                     <span class="dj-stack-tag">Sentry</span>
                     <span class="dj-stack-tag">PostHog</span>
-                    <span class="dj-stack-tag">Logfire</span>
                     <span class="dj-stack-tag">Stripe</span>
                     <span class="dj-stack-tag">S3</span>
                     <span class="dj-stack-tag">MCP option</span>
@@ -247,11 +246,11 @@
     {% if show_confetti %}
         <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
         <script>
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
         </script>
     {% endif %}
 {% endblock content %}

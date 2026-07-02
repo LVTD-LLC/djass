@@ -256,6 +256,8 @@ def test_generator_options_exposes_defaults_and_flags(settings):
     assert options["template_path"] == "https://example.test/template.git"
     assert options["defaults"]["project_name"] == "My Awesome Project"
     assert "use_stripe" in options["module_flags"]
+    assert "use_logfire" not in options["module_flags"]
+    assert "use_logfire" not in options["defaults"]
     assert "groups" in options
     posthog_option = next(
         option
@@ -322,7 +324,6 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_mjml="y",
         use_keyboard_shortcuts="y",
         use_ai="y",
-        use_logfire="y",
         use_healthchecks="y",
         use_apprise="n",
         use_mcp="y",
@@ -355,7 +356,6 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_mjml="y",
         use_keyboard_shortcuts="y",
         use_ai="y",
-        use_logfire="y",
         use_healthchecks="y",
         use_apprise="n",
         use_mcp="y",
@@ -388,7 +388,6 @@ def test_mcp_tools_expose_current_generator_fields_and_defaults():
         use_mjml="y",
         use_keyboard_shortcuts="y",
         use_ai="y",
-        use_logfire="y",
         use_healthchecks="y",
         use_apprise="n",
         use_mcp="y",
