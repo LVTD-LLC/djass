@@ -31,6 +31,7 @@ class TestHomeView:
         content = response.content.decode()
         assert "Generation locked" in content
         assert "Unlock for $10" in content
+        assert "Logfire" not in content
 
     def test_home_shows_generation_unlocked_for_paid_user(self, auth_client, user):
         user.profile.state = ProfileStates.SUBSCRIBED

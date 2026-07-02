@@ -84,7 +84,7 @@ def build_djass_agent_skill_md() -> str:
            idea alone. In particular, ask the user to confirm enabled/disabled
            values for feature flags such as analytics, support chat, storage,
            payments, error monitoring, admin notifications, blog/docs, MJML, AI,
-           Logfire, health checks, MCP scaffolding, CI, and deployment provider support.
+           health checks, MCP scaffolding, CI, and deployment provider support.
            If the user says to use Djass defaults, treat that as confirmation.
 
         4. Call `create_project` with explicit project fields and feature flags
@@ -239,7 +239,6 @@ def build_djass_agent_skill_md() -> str:
             "use_mjml": "y",
             "use_keyboard_shortcuts": "y",
             "use_ai": "y",
-            "use_logfire": "y",
             "use_healthchecks": "y",
             "use_apprise": "n",
             "use_mcp": "y",

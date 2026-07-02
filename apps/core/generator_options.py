@@ -268,17 +268,6 @@ GENERATOR_OPTION_CATALOG = GeneratorOptionCatalog(
             ),
         ),
         GeneratorField(
-            "use_logfire",
-            "y",
-            "Use Logfire",
-            category="monitoring",
-            is_feature_flag=True,
-            description=(
-                "Adds Logfire instrumentation that works with the generated app's standard "
-                "Python logging records and Pydantic telemetry."
-            ),
-        ),
-        GeneratorField(
             "use_healthchecks",
             "y",
             "Use Healthchecks",

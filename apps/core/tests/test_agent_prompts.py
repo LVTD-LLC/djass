@@ -22,6 +22,8 @@ def test_agent_skill_uses_canonical_api_base_url():
     assert "Call `get_project_download`" in skill_md
     assert "djass_generation_options" not in skill_md
     assert "djass_create_project" not in skill_md
+    assert "use_logfire" not in skill_md
+    assert "Logfire" not in skill_md
     assert "__DJASS_API_BASE_URL__" not in skill_md
     assert "__DJASS_OPENAPI_DOCS_URL__" not in skill_md
     assert "__DJASS_MCP_DOCS_URL__" not in skill_md

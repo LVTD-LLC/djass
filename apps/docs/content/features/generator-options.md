@@ -39,8 +39,6 @@ not block unrelated PRs.
   PostHog Logs can read the same structured fields when its handler is attached.
 - **Use Sentry**: error monitoring plus breadcrumbs, events, and optional logs
   from standard Python logging records.
-- **Use Logfire**: Logfire instrumentation that works with the generated app's
-  standard Python logging records and Pydantic telemetry.
 - **Use Healthchecks**: health-check related setup when enabled.
 - **Use Apprise**: Apprise-backed admin notification helper, config, deployment docs, and tests.
 

@@ -24,9 +24,11 @@ def test_generator_options_are_grouped_by_category():
     assert {option["key"] for option in groups["monitoring"]["options"]} >= {
         "use_posthog",
         "use_sentry",
-        "use_logfire",
         "use_healthchecks",
         "use_apprise",
+    }
+    assert "use_logfire" not in {
+        option["key"] for option in groups["monitoring"]["options"]
     }
     assert {option["key"] for option in groups["cx"]["options"]} >= {
         "use_chatwoot",
@@ -59,6 +61,8 @@ def test_catalog_feature_flags_feed_ui_api_and_mcp():
 
     assert feature_flag_keys.issubset(ProjectCreateForm().fields)
     assert feature_flag_keys.issubset(ProjectCreateIn.model_fields)
+    assert "use_logfire" not in ProjectCreateForm().fields
+    assert "use_logfire" not in ProjectCreateIn.model_fields
     assert {
         option["key"] for group in catalog.as_mcp_payload()["groups"] for option in group["options"]
     } == feature_flag_keys

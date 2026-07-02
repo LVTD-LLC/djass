@@ -376,6 +376,15 @@ def test_landing_header_omits_stack_link(client):
     assert ">Stack</a>" not in content
 
 
+def test_uses_page_does_not_advertise_logfire(client):
+    response = client.get(reverse("uses"))
+    assert response.status_code == 200
+
+    content = response.content.decode()
+    assert "Tools behind Djass" in content
+    assert "Logfire" not in content
+
+
 def test_landing_subscribed_user_gets_dashboard_and_project_ctas(auth_client, user):
     user.profile.state = ProfileStates.SUBSCRIBED
     user.profile.save(update_fields=["state"])
