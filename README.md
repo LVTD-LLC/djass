@@ -85,6 +85,20 @@ shared-filesystem workflows.
 By default it uses `DJASS_MCP_USER_EMAIL` or creates an automation user at
 `djass-agent@example.local`.
 
+## CLI
+
+Djass includes a Go CLI for people and AI agents that need generated code in a
+local workspace while using the managed production service:
+
+```bash
+go install github.com/LVTD-LLC/djass/cli/cmd/djass@latest
+export DJASS_API_KEY="replace-with-your-key"
+djass generate --name "Acme CRM" --slug acme_crm --output ./acme_crm
+```
+
+The CLI has parity with Projects API v1 and discovers generator options from
+production. See [`cli/README.md`](cli/README.md) for all commands.
+
 ## Project structure
 
 - `apps/core` — shared business logic and core models

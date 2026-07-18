@@ -19,6 +19,7 @@ Repository structure and placement rules for AI agents working on Djass.
 - `scripts/`: Node scripts that copy vendor assets, copy app JS, and watch frontend assets
 - `deployment/`: production Dockerfile and entrypoint
 - `.github/workflows/`: CI and deployment workflows
+- `cli/`: Go source, tests, and installation guidance for the remote `djass` command
 
 ## Placement Rules
 
@@ -52,6 +53,7 @@ For a new API capability:
 - Add endpoint in `apps/api/views.py`
 - Add audit action in `apps/api/audit.py` / `ProjectAPIAuditLog` if it is project-related
 - Add contract tests near `apps/api/test_spec_001_contract.py`
+- Update `cli/internal/api` and `cli/internal/command` when the capability belongs in the public CLI contract
 
 For a new background job:
 

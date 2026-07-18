@@ -22,3 +22,9 @@ test:
 
 restart-worker:
 	docker compose -f docker-compose-local.yml up -d workers --force-recreate
+
+cli-test:
+	cd cli && go test ./... && go vet ./...
+
+cli-build:
+	cd cli && go build ./cmd/djass

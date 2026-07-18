@@ -27,5 +27,6 @@ navigation:
     - environment-variables
 
   api:
+    - cli
     - projects-api-v1
     - mcp-server
