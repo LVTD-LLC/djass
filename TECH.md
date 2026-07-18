@@ -6,6 +6,7 @@ Technical context for AI agents working on Djass.
 
 - Python: `3.14.5` from `.python-version`
 - Node: `24.15.0` from `.nvmrc` and `package.json` engines
+- Go: `1.24` from `cli/go.mod` for the `djass` CLI
 - Python dependency manager: `uv`
 - Node package manager: npm with `package-lock.json`
 - Database: PostgreSQL, using custom Postgres 18 in CI and local Docker
@@ -67,6 +68,15 @@ uv run python -m apps.mcp.server
 djass-mcp
 ```
 
+Go CLI:
+
+```bash
+cd cli
+go test ./...
+go vet ./...
+go build ./cmd/djass
+```
+
 Frontend:
 
 ```bash
@@ -103,6 +113,7 @@ Settings live in `djass/settings.py` and read `.env`.
 ## API and MCP Contracts
 
 - API v1 endpoints live in `apps/api/views.py` and schemas in `apps/api/schemas.py`.
+- The Go CLI lives in `cli/` and maps Projects API v1 operations to `djass` commands.
 - API auth is in `apps/api/auth.py`; scoped keys use `ProjectAPIKeyScope`.
 - API audit logs are `ProjectAPIAuditLog` rows.
 - MCP tool implementations are split between `apps/mcp/server.py`, `apps/mcp/hosted.py`, and `apps/mcp/services.py`.

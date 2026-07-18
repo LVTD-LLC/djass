@@ -4,6 +4,33 @@ on:
   pull_request:
 
 jobs:
+  cli:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: cli/go.mod
+          cache-dependency-path: cli/go.mod
+
+      - name: Test CLI
+        working-directory: cli
+        run: go test ./...
+
+      - name: Vet CLI
+        working-directory: cli
+        run: go vet ./...
+
+      - name: Build CLI
+        working-directory: cli
+        run: go build ./cmd/djass
+
   test:
     runs-on: ubuntu-latest
 

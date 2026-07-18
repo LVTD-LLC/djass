@@ -9,7 +9,7 @@ Djass helps users generate agent-ready Django SaaS repositories from `django-saa
 Primary user jobs:
 
 - Create a new Django SaaS starter by choosing project metadata and optional modules.
-- Generate the same project through UI, API, or MCP workflows.
+- Generate the same project through UI, API, CLI, or MCP workflows.
 - Poll build status and download a ZIP artifact when generation is ready.
 - Hand an AI agent a Djass prompt or MCP setup so the agent can create projects without manual UI steps.
 
@@ -17,13 +17,13 @@ Primary user jobs:
 
 Project generation:
 
-1. User submits generator options through `ProjectCreateForm`, `/api/v1/projects`, or Djass MCP.
+1. User submits generator options through `ProjectCreateForm`, `/api/v1/projects`, the `djass` CLI, or Djass MCP.
 2. Djass validates the payload against the generator catalog.
 3. Djass creates a `Project` row with `status=queued`.
 4. Django Q2 runs `apps.core.tasks.generate_project_artifact`.
 5. Cookiecutter renders `django-saas-starter`.
 6. Djass writes `project-metadata.json` and `djass-manifest.json`, zips the generated repo, stores `ProjectArtifact`, and marks the project `ready`.
-7. Users download artifacts from the dashboard, API, or MCP download flow.
+7. Users download artifacts from the dashboard, API, CLI, or MCP download flow.
 
 Access and monetization:
 
@@ -34,6 +34,7 @@ Access and monetization:
 Agent workflow:
 
 - Hosted MCP is preferred for remote agents at `https://djass.dev/mcp`.
+- The Go `djass` CLI is preferred when an agent needs the generated repository in its local workspace.
 - HTTP API fallback uses `https://djass.dev/api/v1`.
 - Agent prompts are generated in `apps/core/agent_prompts.py`; public skill endpoints must never embed user-specific secrets.
 

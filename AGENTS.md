@@ -28,7 +28,7 @@ For documentation-only changes, at minimum run `git diff --check` and verify eve
 
 ## Implementation Rules
 
-- Keep the three generation entrypoints aligned: web UI in `apps/core/views.py` and `ProjectCreateForm`, API v1 in `apps/api`, and MCP in `apps/mcp`.
+- Keep the four generation entrypoints aligned: web UI in `apps/core/views.py` and `ProjectCreateForm`, API v1 in `apps/api`, the Go CLI in `cli/`, and MCP in `apps/mcp`.
 - Treat `apps/core/generator_options.py` as the canonical generator option catalog. When adding, removing, or renaming a generator field, update the form, API schema/contract, MCP tools, docs, and tests in the same change.
 - Keep project generation asynchronous. Web/API/MCP paths should create `Project(status=queued)` and enqueue `apps.core.tasks.generate_project_artifact` instead of running Cookiecutter inline.
 - Preserve artifact safety and determinism in `apps/core/tasks.py`: normalized payloads, sorted ZIP traversal, fixed ZIP timestamps, SHA-256, size metadata, and persisted failure diagnostics.
